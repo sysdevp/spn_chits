@@ -1,0 +1,84 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add Bank</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-bank-details']"  class="bg-primary border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Bank Details</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze ">
+    <form class="bs-example form-horizontal" [formGroup]="AddBank" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">Branch <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <select #branch_id class="form-control form-control w-100 border-dark"  formControlName="branch_id">
+            <option value=""> Select Branch </option>
+            <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+            <label *ngIf="f.branch_id.errors.required">Branch Name is required</label>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">Account No <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <input #account_number type="text" class="form-control" placeholder="Enter Account No"  formControlName="account_number" >
+          <div class="col-md-12" *ngIf="submitted && f.account_number.errors" class="invalid-feedback">
+            <label *ngIf="f.account_number.errors.required">Account Number is required</label>
+            <label *ngIf="f.account_number.errors.pattern">Invaild Format</label>
+          </div>
+        </div>
+      </div>
+         <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">Bank  <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <input #bank_name type="text" class="form-control" placeholder="Enter Bank "  formControlName="bank_name">
+          <div class="col-md-12" *ngIf="submitted && f.bank_name.errors" class="invalid-feedback">
+            <label *ngIf="f.bank_name.errors.required">Bank Name is required</label>
+            <label *ngIf="f.bank_name.errors.pattern">Characters only allowed</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">Bank Branch <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <input #bank_branch_name type="text" class="form-control" placeholder="Bank Branch" formControlName="bank_branch_name">
+          <div class="col-md-12" *ngIf="submitted && f.bank_branch_name.errors" class="invalid-feedback">
+            <label *ngIf="f.bank_branch_name.errors.required">Bank Branch Name is required</label>
+          </div>
+        </div>
+      </div>
+        <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">IFSC Code <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <input #ifsc_code type="text" class="form-control" placeholder="Enter IFSC Code "  formControlName="ifsc_code">
+          <div class="col-md-12" *ngIf="submitted && f.ifsc_code.errors" class="invalid-feedback">
+            <label *ngIf="f.ifsc_code.errors.required">IFSC Code is required</label>
+            <label *ngIf="f.ifsc_code.errors.required">Invalid pattern</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row ">
+        <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-bank-details']" class="btn btn-danger mr-1">Cancel</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

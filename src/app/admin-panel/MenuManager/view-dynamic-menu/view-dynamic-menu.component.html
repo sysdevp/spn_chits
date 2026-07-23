@@ -1,0 +1,105 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Menu Detail</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Menu Title : </label>
+              <b class="px-1">{{ViewMenuInfo.menu_title}} </b>
+            </div>
+          </div>	
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Icon Class : </label>
+              <b class="px-1">{{ViewMenuInfo.icon_class}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Router Link : </label>
+              <b class="px-1">{{ViewMenuInfo.router_link}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Page Type : </label>
+              <b class="px-1" *ngIf="ViewMenuInfo.page_type==1">CRUD  </b>
+              <b class="px-1" *ngIf="ViewMenuInfo.page_type==0">Report  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Has Submenu : </label>
+              <b class="px-1" *ngIf="ViewMenuInfo.has_submenu==1">Yes  </b>
+              <b class="px-1" *ngIf="ViewMenuInfo.has_submenu==0">No  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Tab Tpe : </label>
+              <b class="px-1" *ngIf="ViewMenuInfo.tab_type==1">Self </b>
+              <b class="px-1" *ngIf="ViewMenuInfo.has_submenu==0">Blank </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Parent Menu : </label>
+              <b class="px-1" *ngIf="ViewMenuInfo.parent_menu_id!=0">{{parentInfo.menu_title}}  </b>
+              <b class="px-1" *ngIf="ViewMenuInfo.parent_menu_id==0">- </b>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Menus</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/add-dynamic-menu']" class="bg-success border-0 text-white px-3 py-2"> + Add Dynamic Menu </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div [hidden]="TableHidden">
+        <table id="dtable" class="row-border hover">
+          <thead>
+            <tr> 
+              <th>Sno</th>
+              <th>Menu Title</th>
+              <th>Router Link</th>
+              <th>Tab Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.menu_title}}</td>
+            <td>{{row.router_link}}</td>
+            <td *ngIf="row.tab_type==1">Self</td>
+            <td *ngIf="row.tab_type==2">Blank</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Menu"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-dynamic-menu/'+row.id]" title="Edit Menu"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-dynamic-menu/'+row.id]" title="Delete Menu"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Menu"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Menu"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

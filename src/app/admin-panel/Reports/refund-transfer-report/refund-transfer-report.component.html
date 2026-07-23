@@ -1,0 +1,249 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Payment Transfer Report</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-transfer-customer']" class="bg-success border-0 text-white px-3 py-2"> + Add Payment Transfer</a> &nbsp;&nbsp;
+      </div>
+    </div>
+    <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+      <button (click)="onpdf()" class="mr-1"><i class="fas fa-download"></i></button>
+    </div>
+  </div>
+  <div class="card-body">
+    <div >
+      <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="PaymentRefundReport" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Branch <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+                  <option value="">Select Branch</option>
+                  <option value="0">All Branch</option>
+                  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Group</label>
+              <div class="col-sm-8">
+                <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
+                  <option value="">Select Group</option>
+                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Start Date</label>
+              <div class="col-sm-8">
+                <input #start_date type="text" formControlName="start_date" class="form-control calendar" placeholder="Enter Start Date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">End Date</label>
+              <div class="col-sm-8">
+                <input #end_date type="text" formControlName="end_date" class="form-control calendar" placeholder="Enter End Date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+        <table class="table table-responsive">
+          <thead>
+          <tr>
+            <th>S No</th>
+            <th>Branch Name</th>
+            <th>Group Name</th>
+            <th>Customer Name</th>
+            <th>Refund Date</th>
+            <th>Employee Name</th>
+            <th>Payment Amount</th>
+            <th>Payment Type</th>
+            <th>Cheque No</th>
+            <th>Cheque Date</th>
+            <th>Bank Name</th>
+            <th>Bank Branch Name</th>
+            <th>Transcation Date</th>
+            <th>Debit To</th>
+            <th>Cheque Clearance</th>
+          </tr>
+        </thead>
+          <tbody>
+            <tr>
+              <td colspan="12" style="color: #d9534f;
+              border: transparent;
+              font-size: 20px;">
+                No Records Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+	  <div class="row recp_rep" [hidden]="hideReport">
+        <div class="test-header col-5">
+          Show:
+          <select (change)="onPageSizeChanged()" id="page-size">
+            <option value="10" selected="">10</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+          entries
+        </div>
+        <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
+          <button (click)="onBtnExport()" >Excel</button>
+          <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
+        </div>
+        <div class="col-3 r_rep">
+          <span >Search</span> 
+          <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
+        </div> 
+        <ag-grid-angular *ngIf="showReportGrid" #agGrid
+          style="width: 100%; height: 450px; margin-top: 15px;" 
+          class="ag-theme-balham"
+          [rowData]="rowData" 
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [pagination]="true"
+          [paginationPageSize]="paginationPageSize"
+          [paginationNumberFormatter]="paginationNumberFormatter"
+          [rowHeight]="50"
+          [headerHeight]="50"
+          [suppressExcelExport] = "true" 
+          (gridReady)="onGridReady($event)"
+          [gridOptions]="gridOptions"
+        >     
+        </ag-grid-angular>
+        <h4 class="text-center col-12">Grand Total </h4>
+        <table class="table text-center mx-3 table-bordered">
+          <tr>
+            <th class="bg-secondary text-white"> Total Amount</th>
+          </tr>
+          <tr>
+            <td>{{totalAmt}}</td>
+          </tr>
+        </table>
+      </div>
+      <!--<div class="row" style="overflow-x:scroll ">
+        <table id="dtable" class="row-border hover" [hidden]="TableHidden">
+          <thead>
+            <tr> 
+              <th>Sno</th>
+              <th>Branch Name</th>
+              <th>Group Name</th>
+              <th>Customer Name</th>
+              <th>Refund Date</th>
+              <th>Employee Name</th>
+              <th>Total Amount</th>
+              <th>Payment Type</th>
+              <th>Cheque No</th>
+              <th>Cheque Date</th>
+              <th>Bank Name</th>
+              <th>Bank branch Name</th>
+              <th>Transcation No</th>
+              <th>Transcation Date</th>
+              <th>Dabit To</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody> 
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td>{{row.group_info.group_name}}</td>
+              <td>{{row.customer_info.name}}</td>
+              <td>{{row.payment_date}}</td>
+              <td>{{row.employee_info.first_name}}{{row.employee_info.last_name}}</td>
+              <td>{{row.total_amount}}</td>
+              <td>{{row.payment_type_info.payment_name}}</td>
+              <td>{{row.cheque_no}}</td>
+              <td>{{row.cheque_date}}</td>
+              <td>{{row.bank_id}} </td>
+              <td>{{row.branch_name}} </td>
+              <td>{{row.transaction_no}} </td>
+              <td>{{row.transaction_date}} </td>
+              <td>{{row.debit_from}} </td>
+              <td>  
+                <a [routerLink]="['/admin-panel/delete-enrol-refund-amount/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>-->
+      <div>
+        
+      <table class="text-center mx-3 table-bordered" [hidden]="pdfrectab" id="contentToConvert">
+        <tr>
+          <th class="bg-secondary text-white">Sno</th>
+          <th class="bg-secondary text-white">Branch Name</th>
+          <th class="bg-secondary text-white">Group Name</th>
+          <th class="bg-secondary text-white">Customer Name</th>
+          <th class="bg-secondary text-white">Refund Date</th>
+          <th class="bg-secondary text-white">Employee Name</th>
+          <th class="bg-secondary text-white">Total Amount</th>
+          <th class="bg-secondary text-white">Payment Type</th>
+          <th class="bg-secondary text-white">Cheque No</th>
+          <th class="bg-secondary text-white">Cheque Date</th>
+          <th class="bg-secondary text-white">Cheque Clear/ Return Date</th>
+          <th class="bg-secondary text-white">Bank Name</th>
+          <th class="bg-secondary text-white">Bank Branch Name</th>
+          <th class="bg-secondary text-white">Transaction No</th>
+          <th class="bg-secondary text-white">Transaction Date</th>
+          <th class="bg-secondary text-white">Cheque Clearance</th>
+          <th class="bg-secondary text-white">Cheque Debit To</th>
+          <th class="bg-secondary text-white">Status</th>
+        </tr>
+        <tr *ngFor="let row of dataList;">
+          <td>{{row.sno}}</td>
+          <td>{{row.branch_name}}</td>
+          <td>{{row.group_name}}</td>
+          <td>{{row.customer_name}}</td>
+          <td>{{row.payment_date}}</td>
+          <td>{{row.employee_name}}</td>
+          <td>{{row.total_amount}}</td>
+          <td>{{row.payment_type_name}}</td>
+          <td>{{row.cheque_no}}</td>
+          <td>{{row.cheque_date}}</td>
+          <td>{{row.cheque_clear_return_date}}</td>
+          <td>{{row.bank_name}}</td>
+          <td>{{row.bank_branch_name}}</td>
+          <td>{{row.transaction_no}}</td>
+          <td>{{row.transaction_date}}</td>
+          <td>{{row.cheque_clearance}}</td>
+          <td>{{row.debit_from}}</td>
+          <td>{{row.status_name}}</td>
+        </tr>
+      </table>
+    </div>
+    </div>
+  </div>
+</div>

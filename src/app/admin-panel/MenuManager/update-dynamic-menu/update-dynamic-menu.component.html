@@ -1,0 +1,121 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Menu</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-dynamic-menus']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Menus</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdateDynamicMenu" (ngSubmit)="onSubmit()">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Menu Title <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #menu_title type="text" class="form-control" placeholder="Enter Menu Title" formControlName="menu_title">
+              <div class="col-md-12" *ngIf="submitted && f.menu_title.errors" class="invalid-feedback">
+                <label *ngIf="f.menu_title.errors.required">Menu title is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Icon class</label>
+            <div class="col-sm-8">
+              <input #icon_class type="text" class="form-control" placeholder="Enter Icon Class" formControlName="icon_class">
+              <div class="col-md-12" *ngIf="submitted && f.icon_class.errors" class="invalid-feedback">
+                <label *ngIf="f.icon_class.errors.required">Icon class is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Router Link <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #router_link type="text" class="form-control" placeholder="Enter Router Link" formControlName="router_link">
+              <div class="col-md-12" *ngIf="submitted && f.router_link.errors" class="invalid-feedback">
+                <label *ngIf="f.router_link.errors.required">Router link is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Page Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #page_type formControlName="page_type">
+                <option value="">Select Page Type</option>
+                <option value="1">CRUD</option>
+                <option value="2">Report</option>
+                <option value="3">Dashboard</option>  
+                <option value="4">Menu Head</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.page_type.errors" class="invalid-feedback">
+                <label *ngIf="f.page_type.errors.required">Page type is required</label>
+              </div>
+            </div>
+          </div>          
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Parent Menu</label>
+            <div class="col-sm-8">
+              <select #parent_menu_id formControlName="parent_menu_id">
+                <option value="0">Select Parent Menu</option>
+                <option *ngFor="let data of parentMenuList" value="{{data.id}}">{{data.menu_title}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.parent_menu_id.errors" class="invalid-feedback">
+                <label *ngIf="f.parent_menu_id.errors.required">Parent menu is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Tab Type</label>
+            <div class="col-sm-8">
+              <select #tab_type formControlName="tab_type">
+                <option value="">Select Tab Type</option>
+                <option value="1">Self</option>
+                <option value="2">Blank</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.tab_type.errors" class="invalid-feedback">
+                <label *ngIf="f.tab_type.errors.required">Tab type is required</label>
+              </div>
+            </div>
+          </div>          
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Sorting No</label>
+            <div class="col-sm-8">
+              <select #sort_order formControlName="sort_order">
+                <option value="">Select Sorting No</option>
+                <option value="{{item}}" *ngFor="let item of sortOrderList; let i = index;">{{item}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.sort_order.errors" class="invalid-feedback">
+                <label *ngIf="f.sort_order.errors.required">Sorting no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Has Sub Menu </label>
+            <div class="col-sm-8">
+              <input #has_submenu type="checkbox" value="0" formControlName="has_submenu">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-dynamic-menus']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

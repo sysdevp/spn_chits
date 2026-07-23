@@ -1,0 +1,80 @@
+<form [formGroup]="bookForm" (ngSubmit)="onSubmit()">
+  <div class="form-row mb-3">
+    <div class="col-md-2">
+      <label>Tenant</label>
+      <select formControlName="tenant_id" #focus1 class="form-control">
+        <!-- Populate dynamically -->
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label>Branch</label>
+      <select formControlName="branch_id" #focus2 class="form-control">
+        <!-- Populate dynamically -->
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label>Start Date</label>
+      <input type="date" formControlName="start_date" #focus3 class="form-control" />
+    </div>
+    <div class="col-md-2">
+      <label>End Date</label>
+      <input type="date" formControlName="end_date" #focus4 class="form-control" />
+    </div>
+    <div class="col-md-2">
+      <label>Book Type</label>
+      <select formControlName="book_type" class="form-control">
+        <option value="cash">Cash Book</option>
+        <option value="bank">Bank Book</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary w-100" [disabled]="disableBtn">
+        {{ SubmitbuttonName }}
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- Report Table -->
+<div *ngIf="reportLoaded" class="mt-4">
+  <div class="d-flex justify-content-between mb-2">
+    <h5>{{ bookForm.value.book_type | titlecase }} Book Report</h5>
+    <div>
+      <button class="btn btn-sm btn-success me-2" (click)="exportExcel()">Export Excel</button>
+      <button class="btn btn-sm btn-danger" (click)="exportPDF()">Export PDF</button>
+    </div>
+  </div>
+
+  <div class="alert alert-info">
+    Opening Balance: ₹{{ opening_balance | number:'1.2-2' }}
+  </div>
+
+  <table class="table table-bordered table-sm">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Particulars</th>
+        <th class="text-end">Debit (₹)</th>
+        <th class="text-end">Credit (₹)</th>
+        <th class="text-end">Balance (₹)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of entries">
+        <td>{{ row.date }}</td>
+        <td>{{ row.particulars }}</td>
+        <td class="text-end text-success">{{ row.debit | number:'1.2-2' }}</td>
+        <td class="text-end text-danger">{{ row.credit | number:'1.2-2' }}</td>
+        <td class="text-end">{{ row.running_balance | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+    <tfoot>
+      <tr>
+        <th colspan="2">Total</th>
+        <th class="text-end text-success">{{ total_debit | number:'1.2-2' }}</th>
+        <th class="text-end text-danger">{{ total_credit | number:'1.2-2' }}</th>
+        <th class="text-end text-primary">{{ closing_balance | number:'1.2-2' }}</th>
+      </tr>
+    </tfoot>
+  </table>
+</div>

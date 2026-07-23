@@ -1,0 +1,23 @@
+<div class="card">
+  <div class="card-header"> 
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Delete Family Code</div>
+      <div class="col-6 d-flex justify-content-end"> 
+        <a [routerLink]="['/admin-panel/view-family-code']" class="bg-sky border-0 text-white px-3 py-2 mx-2 "> <i class="fas fa-eye pr-2"></i>View Family Code</a>
+        <a [routerLink]="['/admin-panel/add-family-code']"  class="bg-success border-0 text-white px-3 py-2"> + Add Family Code</a>
+      </div>  
+    </div>  
+  </div>
+  <div class="card-body">
+    <form class="bs-example form-horizontal" [formGroup]="DeleteFamilyCode" (ngSubmit)="onSubmit()">
+      <div class="form-group row">
+        <label class="col-md-2 col-sm-4 col-3">Remarks</label>
+        <textarea class="form-control col-md-10 col-sm-8 col-9" formControlName="deletion_remark" rows="3"></textarea>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-family-code']" class="btn btn-danger mr-1 ">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

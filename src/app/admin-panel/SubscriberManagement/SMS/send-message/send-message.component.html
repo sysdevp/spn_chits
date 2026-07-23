@@ -1,0 +1,99 @@
+<div class="card">
+  <div class="card-header">
+    <div class="col-6 text-right">
+      <div class="col-6 text-right">
+        <button type="button" class="btn btn-success" (click)="logbiddingReport()">Send SMS</button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="AddSMS" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Group Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #group_id formControlName="group_id" (change)="groupChg($event)">
+                <option value="">Select Group</option>
+                <option value="0">All Groups</option>
+                <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+                <label *ngIf="f.group_id.errors.required">Group is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Customer Name<span class="error">*</span></label>
+                    <div class="col-sm-8">
+                        <ng-multiselect-dropdown
+                          [placeholder]="'Select Customer Name'"
+                          [data]="dropdownList"
+                          formControlName="customer_id"
+                          [settings]="dropdownSettings"
+                          (onSelect)="customerChg($event)">
+                        </ng-multiselect-dropdown>
+                        <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+                          <label *ngIf="f.customer_id.errors.required">Customer Name is required</label>
+                        </div>
+                  </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Template Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #template_id formControlName="template_id" (change)="templateChg($event)">
+                <option value="">Select Template</option>
+                <option *ngFor="let data of templateList" value="{{data.id}}">{{data.template_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.template_id.errors" class="invalid-feedback">
+                <label *ngIf="f.template_id.errors.required">Template is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Content</label>
+            <div class="col-sm-10">
+              <textarea #remark class="form-control" placeholder="Enter Content" formControlName="remark"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

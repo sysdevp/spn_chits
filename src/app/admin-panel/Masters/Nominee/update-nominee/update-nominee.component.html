@@ -1,0 +1,464 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text d-flex p-2">
+    <h4 class="mb-0 my-auto text-white px-3">Upload File</h4>
+    <button type="button" class="btn btn-default mx-2 text-white border-white px-3 py-2 rounded-circle" id="myDiv" style="color:#000;" (click)="c('Close click');uploader.clearQueue()">X</button>
+  </div>
+  <div class="ng2-file-upload-drop-zone text-center py-2 px-3" style="border-bottom: 1px solid #8897aa;margin: 10px;"
+    ng2FileDrop
+    [ngClass]="{'ng2-file-upload-file-over': hasBaseDropZoneOver}"
+    (fileOver)="fileOver($event)"
+    [uploader]="uploader">
+    <div class="row">
+      <div class="col-md-12 col-12 d-flex justify-content-center">
+    <label class="btn btn-secondary mr-2">Select file
+      <input type="file" class="sr-only" ng2FileSelect [uploader]="uploader" accept="image/*">
+    </label>
+    
+    <div class="mr-3 text-center service_up">
+      <button type="button" class="progress-resume-link btn btn-primary" (click)="uploadFileDetails(uploader.queue);c('Close click');uploader.clearQueue()"
+       [disabled]="!uploader.getNotUploadedItems().length" ngbTooltip="Upload all">
+       <i class="icon ion-md-cloud-upload px-2"></i> Upload File</button>
+    </div>
+  </div>
+  </div>
+  </div>
+  <div class="media mt-4" [class.d-none]="!uploader?.queue?.length">
+    <div class="row" style="width: 100%;"> 
+      <div class="col-md-12">
+        <div class="media-body align-self-center" style="margin-top: 13px;"> 
+          <div class="progress-container progress">
+            <div class="progress-bar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <ul class="list-group mt-4" [class.d-none]="!uploader?.queue?.length">
+          <li class="list-group-item" *ngFor="let item of uploader.queue; let i = index;"> 
+            <div class="media">
+              <div class="media-body">
+                <div class="file_n_scrl">
+                  <span *ngIf="item.isSuccess"><i class="ion ion-md-checkmark text-success text-big mr-2"></i></span> 
+                  <span *ngIf="item.isError"><i class="ion ion-md-alert text-danger text-big mr-2"></i></span>
+                  <strong>File {{ item?.file?.name }}</strong>
+                  <span>- <em class="text-muted">{{ item.progress + '%' }}</em></span>
+                  <small class="text-muted" nowrap>
+                  {{ item?.file?.size/1024/1024 | number:'.2' }} MB
+                  </small>
+                </div>
+              </div>
+              <div class="align-self-center ml-3">
+                <button type="button" class="btn btn-sm icon-btn btn-outline-danger" (click)="item.remove()"><i class="ion ion-md-trash"></i></button>
+              </div>
+            </div> 
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div> 
+</ng-template>
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Nominee Details</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-nominee']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Nominee</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdateNominee" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)" disabled>
+          <option value="">Select Company</option>
+          <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-10">
+              <select #branch_id formControlName="branch_id" (change)="branchChg($event)" disabled> 
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #customer_id formControlName="customer_id" (change)="customerChg($event)" disabled>
+                <option value="">Select Customer Name</option>
+                <option *ngFor="let data of customerList" value="{{data.id}}">{{data.name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+                <label *ngIf="f.customer_id.errors.required">Customer name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Nominee Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #name type="text" class="form-control" placeholder="Enter Name" formControlName="name">
+              <div class="col-md-12" *ngIf="submitted && f.name.errors" class="invalid-feedback">
+                <label *ngIf="f.name.errors.required">Nominee name is required</label>
+                <label *ngIf="f.name.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Upload File</label>
+            <div class="col-sm-8 custom-file">
+              <input  type="hidden" class="form-control" id="photo" name="photo" formControlName="photo">
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' })" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
+                <b>Choose File</b> 
+              </a>
+            </div>
+          </div>
+          <span style="color:blue">{{customer_photo}}</span>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Date Of Birth <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #dob type="text" formControlName="dob" class="form-control calendar" [minDate]="minDate" [maxDate]="maxDate" placeholder="Enter Date Of Birth" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Select Gender</label>
+            <div class="col-sm-8">
+              <select #gender formControlName="gender">
+              <option value="">Select Gender</option>
+              <option value="1"> Male</option>
+              <option value="2"> Female</option>
+              </select>   
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Phone Number</label>
+            <div class="col-sm-8">
+              <input #phone_no type="text" class="form-control" placeholder="Enter Phone Number" formControlName="phone_no" (input)="onKeyUpPhone($event)">
+              <div class="col-md-12" *ngIf="(submitted && f.phone_no.errors) || (!isValidPhone)" class="invalid-feedback">
+                <label *ngIf="(f.phone_no.errors.pattern) || (!isValidPhone)">Invalid phone number</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Mobile Number <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #mobile_no type="text" class="form-control" placeholder="Enter Mobile Number" formControlName="mobile_no" (input)="onKeyUpMobile($event)">
+              <div class="col-md-12" *ngIf="(submitted && f.mobile_no.errors) || (!isValidMobile)" class="invalid-feedback">
+                <label *ngIf="(f.mobile_no.errors.pattern) || (!isValidMobile)">Invalid mobile number</label>
+                <label *ngIf="f.mobile_no.errors.required">Mobile number is required</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Email Id</label>
+            <div class="col-sm-8">
+              <input #email_id type="text" class="form-control" placeholder="Enter Email Id" formControlName="email_id" (input)="onKeyUpMail($event)">
+              <div class="col-md-12"*ngIf="(submitted && f.email_id.errors) || (!isValidMail)" class="invalid-feedback">
+                <label *ngIf="f.email_id.errors.required">Email id is required</label>
+                <label *ngIf="(f.email_id.errors.pattern) || (!isValidMobile)">Invalid email id</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">AdharCard Number</label>
+            <div class="col-sm-8">
+              <input #adhar_no type="text" class="form-control" placeholder="Enter Adhar Number" formControlName="adhar_no">
+              <div class="col-md-12"*ngIf="(submitted && (mantFieldAlertMsg!=''))" class="invalid-feedback">
+                <label>{{mantFieldAlertMsg}}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pancard Number</label>
+            <div class="col-sm-8">
+              <input #pan_no type="text" class="form-control" placeholder="Enter Pancard Number" formControlName="pan_no">
+              <div class="col-md-12" *ngIf="submitted && f.pan_no.errors" class="invalid-feedback">
+                <label *ngIf="f.pan_no.errors.Pattern">Invaild format</label>
+              </div>   
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Rationcard Number</label>
+            <div class="col-sm-8">
+              <input #ration_card_no type="text" class="form-control" placeholder="Enter Rationcard Number" formControlName="ration_card_no">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">License Number</label>
+            <div class="col-sm-8">
+              <input #license_no type="text" class="form-control" placeholder="Enter License Number" formControlName="license_no">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Date Of Joining <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #doj type="text" class="form-control" placeholder="Enter Date Of Joining" formControlName="doj" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Father Name</label>
+            <div class="col-sm-8">
+              <input #father_name type="text" class="form-control" placeholder="Enter Father Name" formControlName="father_name">
+              <div class="col-md-12" *ngIf="submitted && f.father_name.errors" class="invalid-feedback">
+                <label *ngIf="f.father_name.errors.pattern">Invaild Format</label>
+              </div>    
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Spouse Name</label>
+            <div class="col-sm-8">
+              <input #spouse_name type="text" class="form-control" placeholder="Enter Spouse Name" formControlName="spouse_name">
+              <div class="col-md-12" *ngIf="submitted && f.spouse_name.errors" class="invalid-feedback">
+                <label *ngIf="f.spouse_name.errors.pattern">Invaild Format</label>
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Door Number</label>
+            <div class="col-sm-8">
+              <input #door_no type="text" class="form-control" placeholder="Enter Door Number" formControlName="door_no">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Building Name</label>
+            <div class="col-sm-8">
+              <input #buildling_name type="text" class="form-control" placeholder="Enter Building Name" formControlName="buildling_name">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 1</label>
+            <div class="col-sm-8">
+              <input #address_line_1 type="text" class="form-control" placeholder="Enter Address Line 1" formControlName="address_line_1">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 2</label>
+            <div class="col-sm-8">
+              <input #address_line_2 type="text" class="form-control" placeholder="Enter Address Line 2" formControlName="address_line_2">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Landmark</label>
+            <div class="col-sm-8">
+              <input #landmark type="text" class="form-control" placeholder="Enter Landmark" formControlName="landmark">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">State Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #state_id formControlName="state_id"  (change)="stateChg($event)" >
+              <option value="">Select State</option>
+              <option *ngFor="let data of stateList" value="{{data.id}}">{{data.state_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.state_id.errors" class="invalid-feedback">
+                <label *ngIf="f.state_id.errors.required">State is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">District Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #district_id formControlName="district_id" (change)="districtChg($event)">
+              <option value="">Select District</option>
+              <option *ngFor="let data of districtList" value="{{data.id}}">{{data.district_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.district_id.errors" class="invalid-feedback">
+                <label *ngIf="f.district_id.errors.required">District is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #city_id formControlName="city_id">
+              <option value="">Select City</option>
+              <option *ngFor="let data of cityList" value="{{data.id}}">{{data.city_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.city_id.errors" class="invalid-feedback">
+                <label *ngIf="f.city_id.errors.required">City is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pincode</label>
+            <div class="col-sm-8">
+              <input #pincode type="text" class="form-control" placeholder="Enter Pincode" formControlName="pincode" (input)="onKeyUpPincode($event)">
+              <div class="col-md-12" *ngIf="(submitted && f.pincode.errors) || (!isValidPincode)" class="invalid-feedback">
+                <label *ngIf="(f.pincode.errors.pattern) || (!isValidPincode)">Invalid pincode</label>
+                <div class="col-md-12" *ngIf="submitted && f.pincode.errors" class="invalid-feedback">
+                  <label *ngIf="f.pincode.errors.required">Pincode is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">&nbsp;</div>
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">&nbsp;</label>
+            <div class="col-sm-10 my-auto">
+              <input type="checkbox" (change)="chkChg($event)">
+              if Communicate Address (Same as above)
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Door Number </label>
+            <div class="col-sm-8">
+              <input #communication_door_no type="text" class="form-control" placeholder="Enter Communication Door Number" formControlName="communication_door_no">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Building Name </label>
+            <div class="col-sm-8">
+              <input #communication_building_name type="text" class="form-control" placeholder="Enter Communication Building Name" formControlName="communication_building_name">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Address Line 1 </label>
+            <div class="col-sm-8">
+              <input #communication_address_line_1 type="text" class="form-control" placeholder="Enter Communication Address Line 1" formControlName="communication_address_line_1">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Address Line 2 </label>
+            <div class="col-sm-8">
+              <input #communication_address_line_2 type="text" class="form-control" placeholder="Enter Communication Address Line 2" formControlName="communication_address_line_2">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Land Mark </label>
+            <div class="col-sm-8">
+              <input #communication_land_mark type="text" class="form-control" placeholder="Enter Communication Land Mark" formControlName="communication_land_mark">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication State Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #communication_state_id formControlName="communication_state_id" (change)="communicationStateChg($event)">
+              <option value="">Select State</option>
+              <option *ngFor="let data of stateList" value="{{data.id}}">{{data.state_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.state_id.errors" class="invalid-feedback">
+                <label *ngIf="f.state_id.errors.required">Communication state name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"> Communication District Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #communication_district_id formControlName="communication_district_id" (change)="communicationDistrictChg($event)">
+              <option value="">Select District</option>
+              <option *ngFor="let data of districtList" value="{{data.id}}">{{data.district_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.communication_district_id.errors" class="invalid-feedback">
+                <label *ngIf="f.communication_district_id.errors.required">Communication district name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication City Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #communication_city_id formControlName="communication_city_id">
+              <option value="">Select City</option>
+              <option *ngFor="let data of cityList" value="{{data.id}}">{{data.city_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.communication_city_id.errors" class="invalid-feedback">
+                <label *ngIf="f.communication_city_id.errors.required">Communication city name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Communication Pincode</label>
+            <div class="col-sm-8">
+              <input #communication_pincode type="text" class="form-control" placeholder="Enter Communication Pincode" formControlName="communication_pincode">
+              <div class="col-md-12" *ngIf="submitted && f.communication_pincode.errors" class="invalid-feedback">
+                <label *ngIf="f.communication_pincode.errors.required">Communication Pincode is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-nominee']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

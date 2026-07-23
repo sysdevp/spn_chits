@@ -1,0 +1,321 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Payment</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-payments']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Payments</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdatePayment" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)" disabled>
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name</label>
+            <div class="col-sm-8">
+              <input #branch_id type="text" class="form-control" value="{{branchName}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Group Name</label>
+            <div class="col-sm-8">
+              <input #group_id type="text" class="form-control" value="{{groupName}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Ticket No </label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control" value="{{ticketName}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Name</label>
+            <div class="col-sm-8">
+              <input #customer_id type="text" class="form-control" value="{{customerName}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Employee Name</label>
+            <div class="col-sm-8">
+              <select #employee_id formControlName="employee_id" disabled>
+                <option value="">Select Employee</option>
+                <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Chit Value</label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control" value="{{chitValue}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bidding Amount</label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control" value="{{biddingAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Commission Amount</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" value="{{commissionAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Total Release Amount</label>
+            <div class="col-sm-8">
+              <input #total_release_amount type="text" class="form-control" value="{{totalReleaseAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Paid Amount</label>
+            <div class="col-sm-8">
+              <input #given_amount type="text" class="form-control" value="{{paidAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bid Advance Amount</label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control" value="{{bidAdvanceAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label">CGST</label>
+            <div class="col-sm-6">
+              <input #gst type="text" class="form-control" formControlName="cgst" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label">SGST</label>
+            <div class="col-sm-6">
+              <input #cgst type="text" class="form-control" formControlName="sgst" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-3 col-form-label">GST</label>
+            <div class="col-sm-6">
+              <input #sgst type="text" class="form-control" formControlName="gst" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Payment Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #payment_date type="text" formControlName="payment_date" class="form-control calendar" placeholder="Enter Date Introduced" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false" readonly>
+              <div class="col-md-12" *ngIf="submitted && f.payment_date.errors" class="invalid-feedback">
+                <label *ngIf="f.payment_date.errors.required">Payment date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pending Due Amount</label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control" value="{{0}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Paid Pending Due</label>
+            <div class="col-sm-8">
+              <input type="radio" name="payment_receipt" value="yes" (change)="setPendingDueAmt()" required>&nbsp;&nbsp;Yes&nbsp;&nbsp;
+				    	<input type="radio" name="payment_receipt" value="no" (change)="resetPendingDueAmt()">&nbsp;&nbsp;No
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hidePendingdueamount">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Enter Pending Due Amount</label>
+            <div class="col-sm-8">
+              <input #pending_due_amount type="text" class="form-control" placeholder="Enter Pending Due Amount" formControlName="pending_due_amount" (blur)="pendingReleaseCal()" readonly>
+              <div class="col-md-12" *ngIf="pendingAlertMsg" class="invalid-feedback">
+                <label>Pending due should less than actual release</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Release Amount <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #release_amount type="text" class="form-control" placeholder="Enter Release Amount" formControlName="customer_released" (blur)="pendingReleaseCal()" readonly>
+              <div class="col-md-12" *ngIf="releaseAlertMsg" class="invalid-feedback">
+                <label>Release amount should less than actual release</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Actual Release Amount</label>
+            <div class="col-sm-8">
+              <input type="text"  class="form-control" placeholder="Actual Release Amount" value="{{actualReleaseAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pending Release Amount</label>
+            <div class="col-sm-8">
+              <input #pending_release type="text" class="form-control" formControlName="pending_release" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Payment Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #payment_type_id formControlName="payment_type_id" (change)="paymentChg($event)">
+                <option>Select Payment Type</option>
+                <option value="1">Cash</option>
+                <option value="2">Cheque</option>
+                <option value="3">D.D</option>
+                <option value="4">RTGS/NEFT</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.payment_type_id.errors" class="invalid-feedback">
+                <label *ngIf="f.payment_type_id.errors.required">Payment type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideDebitTo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Debit To <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #debit_to type="text" class="form-control" placeholder="Debit To" formControlName="debit_to" >
+              <div class="col-md-12" *ngIf="submitted && f.debit_to.errors" class="invalid-feedback">
+                <label *ngIf="f.debit_to.errors.required">Debit to is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideChequeNo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Cheque No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #cheque_no type="text" class="form-control" placeholder="Cheque No" formControlName="cheque_no" >
+              <div class="col-md-12" *ngIf="submitted && f.cheque_no.errors" class="invalid-feedback">
+                <label *ngIf="f.cheque_no.errors.required">Cheque no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideChequeDate">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Cheque Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #cheque_date type="text" class="form-control" placeholder="Cheque Date"  formControlName="cheque_date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.cheque_date.errors" class="invalid-feedback">
+                <label *ngIf="f.cheque_date.errors.required">Cheque date is required</label>
+              </div>
+            </div>
+          </div>
+        </div> 
+        <div class="col-md-6" [hidden]="hideBankName">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bank Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #bank_id formControlName="bank_id">
+                <option value="">Select Bank</option>
+                <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.bank_id.errors" class="invalid-feedback">
+                <label *ngIf="f.bank_id.errors.required">Bank name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideBranchName">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #bank_branch_name formControlName="bank_branch_name">
+                <option value="">Select Bank</option>
+                <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.bank_branch_name.errors" class="invalid-feedback">
+                <label *ngIf="f.bank_branch_name.errors.required">Bank branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideTransactionDate">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Transaction Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #transaction_date type="text" class="form-control" placeholder="Transaction Date"  formControlName="transaction_date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.transaction_date.errors" class="invalid-feedback">
+                <label *ngIf="f.transaction_date.errors.required">Transaction date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideTransactionNo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Transaction No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input  #transaction_no type="text" class="form-control" placeholder="Transaction No"  formControlName="transaction_no">
+              <div class="col-md-12" *ngIf="submitted && f.transaction_no.errors" class="invalid-feedback">
+                <label *ngIf="f.transaction_no.errors.required">Transaction no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>     
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Remark</label>
+            <div class="col-sm-10">
+              <textarea #remark class="form-control" placeholder="Enter Remark" formControlName="remark"></textarea>
+            </div>     
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-auction']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

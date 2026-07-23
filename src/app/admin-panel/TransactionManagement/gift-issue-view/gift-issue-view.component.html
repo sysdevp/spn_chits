@@ -1,0 +1,43 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      
+    </div>
+    
+  </div>
+  <div class="card-body">
+    <div>
+      
+    <div>
+      <div [hidden]="pdfrectab" id="mygrid">
+      <h4 style="text-align: center;">Gift Issue Details</h4><br>
+      
+      <table class="table" border="1" [hidden]="report" id="mygrid">
+        <tbody>
+          <tr>
+            
+            
+            <th>Customer Name</th>
+            <th>Group Name</th>
+            <th>ticket_no</th>
+            <th>Gift Name</th>
+            <th>Issue Date</th>
+          </tr>
+       
+          <tr *ngFor="let row of dataList;">
+            
+            <td>{{row.customer_name}}</td>
+            <td>{{row.group_name}}</td>
+            <td>{{row.ticket_no}}</td>
+            <td>{{row.gift_id}}</td>
+            <td>{{row.issue_date}}</td>
+           
+          </tr>
+         
+        </tbody>
+        
+      </table>
+  </div>
+  </div>
+  </div>
+</div>

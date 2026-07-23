@@ -1,0 +1,136 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Tenant Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <label class="form-label">Company Logo: </label>
+          <img *ngIf="ViewTenantInfo.company_logo_for_view!=''" src={{ViewTenantInfo.company_logo_for_view}} class="img-view"/>
+        </div>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Receipt Logo: </label>
+            <img width=200 height=200 *ngIf="ViewTenantInfo.receipts_logo_for_view!=''" src={{ViewTenantInfo.receipts_logo_for_view}} class="img-view"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Favicon : </label>
+            <img width=200 height=200 *ngIf="ViewTenantInfo.favicon_for_view!=''" src={{ViewTenantInfo.favicon_for_view}} class="img-view"/>
+          </div>
+        </div>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Chit Fund Name: </label>
+            <b class="px-1">{{ViewTenantInfo.chit_fund_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Header Name : </label>
+            <b class="px-1">{{ViewTenantInfo.header_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Admin Email : </label>
+            <b class="px-1">{{ViewTenantInfo.admin_email}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">GST No : </label>
+            <b class="px-1">{{ViewTenantInfo.gst_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Authorized Person Name : </label>
+            <b class="px-1">{{ViewTenantInfo.authorized_person_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Phone No : </label>
+            <b class="px-1">{{ViewTenantInfo.phone_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Mobile No : </label>
+            <b class="px-1">{{ViewTenantInfo.mobile_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Database Name : </label>
+            <b class="px-1">{{ViewTenantInfo.database_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Slug URL : </label>
+            <b class="px-1">{{ViewTenantInfo.slag_url}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Tenant Detail</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-tenant']"  class="bg-success border-0 text-white px-3 py-2"> + Add Tenant</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>Sno</th>
+            <th>Chit Fund Name</th>
+            <th>Header Name</th>
+            <th>Database Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.chit_fund_name}}</td>
+            <td>{{row.header_name}}</td>
+            <td>{{row.database_name}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-tenant/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-tenant/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Tenant"><i class="fas fa-check-circle text-success"></i></a>
+                <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Tenant"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

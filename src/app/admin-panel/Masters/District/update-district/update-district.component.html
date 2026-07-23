@@ -1,0 +1,49 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update District</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-district']" class="bg-success border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View District</a>
+      </div>
+      </div>
+    </div>
+    <div class="card-body add-maze ">
+      <form class="bs-example form-horizontal" [formGroup]="UpdateDistrict" (ngSubmit)="onSubmit()">
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select State <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #state_id class="form-control form-control w-100 border-dark" formControlName="state_id">
+              <option value="">Select State</option>
+              <option *ngFor="let data of stateList" value="{{data.id}}">{{data.state_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.state_id.errors" class="invalid-feedback">
+              <label *ngIf="f.state_id.errors.required">State is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">District <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <input #district_name type="text" class="form-control" placeholder="Enter District" formControlName="district_name" >
+            <div class="col-md-12" *ngIf="submitted && f.district_name.errors" class="invalid-feedback">
+              <label *ngIf="f.district_name.errors.required">District name is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Remarks </label>
+          <div class="col-sm-10 col-md-7 col-9 w">
+            <input #remarks type="text" class="form-control" placeholder="Enter Remarks" formControlName="remarks">
+            <div class="col-md-12" *ngIf="submitted && f.remarks.errors" class="invalid-feedback">
+              <label *ngIf="f.remarks.errors.required">Remarks is required</label>
+              <label *ngIf="f.remarks.errors.pattern">Invalid format</label>
+            </div>  
+          </div>
+        </div>
+        <div class="form-group d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-district']" class="btn btn-danger mr-1">Cancel</a>
+        </div> 
+    </form>
+  </div>
+</div>

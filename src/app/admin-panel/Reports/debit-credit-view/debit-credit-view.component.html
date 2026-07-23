@@ -1,0 +1,53 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Account Incomes/Expenses Report</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-expenses-income']" class="bg-success border-0 text-white px-3 py-2"> + Add Account Expenses</a>
+      </div>
+
+    </div>
+    
+  </div>
+  <div class="card-body">
+    <div>
+      
+    <div>
+      <div [hidden]="pdfrectab" id="mygrid">
+      <h4 style="text-align: center;">Debit-Credit View</h4><br>
+      
+      <table class="table" border="1" [hidden]="report" id="mygrid">
+        <tbody>
+          <tr>
+            
+            <th>Voucher No</th>
+            <th>Date</th>
+            <th>Remarks</th>
+            <th>Particulars Debit</th>
+            <th>Debit</th>
+            <th>Particulars Credit</th>
+            <th>Credit</th>
+            <th>Credit Remarks</th>
+            <th>Debit Remarks</th>
+          </tr>
+       
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.voucher_no}}</td>
+            
+            <td>{{row.entry_date}}</td>
+            <td>{{row.remarks}}</td>
+            <td>{{row.debit_name}}</td>
+            <td>{{row.debit_amount}}</td>
+            <td>{{row.credit_name}}</td>
+            <td>{{row.credit_amount}}</td>
+            <td>{{row.credit_remarks}}</td>
+            <td>{{row.debit_remarks}}</td>
+          </tr>
+         
+        </tbody>
+        
+      </table>
+  </div>
+  </div>
+  </div>
+</div>

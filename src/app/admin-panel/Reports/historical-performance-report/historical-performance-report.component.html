@@ -1,0 +1,192 @@
+<div class="card maz-vh exec-report-root">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="font-weight-bold">Historical performance (collections &amp; subscribers)</span>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="loadReport()" class="mb-4 p-3 rounded" style="background: #f5f7fb; border: 1px solid #e8eaf0">
+      <div class="form-group row" *ngIf="isSuperAdmin">
+        <label class="col-md-2 col-form-label">Company <span class="text-danger">*</span></label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select company</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name || c.name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-2 col-form-label">Branch</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="branch_id">
+            <option value="">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <label class="col-md-2 col-form-label">Period</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="range_months">
+            <option value="3">Last 3 calendar months</option>
+            <option value="6">Last 6 calendar months</option>
+            <option value="12">Last 12 calendar months</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row mb-0">
+        <div class="col-md-10 offset-md-2">
+          <button type="submit" class="btn btn-primary px-4" [disabled]="loading">
+            {{ loading ? 'Loading…' : 'Run report' }}
+          </button>
+        </div>
+      </div>
+      <div *ngIf="submitted && f.tenant_id.errors" class="text-danger small mt-2">Company is required.</div>
+    </form>
+
+    <div *ngIf="loading" class="text-center text-muted py-5">Building report…</div>
+
+    <div *ngIf="report && !loading">
+      <!-- KPI spotlight: bid / outstanding -->
+      <div class="row exec-kpi-row mb-4">
+        <div class="col-md-6 col-lg-3 mb-3">
+          <div class="exec-kpi exec-kpi-bid h-100">
+            <div class="exec-kpi-label">Bid outstanding (pending release)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.current_outstanding_bid_pending) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Live snapshot · prized money still in pipeline</div>
+            <span class="exec-kpi-badge">Current portfolio</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+          <div class="exec-kpi exec-kpi-collections h-100">
+            <div class="exec-kpi-label">Collections (period total)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.totals?.collections) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Receipts + advances + before enrolment</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+          <div class="exec-kpi exec-kpi-payments h-100">
+            <div class="exec-kpi-label">Payments (period total)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.totals?.payments) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Posted chit / installment payments</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-3">
+          <div class="exec-kpi exec-kpi-people h-100">
+            <div class="exec-kpi-label">Net movement (period)</div>
+            <div class="exec-kpi-value">
+              +{{ num(report.totals?.new_customers) }}
+              <span style="opacity: 0.85; font-size: 1rem">/</span>
+              −{{ num(report.totals?.removed_customers) }}
+            </div>
+            <div class="exec-kpi-hint">New subscribers vs removed</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="exec-note mb-3 p-2 rounded" style="background: #fff8e1; border-left: 4px solid #ff9800">
+        <strong>Outstanding note:</strong> bid pending is <em>today’s</em> total, not reconstructed month-end history.
+        {{ report.notes?.outstanding }}
+      </p>
+
+      <!-- Charts -->
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">Collections by month</div>
+            <div *ngFor="let row of report.months" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track">
+                <div class="exec-bar-fill exec-fill-coll" [style.width.%]="barPct(row.collections, maxCollections)"></div>
+              </div>
+              <span class="exec-bar-amt">₹ {{ num(row.collections) | number : '1.0-0' }}</span>
+            </div>
+            <div class="exec-legend"><span><span class="exec-swatch exec-swatch-teal"></span>Collections</span></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">Payments by month</div>
+            <div *ngFor="let row of report.months" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track">
+                <div class="exec-bar-fill exec-fill-pay" [style.width.%]="barPct(row.payments, maxPayments)"></div>
+              </div>
+              <span class="exec-bar-amt">₹ {{ num(row.payments) | number : '1.0-0' }}</span>
+            </div>
+            <div class="exec-legend"><span><span class="exec-swatch exec-swatch-blue"></span>Payments</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="row mb-4">
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">New subscribers vs removed</div>
+            <div *ngFor="let row of report.months" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track" style="display: flex; gap: 2px; background: transparent; border: 0">
+                <div style="flex: 1; height: 18px; background: #eceff1; border-radius: 9px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05)">
+                  <div class="exec-bar-fill exec-fill-new" [style.width.%]="barPct(row.new_customers, maxNewCustomers)"></div>
+                </div>
+                <div style="flex: 1; height: 18px; background: #eceff1; border-radius: 9px; overflow: hidden; border: 1px solid rgba(0,0,0,0.05)">
+                  <div class="exec-bar-fill exec-fill-rem" [style.width.%]="barPct(row.removed_customers, maxRemoved)"></div>
+                </div>
+              </div>
+              <span class="exec-bar-amt" style="width: auto; min-width: 88px">{{ row.new_customers }} / {{ row.removed_customers }}</span>
+            </div>
+            <div class="exec-legend">
+              <span><span class="exec-swatch exec-swatch-green"></span>New</span>
+              <span><span class="exec-swatch exec-swatch-red"></span>Removed</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">New enrollments by month</div>
+            <div *ngFor="let row of report.months" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track">
+                <div class="exec-bar-fill exec-fill-enr" [style.width.%]="barPct(row.new_enrollments, maxEnrollments)"></div>
+              </div>
+              <span class="exec-bar-amt">{{ row.new_enrollments }}</span>
+            </div>
+            <div class="exec-legend"><span><span class="exec-swatch exec-swatch-purple"></span>Enrollments</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h6 class="font-weight-bold text-secondary mb-2">Detailed table</h6>
+      <div class="table-responsive exec-table-wrap mb-3">
+        <table class="table table-sm table-bordered table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="text-right">Collections</th>
+              <th class="text-right">Payments</th>
+              <th class="text-right">New subscribers</th>
+              <th class="text-right">Removed</th>
+              <th class="text-right">New enrollments</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.months">
+              <td>{{ row.month_label }}</td>
+              <td class="text-right">₹ {{ row.collections | number : '1.2-2' }}</td>
+              <td class="text-right">₹ {{ row.payments | number : '1.2-2' }}</td>
+              <td class="text-right">{{ row.new_customers }}</td>
+              <td class="text-right">{{ row.removed_customers }}</td>
+              <td class="text-right">{{ row.new_enrollments }}</td>
+            </tr>
+          </tbody>
+          <tfoot class="font-weight-bold bg-light">
+            <tr>
+              <td>Total / sum</td>
+              <td class="text-right">₹ {{ report.totals?.collections | number : '1.2-2' }}</td>
+              <td class="text-right">₹ {{ report.totals?.payments | number : '1.2-2' }}</td>
+              <td class="text-right">{{ report.totals?.new_customers }}</td>
+              <td class="text-right">{{ report.totals?.removed_customers }}</td>
+              <td class="text-right">{{ report.totals?.new_enrollments }}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="exec-note mb-0">{{ report.notes?.customers }}</p>
+    </div>
+  </div>
+</div>

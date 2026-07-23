@@ -1,0 +1,108 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Employee Attendance Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body py-0">
+      <div class="row">
+        
+        <div class="row emp_hrm">
+          <h5 class="col-md-12 py-1 mb-0"> Employee Attendance List</h5>
+          <div class="col-md-12 border pt-3">
+            <div class="row" >
+                  <table class="table table-striped">
+                      <thead>
+                          <tr> 
+                            <th>Branch Name</th>
+                            <th>Date</th>
+                            <th>Employee Name</th>
+                            <th>Attendance Type</th>
+                            <th>Leave Type</th>
+                            <th>Sessions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of viewEmployeeAttendanceInfo;">
+                            <td>{{row.branch_info.branch_name}} </td>
+                            <td>{{row.att_date}} </td>
+                            <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}}</td>
+                            <td *ngIf="row.attendance_type==0">Absent</td>
+                            <td *ngIf="row.attendance_type==1">Present</td>
+                            <td>
+                            <span *ngIf="row.leave_type==1">Paid</span> 
+                            <span *ngIf="row.leave_type==2">Unpaid</span> 
+                          </td>
+                            <td>
+                              <span *ngIf="row.forenoon_session==1">Forenoon - </span> 
+                              <span *ngIf="row.afternoon_session==1">Afternoon</span> 
+                             </td>
+                          </tr>
+                        </tbody>
+                    
+                     <!--  <tr>
+                        <td>Employee Name</td>
+                        <td>{{EmployeeInfo.first_name}} {{EmployeeInfo.last_name}}</td>
+                        <td>Attendance Type</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.attendance_type==0">Absent</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.attendance_type==1">Present</td>
+                      </tr>
+                      <tr>
+                        <td>Leave Type</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.leave_type==1">Paid</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.leave_type==2">Unpaid</td>
+                        <td>Leave Sessions</td>
+                        <td>
+                          <span *ngIf="viewEmployeeAttendanceInfo.forenoon_session==1">Forenoon --</span> 
+                          <span *ngIf="viewEmployeeAttendanceInfo.afternoon_session==1">Afternoon</span> 
+                        </td>
+                      </tr> -->
+                  </table>
+             
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Employee Attendance List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-employee-attendance']"  class="bg-success border-0 text-white px-3 py-2"> + Add Employee Attendance</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.att_view_date}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.branch_id,row.att_year,row.att_month,row.att_date)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-employee-attendance/'+row.branch_id+'/'+row.att_year+'/'+row.att_month+'/'+row.att_date]"><i class="fas fa-edit text-primary mx-2"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

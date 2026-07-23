@@ -1,0 +1,306 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Installmentwise Report</div>
+      <div class="col-6 text-right">&nbsp;</div>
+    </div>
+    <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
+        <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
+      </div>
+      <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+        <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
+      </div>
+     <h3 [hidden]="pdfrectab">Installmentwise Report</h3>
+  </div>
+  <div class="card-body">
+    <div >
+      <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="InstallmentwiseReport" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-10 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-10 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+              <option value="">Select Branch</option>
+              <option value="0">All Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Group </label>
+          <div class="col-sm-10 col-md-10 col-9">
+            <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
+              <option value="">Select Group</option>
+              <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+              <label *ngIf="f.group_id.errors.required">Group is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row" >
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">From No <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #from_no class="form-control form-control w-100 border-dark" formControlName="from_no">
+                  <option value="">Select From No</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                  <option value="13">13</option>
+                  <option value="14">14</option>
+                  <option value="15">15</option>
+                  <option value="16">16</option>
+                  <option value="17">17</option>
+                  <option value="18">18</option>
+                  <option value="19">19</option>
+                  <option value="20">20</option>
+                  <option value="21">21</option>
+                  <option value="22">22</option>
+                  <option value="23">23</option>
+                  <option value="24">24</option>
+                  <option value="25">25</option>
+                  <option value="26">26</option>
+                  <option value="27">27</option>
+                  <option value="28">28</option>
+                  <option value="29">29</option>
+                  <option value="30">30</option>
+                  <option value="31">31</option>
+                  <option value="32">32</option>
+                  <option value="33">33</option>
+                  <option value="34">34</option>
+                  <option value="35">35</option>
+                  <option value="36">36</option>
+                  <option value="37">37</option>
+                  <option value="38">38</option>
+                  <option value="39">39</option>
+                  <option value="40">40</option>
+                  <option value="41">41</option>
+                  <option value="42">42</option>
+                  <option value="43">43</option>
+                  <option value="44">44</option>
+                  <option value="45">45</option>
+                  <option value="46">46</option>
+                  <option value="47">47</option>
+                  <option value="48">48</option>
+                  <option value="49">49</option>
+                  <option value="50">50</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.from_no.errors" class="invalid-feedback">
+                  <label *ngIf="f.from_no.errors.required">From Installment No is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">To No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #to_no class="form-control form-control w-100 border-dark" formControlName="to_no">
+                  <option value="">Select To No</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                  <option value="11">11</option>
+                  <option value="12">12</option>
+                  <option value="13">13</option>
+                  <option value="14">14</option>
+                  <option value="15">15</option>
+                  <option value="16">16</option>
+                  <option value="17">17</option>
+                  <option value="18">18</option>
+                  <option value="19">19</option>
+                  <option value="20">20</option>
+                  <option value="21">21</option>
+                  <option value="22">22</option>
+                  <option value="23">23</option>
+                  <option value="24">24</option>
+                  <option value="25">25</option>
+                  <option value="26">26</option>
+                  <option value="27">27</option>
+                  <option value="28">28</option>
+                  <option value="29">29</option>
+                  <option value="30">30</option>
+                  <option value="31">31</option>
+                  <option value="32">32</option>
+                  <option value="33">33</option>
+                  <option value="34">34</option>
+                  <option value="35">35</option>
+                  <option value="36">36</option>
+                  <option value="37">37</option>
+                  <option value="38">38</option>
+                  <option value="39">39</option>
+                  <option value="40">40</option>
+                  <option value="41">41</option>
+                  <option value="42">42</option>
+                  <option value="43">43</option>
+                  <option value="44">44</option>
+                  <option value="45">45</option>
+                  <option value="46">46</option>
+                  <option value="47">47</option>
+                  <option value="48">48</option>
+                  <option value="49">49</option>
+                  <option value="50">50</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.to_no.errors" class="invalid-feedback">
+                <label *ngIf="f.to_no.errors.required">To Installment No is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetGroupwiseReport()">Reset</button>
+          </div> 
+        </div>
+      </form>
+	    <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+        <table class="table table-responsive">
+          <thead>
+          <tr>
+            <th>S No</th>
+            <th>Branch Name</th>
+            <th>Group Name</th>
+            <th>Customer Name</th>
+            <th>Customer Mobile</th>
+            <th>Ticket No</th>
+            <th>Pending Due</th>            
+            <th>Pending Penalty</th>
+            <th>Pending Bonus</th>
+            <th>Pending Days</th>
+            <th>Pending Installments</th>
+            <th>Released Amount</th>
+          </tr>
+        </thead>
+          <tbody>
+            <tr>
+              <td colspan="12" style="color: #d9534f;
+              border: transparent;
+              font-size: 20px;">
+                No Records Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+	  <div class="row recp_rep" [hidden]="hideReport">
+        <div class="test-header col-5">
+          Show:
+          <select (change)="onPageSizeChanged()" id="page-size">
+            <option value="10" selected="">10</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+          entries
+        </div>
+        <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
+          <button (click)="onBtnExport()" >Excel</button>
+          <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
+        </div>
+        <div class="col-3 r_rep">
+          <span >Search</span> 
+          <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
+        </div> 
+        <ag-grid-angular *ngIf="showReportGrid" #agGrid
+          style="width: 100%; height: 450px; margin-top: 15px;" 
+          class="ag-theme-balham"
+          [rowData]="rowData" 
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [pagination]="true"
+          [paginationPageSize]="paginationPageSize"
+          [paginationNumberFormatter]="paginationNumberFormatter"
+          [rowHeight]="50"
+          [headerHeight]="50"
+          [suppressExcelExport] = "true" 
+          (gridReady)="onGridReady($event)"
+        >     
+        </ag-grid-angular>
+        
+      </div>
+      <div>
+      <table class="table text-center mx-3 table-bordered" [hidden]="pdfrectab" id="mygrid">
+          <thead>
+            <tr>
+              <th>Branch Name</th>
+              <th>Group Name</th>
+              <th>Area Name</th>
+              <th>Collection Employee Name</th>
+              <th>Customer Code</th>
+              <th>Customer Name</th>
+              <th>Customer Address</th>
+              <th>Customer Mobile No</th>
+              <th>Ticket No</th>
+              <th>Installment No</th>
+              <th>Installmentwise Pending</th>
+              <th>Installmentwise Penalty</th>
+              <th>Installmentwise Bonus</th>
+              <th>Installmentwise Discount</th>
+              <th>Current Due</th>
+              <th>To Be Collected</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!--<tr *ngFor="let row of suhail; let i=index;">
+              <td *ngFor="let key of row">{{row[key.installment_no]}}</td>
+              <td>{{row.installment_wise_overall_pending}}</td>
+            </tr>-->
+            <tr *ngFor="let row of test; let i=index;">
+              <td>{{row.branch_name}}</td>
+              <td>{{row.group_name}}</td>
+              <td>{{row.area_name}}</td>
+              <td>{{row.employee_name}}</td>
+              <td>{{row.cust_code}}</td>
+              <td>{{row.cust_name}}</td>
+              <td>{{row.cust_address}}</td>
+              <td>{{row.cust_mobile_no}}</td>
+              <td>{{row.ticket_no}}</td>
+              <td>{{row.installment_no}}</td>
+              <td>{{row.inst_amt_wise_pending}}</td>
+              <td>{{row.penalty_inst_wise}}</td>
+              <td>{{row.bonus_inst_wise}}</td>
+              <td>{{row.bonus_inst_wise}}</td>
+              <td>{{row.current_due}}</td>
+              <td>{{row.to_be_collected}}</td>
+            </tr>
+          </tbody>
+      </table>
+    </div>
+    </div>
+  </div>
+</div>

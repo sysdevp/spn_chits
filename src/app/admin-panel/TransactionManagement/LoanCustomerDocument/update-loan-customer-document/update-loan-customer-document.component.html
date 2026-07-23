@@ -1,0 +1,603 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text d-flex p-2">
+    <h4 class="mb-0 my-auto text-white px-3">Upload Document</h4>
+    <button
+      type="button"
+      class="btn btn-default mx-2 text-white border-white px-3 py-2 rounded-circle"
+      id="myDiv"
+      style="color: #000"
+      (click)="c('Close click'); uploader.clearQueue()"
+    >
+      X
+    </button>
+  </div>
+  <div
+    class="ng2-file-upload-drop-zone text-center py-2 px-3"
+    style="border-bottom: 1px solid #8897aa; margin: 10px"
+    ng2FileDrop
+    [ngClass]="{ 'ng2-file-upload-file-over': hasBaseDropZoneOver }"
+    (fileOver)="fileOver($event)"
+    [uploader]="uploader"
+  >
+    <div class="row">
+      <div class="col-md-12 col-12 d-flex justify-content-center">
+        <label class="btn btn-secondary mr-2"
+          >Select file
+          <input
+            type="file"
+            class="sr-only"
+            ng2FileSelect
+            [uploader]="uploader"
+            accept="image/*"
+          />
+        </label>
+        <div class="mr-3 text-center service_up">
+          <button
+            type="button"
+            class="progress-resume-link btn btn-primary"
+            (click)="
+              uploadAssetDetails(uploader.queue);
+              c('Close click');
+              uploader.clearQueue()
+            "
+            [disabled]="!uploader.getNotUploadedItems().length"
+            ngbTooltip="Upload all"
+          >
+            <i class="icon ion-md-cloud-upload px-2"></i> Upload File
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="media mt-4" [class.d-none]="!uploader?.queue?.length">
+    <div class="row" style="width: 100%">
+      <div class="col-md-12">
+        <div class="media-body align-self-center" style="margin-top: 13px">
+          <div class="progress-container progress">
+            <div
+              class="progress-bar"
+              [ngStyle]="{ width: uploader.progress + '%' }"
+            ></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <ul class="list-group mt-4" [class.d-none]="!uploader?.queue?.length">
+          <li
+            class="list-group-item"
+            *ngFor="let item of uploader.queue; let i = index"
+          >
+            <div class="media">
+              <div class="media-body">
+                <div class="file_n_scrl">
+                  <span *ngIf="item.isSuccess"
+                    ><i
+                      class="ion ion-md-checkmark text-success text-big mr-2"
+                    ></i
+                  ></span>
+                  <span *ngIf="item.isError"
+                    ><i class="ion ion-md-alert text-danger text-big mr-2"></i
+                  ></span>
+                  <strong>File {{ item?.file?.name }}</strong>
+                  <span
+                    >-
+                    <em class="text-muted">{{ item.progress + "%" }}</em></span
+                  >
+                  <small class="text-muted" nowrap>
+                    {{ item?.file?.size / 1024 / 1024 | number: ".2" }} MB
+                  </small>
+                </div>
+              </div>
+              <div class="align-self-center ml-3">
+                <button
+                  type="button"
+                  class="btn btn-sm icon-btn btn-outline-danger"
+                  (click)="item.remove()"
+                >
+                  <i class="ion ion-md-trash"></i>
+                </button>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">
+        Update Loan Customer Documents
+      </div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-loan-customer-document']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Loan Customer Document</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="UpdateLoanCustomerDocument"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="row col-sm-12">
+        <div class="col-md-12 px-0">
+          <div class="form-group row" [hidden]="!isSuperAdmin">
+            <label class="col-sm-2 col-form-label"
+              >Company Name <span class="error">*</span></label
+            >
+            <div class="col-sm-10">
+              <select
+                #tenant_id
+                formControlName="tenant_id"
+                (change)="companyChg($event)"
+                disabled
+              >
+                <option value="">Select Company</option>
+                <option *ngFor="let data of companyList" value="{{ data.id }}">
+                  {{ data.chit_fund_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.tenant_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.tenant_id.errors.required"
+                  >Company is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label"
+                >Branch <span class="error">*</span></label
+              >
+              <div class="col-sm-8">
+                <select
+                  formControlName="branch_id"
+                  class="readonlycolor"
+                  (change)="branchChg($event)"
+                  disabled
+                >
+                  <option value="">Select Branch</option>
+                  <option *ngFor="let data of branchList" value="{{ data.id }}">
+                    {{ data.branch_name }}
+                  </option>
+                </select>
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && f.branch_id.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="f.branch_id.errors.required"
+                    >Branch is required</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4"
+                >Customer <span class="error">*</span></label
+              >
+              <div class="col-sm-8">
+                <select
+                  (change)="customerChg($event)"
+                  class="readonlycolor"
+                  formControlName="customer_id"
+                  disabled
+                >
+                  <option value="">Select Customer</option>
+                  <option
+                    *ngFor="let data of customerList"
+                    value="{{ data.id }}"
+                  >
+                    {{ data.name }}
+                  </option>
+                </select>
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && f.customer_id.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="f.customer_id.errors.required"
+                    >Customer is required</label
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4">Collected From</label>
+                <div class="col-sm-8">
+                  <select formControlName="collected_from" class="readonlycolor"  (change)="collectedFromChg($event)" disabled>
+                    <option value="">Select Collected From</option>
+                    <option value="1">Customer</option>
+                    <option value="2">Guarantor</option>
+                  </select>
+                </div>
+              </div>
+            </div> -->
+
+          <div class="col-md-6" [hidden]="hideGuarantorDetail">
+            <div class="form-group row">
+              <label class="col-sm-4">Guarantor Name</label>
+              <div class="col-sm-8">
+                <select formControlName="guarantor_id" disabled>
+                  <option>Select Guarantor</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4">No Of KYC Doc Collected</label>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  class="form-control px-2"
+                  value="{{ noOfDocuments }}"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4">No Of Asset Doc Collected</label>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  class="form-control px-2"
+                  value="{{ noOfAssets }}"
+                  readonly
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Document Collected Date</label>
+              <div class="col-sm-8">
+                <input
+                  type="text"
+                  class="form-control px-2"
+                  placeholder="Collected Date"
+                  formControlName="collect_date"
+                  (click)="d1.toggle()"
+                  ngbDatepicker
+                  #d1="ngbDatepicker"
+                  onkeydown="return false;"
+                  disabled
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus" [hidden]="hideDocuments">
+        <h5 class="col-md-12 py-3 text-center">Documents Details</h5>
+        <div class="col-md-12">
+          <table class="table col-sm-12">
+            <thead class="thead-light">
+              <tr>
+                <th>Sno</th>
+                <th>Document Name</th>
+                <th>Document No</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tr *ngFor="let document of documentList; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <span *ngIf="document.document_type == 1">Pan Card</span>
+                <span *ngIf="document.document_type == 2">Aadhaar Card</span>
+                <span *ngIf="document.document_type == 3">Ration Card</span>
+              </td>
+              <td>{{ documentList[i].document_no }}</td>
+              <td>
+                <span *ngIf="document.status == 1">Received</span>
+                <span *ngIf="document.status == 2">Returned</span>
+                <span *ngIf="document.status == 3">Canceled</span>
+              </td>
+              <td>
+                <a
+                  *ngIf="document.status == 1"
+                  (click)="returnDocument(document.id)"
+                  style="margin-left: 5%; cursor: pointer"
+                  title="Return Document"
+                  ><i class="fa fa-undo text-info"></i
+                ></a>
+                <a
+                  (click)="removeDocument(document.id, i)"
+                  style="margin-left: 5%; cursor: pointer"
+                  title="Remove Document"
+                  ><i class="fa fa-trash text-danger"></i
+                ></a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus" [hidden]="hideAssets">
+        <h5 class="col-md-12 py-3 text-center">Asset Details</h5>
+        <div class="col-md-12">
+          <table class="table col-sm-12">
+            <thead class="thead-light">
+              <tr>
+                <th>Sno</th>
+                <th>Asset Name</th>
+                <th>Asset Value</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tr *ngFor="let asset of assetList; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ assetList[i].asset_name }}</td>
+              <td>{{ assetList[i].asset_value }}</td>
+              <td>
+                <span *ngIf="asset.status == 1">Received</span>
+                <span *ngIf="asset.status == 2">Returned</span>
+                <span *ngIf="asset.status == 3">Canceled</span>
+              </td>
+              <td>
+                <a
+                  *ngIf="asset.status == 1"
+                  (click)="returnAsset(asset.id)"
+                  style="margin-left: 5%; cursor: pointer"
+                  title="Return Asset"
+                  ><i class="fa fa-undo text-info"></i
+                ></a>
+                <a
+                  (click)="removeAsset(asset.id, i)"
+                  style="margin-left: 5%; cursor: pointer"
+                  title="Remove Asset"
+                  ><i class="fa fa-trash text-danger"></i
+                ></a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus">
+        <h5 class="col-md-12 py-3">Add More Documents</h5>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">No Of Documents</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control px-2"
+                placeholder="No Of Documents"
+                (blur)="noOfDocChg($event)"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" formArrayName="DocumentDetails">
+          <table class="table col-sm-12">
+            <thead class="thead-light">
+              <tr>
+                <th>Sno</th>
+                <th>Document Name</th>
+                <th>Document No</th>
+                <th>Upload Document</th>
+              </tr>
+            </thead>
+            <tr
+              *ngFor="
+                let document of DocumentDetails['controls'];
+                let i = index
+              "
+              formGroupName="{{ i }}"
+            >
+              <td>{{ i + 1 }}</td>
+              <td>
+                <select formControlName="document_type">
+                  <option value="">Select Document Type</option>
+                  <option value="1">Pan Card</option>
+                  <option value="2">Aadhaar Card</option>
+                  <option value="3">Ration Card</option>
+                </select>
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && document.controls.document_type.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="document.hasError('required', 'document_type')"
+                    >Document Type is required</label
+                  >
+                </div>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Document No"
+                  formControlName="document_no"
+                />
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && document.controls.document_no.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="document.hasError('required', 'document_no')"
+                    >Document No is required</label
+                  >
+                </div>
+              </td>
+              <td class="custom-file">
+                <a
+                  (click)="
+                    open(
+                      uploadModal,
+                      { windowClass: 'modal-lg animate' },
+                      i,
+                      'document'
+                    )
+                  "
+                  for="inputGroupFile01"
+                  class="white_btn logobtn p-2 text-dark rounded w-100 btn"
+                >
+                  <b *ngIf="document.get('document_path').value == ''"
+                    >Choose File</b
+                  >
+                  <b
+                    class="uploaded-files"
+                    *ngIf="document.get('document_path').value != ''"
+                    >Uploaded</b
+                  ><br />
+                  <div
+                    class="col-md-12"
+                    *ngIf="submitted && document.controls.document_path.errors"
+                    class="invalid-feedback"
+                  >
+                    <label
+                      *ngIf="document.hasError('required', 'document_path')"
+                      >Document Upload is required</label
+                    >
+                  </div>
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus">
+        <h5 class="col-md-12 py-3">Add More Assets</h5>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">No Of Assets</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control px-2"
+                placeholder="No Of Assests"
+                (blur)="noOfAssetChg($event)"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" formArrayName="AssetDetails">
+          <table class="table col-sm-12">
+            <thead class="thead-light">
+              <tr>
+                <th>Sno</th>
+                <th>Asset Name</th>
+                <th>Asset Value</th>
+                <th>Upload Asset</th>
+              </tr>
+            </thead>
+            <tr
+              *ngFor="let asset of AssetDetails['controls']; let i = index"
+              formGroupName="{{ i }}"
+            >
+              <td>{{ i + 1 }}</td>
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Asset Name"
+                  formControlName="asset_name"
+                />
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && asset.controls.asset_name.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="asset.hasError('required', 'asset_name')"
+                    >Asset Name is required</label
+                  >
+                </div>
+              </td>
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter Asset Value"
+                  formControlName="asset_value"
+                />
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && asset.controls.asset_value.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="asset.hasError('required', 'asset_value')"
+                    >Asset Value is required</label
+                  >
+                  <label *ngIf="asset.hasError('pattern', 'asset_value')"
+                    >Invalid Asset Value</label
+                  >
+                </div>
+              </td>
+              <td class="custom-file">
+                <a
+                  (click)="
+                    open(
+                      uploadModal,
+                      { windowClass: 'modal-lg animate' },
+                      i,
+                      'asset'
+                    )
+                  "
+                  for="inputGroupFile01"
+                  class="white_btn logobtn p-2 text-dark rounded w-100 btn"
+                >
+                  <b *ngIf="asset.get('asset_path').value == ''">Choose File</b>
+                  <b
+                    class="uploaded-files"
+                    *ngIf="asset.get('asset_path').value != ''"
+                    >Uploaded</b
+                  ><br />
+                  <div
+                    class="col-md-12"
+                    *ngIf="submitted && asset.controls.asset_path.errors"
+                    class="invalid-feedback"
+                  >
+                    <label *ngIf="asset.hasError('required', 'asset_path')"
+                      >Asset Upload is required</label
+                    >
+                  </div>
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="form-group d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-loan-customer-document']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

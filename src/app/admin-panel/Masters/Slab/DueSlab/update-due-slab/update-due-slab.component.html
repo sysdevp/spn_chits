@@ -1,0 +1,75 @@
+<div class="card">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6 my-auto font-weight-bold">Update Due Slab</div>
+            <div class="col-6 text-right">
+                <a [routerLink]="['/admin-panel/view-due-slab']"  class="bg-success border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Due Slab</a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body add-maze ">
+        <form class="bs-example form-horizontal" [formGroup]="UpdateSlab" (ngSubmit)="onSubmit()">
+            <div class="form-group row" [hidden]="!isSuperAdmin">
+                <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+                <div class="col-sm-6">
+                    <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)" disabled>
+                        <option value="">Select Company</option>
+                        <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+                    </select>
+                    <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+                        <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Branch  <span class="error">*</span></label>
+                <div class="col-sm-6">
+                    <select formControlName="branch_id" disabled>
+                        <option value="">Select Branch</option>
+                        <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+                    </select>
+                    <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                        <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Scheme  <span class="error">*</span></label>
+                <div class="col-sm-6">
+                    <select formControlName="schemes_id" (change)="schemeChg($event)" disabled>
+                        <option value="">Select Scheme</option>
+                        <option *ngFor="let data of schemeList" value="{{data.id}}">{{data.scheme_format}}</option>
+                    </select> 
+                    <div class="col-md-12" *ngIf="submitted && f.schemes_id.errors" class="invalid-feedback">
+                        <label *ngIf="f.schemes_id.errors.required">Scheme name is required</label>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label">Slab  <span class="error">*</span></label>
+                <div class="col-sm-6">
+                        <input #slab_name type="text" class="form-control px-2" placeholder="Enter Slab Name" formControlName="slab_name" disabled>
+                    <div class="col-md-12" *ngIf="submitted && f.slab_name.errors" class="invalid-feedback">
+                        <label *ngIf="f.slab_name.errors.required">Slab name is required</label>
+                    </div>
+                </div>
+            </div>
+              <div class="p-1 mb-3 bg-light border-start border-3 border-primary">
+  <h5 class="mb-0 text-info">Due Amount</h5>
+</div>
+               
+            <div class="form-group row">
+              <div *ngFor="let item of arrayOne(noOfMonths); let i = index;">
+                <div class="col-sm-12">
+                  <label class="col-form-label">Due - {{i+1}} </label>
+                  <input type="text" class="form-control" name="due_{{i+1}}" formControlName="due_{{i+1}}">
+                </div>
+              </div>
+            </div>
+            <div class="form-group d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+                <a [routerLink]="['/admin-panel/view-due-slab']" class="btn btn-danger mr-1">Cancel</a>
+            </div> 
+        </form>
+    </div>
+</div>

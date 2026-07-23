@@ -1,0 +1,248 @@
+<div class="card maz-vh exec-report-root">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="font-weight-bold">Business forecast (vs last 3 months &amp; same month last year)</span>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="loadReport()" class="mb-4 p-3 rounded" style="background: #f3f4fb; border: 1px solid #e1e4f0">
+      <div class="form-group row" *ngIf="isSuperAdmin">
+        <label class="col-md-2 col-form-label">Company <span class="text-danger">*</span></label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select company</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name || c.name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row mb-0">
+        <label class="col-md-2 col-form-label">Branch</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="branch_id">
+            <option value="">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <button type="submit" class="btn btn-primary px-4" [disabled]="loading">
+            {{ loading ? 'Loading…' : 'Run report' }}
+          </button>
+        </div>
+      </div>
+      <div *ngIf="submitted && f.tenant_id.errors" class="text-danger small mt-2">Company is required.</div>
+    </form>
+
+    <div *ngIf="loading" class="text-center text-muted py-5">Building forecast…</div>
+
+    <div *ngIf="report && !loading">
+      <!-- Bid / outstanding spotlight -->
+      <div class="row exec-kpi-row mb-3">
+        <div class="col-md-6 col-lg-4 mb-3">
+          <div class="exec-kpi exec-kpi-bid h-100">
+            <div class="exec-kpi-label">Bid outstanding (pending release)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.current_outstanding_bid_pending) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Compare forecasts below to what you still have to release on prized money.</div>
+            <span class="exec-kpi-badge">Current snapshot</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 mb-3" *ngIf="report.derived">
+          <div class="exec-kpi exec-kpi-collections h-100">
+            <div class="exec-kpi-label">Avg collections (last 3 mo)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.derived.avg_monthly_collections_last_3) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Baseline used for forward projection</div>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-4 mb-3" *ngIf="report.derived">
+          <div class="exec-kpi exec-kpi-payments h-100">
+            <div class="exec-kpi-label">Avg payments (last 3 mo)</div>
+            <div class="exec-kpi-value">₹ {{ num(report.derived.avg_monthly_payments_last_3) | number : '1.0-0' }}</div>
+            <div class="exec-kpi-hint">Posted installment / chit payments trend</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3" *ngIf="report.derived">
+        <div class="col-md-4 mb-2">
+          <div class="exec-tile exec-tile-a">
+            <div class="small" style="opacity: 0.9">Avg new subscribers (last 3)</div>
+            <div class="h4 mb-0">{{ num(report.derived.avg_new_customers_last_3) | number : '1.1-1' }}</div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="exec-tile exec-tile-b">
+            <div class="small" style="opacity: 0.9">Avg new enrollments (last 3)</div>
+            <div class="h4 mb-0">{{ num(report.derived.avg_new_enrollments_last_3) | number : '1.1-1' }}</div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-2">
+          <div class="exec-tile exec-tile-c">
+            <div class="small" style="opacity: 0.9">Method</div>
+            <div class="small mb-0">Moving average + light growth on forward months (see notes).</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="exec-note mb-2 p-2 rounded" style="background: #fff3e0; border-left: 4px solid #ff9800">
+        <strong>Forecast:</strong> {{ report.notes?.forecast }}
+      </p>
+      <p class="exec-note mb-4 p-2 rounded" style="background: #e3f2fd; border-left: 4px solid #1976d2">
+        <strong>Year-ago compare:</strong> {{ report.notes?.yoy }}
+      </p>
+
+      <!-- Charts: last 3 actual -->
+      <div class="section-title">Charts · last 3 months (actual)</div>
+      <div class="row">
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">Collections</div>
+            <div *ngFor="let row of report.last_3_months_actual" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track">
+                <div class="exec-bar-fill exec-fill-coll" [style.width.%]="barPct(row.collections, maxLast3Coll)"></div>
+              </div>
+              <span class="exec-bar-amt">₹ {{ num(row.collections) | number : '1.0-0' }}</span>
+            </div>
+            <div class="exec-legend"><span><span class="exec-swatch exec-swatch-teal"></span>Collections</span></div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="exec-chart-panel h-100">
+            <div class="exec-chart-title">Payments</div>
+            <div *ngFor="let row of report.last_3_months_actual" class="exec-bar-row">
+              <span class="exec-bar-label">{{ row.month_label }}</span>
+              <div class="exec-bar-track">
+                <div class="exec-bar-fill exec-fill-pay" [style.width.%]="barPct(row.payments, maxLast3Pay)"></div>
+              </div>
+              <span class="exec-bar-amt">₹ {{ num(row.payments) | number : '1.0-0' }}</span>
+            </div>
+            <div class="exec-legend"><span><span class="exec-swatch exec-swatch-blue"></span>Payments</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forecast vs YoY collections -->
+      <div class="section-title">Charts · next 3 months: forecast vs same month last year (collections)</div>
+      <div class="exec-chart-panel mb-4">
+        <div *ngFor="let row of report.next_3_months_forecast; let i = index" class="exec-bar-row">
+          <span class="exec-bar-label">{{ row.month_label }}</span>
+          <div class="exec-bar-track" style="display: flex; gap: 4px; background: transparent; border: 0">
+            <div style="flex: 1; height: 20px; background: #eceff1; border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06)">
+              <div class="exec-bar-fill exec-fill-fc" [style.width.%]="barPct(row.collections_forecast, maxFcYoyColl)"></div>
+            </div>
+            <div style="flex: 1; height: 20px; background: #eceff1; border-radius: 10px; overflow: hidden; border: 1px solid rgba(0,0,0,0.06)">
+              <div class="exec-bar-fill exec-fill-yoy" [style.width.%]="barPct(yoyRow(i).collections, maxFcYoyColl)"></div>
+            </div>
+          </div>
+          <span class="exec-bar-amt" style="font-size: 0.7rem"
+            >F: ₹{{ num(row.collections_forecast) | number : '1.0-0' }} · YoY: ₹{{
+              num(yoyRow(i).collections) | number : '1.0-0'
+            }}</span
+          >
+        </div>
+        <div class="exec-legend">
+          <span><span class="exec-swatch exec-swatch-fc"></span>Forecast</span>
+          <span><span class="exec-swatch exec-swatch-yoy"></span>Same month last year (actual)</span>
+        </div>
+      </div>
+
+      <!-- Subscriber trend: last 3 actual + next 3 forecast -->
+      <div class="section-title">Charts · new subscribers (actual last 3 + forecast next 3)</div>
+      <div class="exec-chart-panel mb-4">
+        <div *ngFor="let row of report.last_3_months_actual" class="exec-bar-row">
+          <span class="exec-bar-label">{{ row.month_label }}</span>
+          <div class="exec-bar-track">
+            <div class="exec-bar-fill exec-fill-new" [style.width.%]="barPct(row.new_customers, maxSubTrend)"></div>
+          </div>
+          <span class="exec-bar-amt">{{ row.new_customers }} actual</span>
+        </div>
+        <div *ngFor="let row of report.next_3_months_forecast" class="exec-bar-row">
+          <span class="exec-bar-label">{{ row.month_label }}</span>
+          <div class="exec-bar-track">
+            <div class="exec-bar-fill exec-fill-fc" [style.width.%]="barPct(row.new_customers_forecast, maxSubTrend)"></div>
+          </div>
+          <span class="exec-bar-amt">{{ row.new_customers_forecast }} est.</span>
+        </div>
+        <div class="exec-legend">
+          <span><span class="exec-swatch exec-swatch-green"></span>Actual</span>
+          <span><span class="exec-swatch exec-swatch-fc"></span>Forecast</span>
+        </div>
+      </div>
+
+      <div class="section-title">Detailed table · last 3 months (actual)</div>
+      <div class="table-responsive exec-table-wrap mb-4">
+        <table class="table table-sm table-bordered table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="text-right">Collections</th>
+              <th class="text-right">Payments</th>
+              <th class="text-right">New subscribers</th>
+              <th class="text-right">Removed</th>
+              <th class="text-right">New enrollments</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.last_3_months_actual">
+              <td>{{ row.month_label }}</td>
+              <td class="text-right">₹ {{ row.collections | number : '1.2-2' }}</td>
+              <td class="text-right">₹ {{ row.payments | number : '1.2-2' }}</td>
+              <td class="text-right">{{ row.new_customers }}</td>
+              <td class="text-right">{{ row.removed_customers }}</td>
+              <td class="text-right">{{ row.new_enrollments }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Detailed table · next 3 months (forecast)</div>
+      <div class="table-responsive exec-table-wrap mb-4">
+        <table class="table table-sm table-bordered mb-0">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th class="text-right">Collections (est.)</th>
+              <th class="text-right">Payments (est.)</th>
+              <th class="text-right">New subscribers (est.)</th>
+              <th class="text-right">Removed (est.)</th>
+              <th class="text-right">New enrollments (est.)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.next_3_months_forecast">
+              <td>{{ row.month_label }}</td>
+              <td class="text-right">₹ {{ row.collections_forecast | number : '1.2-2' }}</td>
+              <td class="text-right">₹ {{ row.payments_forecast | number : '1.2-2' }}</td>
+              <td class="text-right">{{ row.new_customers_forecast }}</td>
+              <td class="text-right">{{ row.removed_customers_forecast }}</td>
+              <td class="text-right">{{ row.new_enrollments_forecast }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="section-title">Detailed table · same month last year (actual)</div>
+      <div class="table-responsive exec-table-wrap">
+        <table class="table table-sm table-bordered table-striped mb-0">
+          <thead>
+            <tr>
+              <th>Month (prior year)</th>
+              <th class="text-right">Collections</th>
+              <th class="text-right">Payments</th>
+              <th class="text-right">New subscribers</th>
+              <th class="text-right">Removed</th>
+              <th class="text-right">New enrollments</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.yoy_same_month_last_year">
+              <td>{{ row.month_label }}</td>
+              <td class="text-right">₹ {{ row.collections | number : '1.2-2' }}</td>
+              <td class="text-right">₹ {{ row.payments | number : '1.2-2' }}</td>
+              <td class="text-right">{{ row.new_customers }}</td>
+              <td class="text-right">{{ row.removed_customers }}</td>
+              <td class="text-right">{{ row.new_enrollments }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

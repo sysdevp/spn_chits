@@ -1,0 +1,257 @@
+
+<div class="card maz-vh">
+    <div class="card-header">
+		<div class="row">
+			<div class="col-6 my-auto font-weight-bold">Suit Fie Report</div>
+			<div class="col-6 text-right">
+				<!--<a [routerLink]="['/admin-panel/add-customer']"  class="bg-success border-0 text-white px-3 py-2"> + Add Customer</a>-->
+			</div>
+		</div>
+    </div>
+	<div class="card-body">
+			<div [hidden]="TableHidden">
+			<form class="bs-example form-horizontal" [formGroup]="auctionReport" (ngSubmit)="onSubmit()">
+					<div class="form-group row" [hidden]="!isSuperAdmin">
+					  <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+					  <div class="col-sm-10 ">
+						<select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+						  <option value="">Select Company</option>
+						  <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+						</select>
+						<div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+						  <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+						</div>
+					  </div>
+					</div>
+					<div class="form-group row">
+					  <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+					  <div class="col-sm-10 ">
+						<select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+						  <option value="">Select Branch</option>
+						  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+						</select>
+						<div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+						  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+						</div>
+					  </div>
+					</div>
+          <div class="row">
+            <div class="col-6">
+              <div class="form-group row">
+                <label class="col-sm-4">Select Group </label>
+                <div class="col-sm-8">
+                  <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
+                    <option value="">Select Group</option>
+                    <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                  </select>
+                  <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+                    <label *ngIf="f.group_id.errors.required">Group is required</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group row">
+                <label class="col-sm-4">Select Group Status</label>
+                <div class="col-sm-8">
+                  <select #group_status class="form-control form-control w-100 border-dark" formControlName="group_status">
+                    <option value="0">Existing Group</option>
+                    <option value="1">Closed Group</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+					<div class="form-group row ">
+					  <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+						<button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+						<button type="button" class="btn btn-danger mr-1" (click)="resetCustomer()">Reset</button>
+					  </div>
+					</div>
+				  </form>
+          <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+            <table class="table table-responsive">
+              <thead>
+              <tr>
+                <th>Sno</th>
+                <th>Group Name</th>
+                <th>Ticket No</th>
+                <th>Customer Name</th>
+                <th>Fund Value</th>
+                <th>Case Stage Status</th>
+                <th>Lawyer Name</th>
+                <th>Actual Pending</th>
+                <th>Total Pending And Dividend</th>
+                <th>Grant Total</th>
+                <th>Grant Total With Dividend</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+              <tbody>
+                <tr>
+                  <td colspan="12" style="color: #d9534f;
+                  border: transparent;
+                  font-size: 20px;">
+                    No Records Found
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+			<!--<table id="dtable"  class="row-border hover">
+				<thead>
+					<tr> 
+						<th>SNo</th>
+						<th>Branch Id</th>
+						<th>Customer Code</th>
+						<th>Customer Name</th>
+						<th>Mobile No</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let row of dataList;">
+						<td>{{row.sno}}</td>
+						<td>{{row.branch_info.branch_name}}</td>
+						<td>{{row.customer_code}}</td>
+						<td>{{row.name}}</td>
+						<td>{{row.mobile_no}}</td>
+						<td>  
+							<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+							<a [routerLink]="['/admin-panel/update-customer/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+							<a [routerLink]="['/admin-panel/delete-customer/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+							<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Branch"><i class="fas fa-check-circle text-success"></i></a>
+              				<a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Branch"><i class="fas fa-ban text-danger"></i></a>
+						</td>
+					</tr>
+				</tbody>
+			</table>-->
+			<div class="dataTables_wrapper no-footer" [hidden]="TableshowHidden">
+
+        <div class="dataTables_length">
+          <label>
+            Show 
+            <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select> 
+            entries
+          </label>
+        </div>
+        <div class="col-10 r_rep pr-6" [hidden]="Tableclosedgroup">
+          <!--<div class="col-1 text-right" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>-->
+          <label style="padding-left: 20%">
+            Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+          </label>
+          <button (click)="exportAsXLSX()" class="btn btn-info" style="background: #1b5a26;border-color: transparent;color: #fff;">Excel </button>
+          <!--<button (click)="onBtnpdf()" class="mr-2">Pdf</button>-->
+        </div>
+        <div class="col-10 r_rep pr-6" [hidden]="Tableexistinggroup">
+          <!--<div class="col-1 text-right" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>-->
+          <label style="padding-left: 20%">
+            Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+          </label>
+          <button (click)="exportAsXLSX1()" class="btn btn-info" style="background: #1b5a26;border-color: transparent;color: #fff;">Excel </button>
+          <!--<button (click)="onBtnpdf()" class="mr-2">Pdf</button>-->
+        </div>
+        <div class="table-responsive">
+        <table class="row-border hover dataTable no-footer" id="mygrid" role="grid" aria-describedby="dtable_info" [hidden]="Tableclosedgroup">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Group Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ticket_no')">Ticket No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('chit_value')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bid_amount')">Fund Value</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('commission_amount')">Case Stage Status</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('gst')">Lawyer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('prize_amount')">Actual Pending</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('balance_amount')">Total Pending And Dividend</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;"  (click)="sortBy('payment_date')">Grant Total</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_released_amount')">Grant Total With Dividend</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td>{{row.sno}}</td>
+              <td>{{row.group_name}}</td>
+              <td>{{row.tno}}</td>
+              <td>{{row.cust_name}}</td>
+              <td>{{row.chit_value}}</td>
+              <td>{{row.case_name}}</td>
+              <td>{{row.lawyer_name}}</td>
+              <td>{{row.actual_pending}}</td>
+              <td>{{row.tot_pending_dividend}}</td>
+              <td>{{row.grand_total}}</td>
+              <td>{{row.grand_total_divident}}</td>
+              <td>  
+                <a [routerLink] ="['/admin-panel/add-suit-file/', row.id]"><i class="fas fa-edit text-primary"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <table class="row-border hover dataTable no-footer" id="mygrid1" role="grid" aria-describedby="dtable_info" [hidden]="Tableexistinggroup">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Group Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ticket_no')">Ticket No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('chit_value')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bid_amount')">Fund Value</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('commission_amount')">Case Stage Status</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('gst')">Lawyer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('prize_amount')">Actual Pending</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('balance_amount')">Total Pending And Dividend</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;"  (click)="sortBy('payment_date')">Grant Total</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_released_amount')">Grant Total With Dividend</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_released_amount')">Grant Total With Extra 1 Month</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_released_amount')">Grant Total With Dividend With Extra 1 Month</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td>{{row.sno}}</td>
+              <td>{{row.group_name}}</td>
+              <td>{{row.tno}}</td>
+              <td>{{row.cust_name}}</td>
+              <td>{{row.chit_value}}</td>
+              <td>{{row.case_name}}</td>
+              <td>{{row.lawyer_name}}</td>
+              <td>{{row.actual_pending}}</td>
+              <td>{{row.tot_pending_dividend}}</td>
+              <td>{{row.grand_total}}</td>
+              <td>{{row.grand_total_divident}}</td>
+              <td>{{row.grand_total_extramonth}}</td>
+              <td>{{row.grand_total_divident_extramonth}}</td>
+              <td>  
+                <a [routerLink] ="['/admin-panel/add-suit-file/', row.id]"><i class="fas fa-edit text-primary"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+        <div class="dataTables_info" role="status" aria-live="polite">
+          {{dtableInfo}}
+        </div>
+        <div class="dataTables_paginate paging_simple_numbers">
+          <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+          <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+          <span *ngFor="let page of pager.pages">
+            <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+            <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+          </span>
+          <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+          <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+        </div>
+      </div>
+			<div *ngIf="TableHidden==true" class="table-loader" > 
+			  <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+			</div>
+		  </div>
+		</div>

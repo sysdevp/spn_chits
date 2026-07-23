@@ -1,0 +1,103 @@
+<div class="container-fluid" *ngIf="report">
+  <form [formGroup]="ProfitLoss" (ngSubmit)="onSubmit()">
+    <div class="row mb-3">
+      <div class="col-md-3" *ngIf="isSuperAdmin">
+        <label>Company</label>
+        <select formControlName="tenant_id" class="form-control" (change)="companyChg($event)" #tenant_id>
+          <option value="">Select</option>
+          <option *ngFor="let company of companyList" [value]="company.id">{{ company.tenant_name }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label>Branch</label>
+        <select formControlName="branch_id" class="form-control" #branch_id>
+          <option value="">Select</option>
+          <option *ngFor="let branch of branchList" [value]="branch.id">{{ branch.branch_name }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label>Start Date</label>
+        <input type="date" formControlName="start_date" class="form-control" #start_date />
+      </div>
+      <div class="col-md-2">
+        <label>End Date</label>
+        <input type="date" formControlName="end_date" class="form-control" #end_date />
+      </div>
+      <div class="col-md-2 mt-4">
+        <button type="submit" class="btn btn-primary btn-block" [disabled]="disableBtn">{{ SubmitbuttonName }}</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Results Section -->
+<div *ngIf="details" class="card p-3">
+  <div class="text-white p-2 mb-3" style="background: dodgerblue; font-weight: bold;">
+    Branch: {{ branch_name }} | From: {{ StartDate }} To: {{ EndDate }}
+  </div>
+
+  <div class="row">
+    <!-- Income Section -->
+    <div class="col-md-6">
+      <h5 class="text-success">Income</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Particulars</th>
+            <th class="text-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let income of incomeInfo">
+            <td>{{ income.account_head_name }}</td>
+            <td class="text-end">{{ income.credit | number:'1.2-2' }}</td>
+          </tr>
+          <tr class="table-success fw-bold">
+            <td>Total Income</td>
+            <td class="text-end">{{ totalincomes | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Expense Section -->
+    <div class="col-md-6">
+      <h5 class="text-danger">Expense</h5>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Particulars</th>
+            <th class="text-end">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let expense of expenseInfo">
+            <td>{{ expense.account_head_name }}</td>
+            <td class="text-end">{{ expense.debit | number:'1.2-2' }}</td>
+          </tr>
+          <tr class="table-danger fw-bold">
+            <td>Total Expense</td>
+            <td class="text-end">{{ totalexpenses | number:'1.2-2' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Profit/Loss Section -->
+  <div class="text-center mt-4">
+    <h5 *ngIf="profit > 0" class="text-success">
+      Profit: ₹ {{ profit | number:'1.2-2' }}
+    </h5>
+    <h5 *ngIf="loss > 0" class="text-danger">
+      Loss: ₹ {{ loss | number:'1.2-2' }}
+    </h5>
+  </div>
+
+  <!-- Export Buttons -->
+  <div class="d-flex justify-content-center gap-2 mt-4">
+    <button class="btn btn-outline-dark" (click)="exportPDF()">Export to PDF</button>
+    <button class="btn btn-outline-success" (click)="exportExcel()">Export to Excel</button>
+    <button class="btn btn-primary" (click)="goBack()">Back</button>
+  </div>
+</div>

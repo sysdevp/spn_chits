@@ -1,0 +1,205 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Branch Details</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+	    <div class="card-body">
+	        <form class="bs-example form-horizontal">
+	            <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Regional Office Name: </label>
+                            <b class="px-1">{{headOfficeInfo.head_name}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Branch Name: </label>
+                            <b class="px-1">{{viewBranchInfo.branch_name}}</b>
+                        </div>
+                    </div>	
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Start Date : </label>
+                            <b class="px-1">{{viewBranchInfo.start_date}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Branch Code : </label>
+                            <b class="px-1">{{viewBranchInfo.branch_code}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">State: </label>
+                            <b class="px-1">{{stateInfo.state_name}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">District: </label>
+                            <b class="px-1">{{districtInfo.district_name}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">City: </label>
+                            <b class="px-1">{{cityInfo.city_name}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Pincode : </label>
+                            <b class="px-1">{{viewBranchInfo.pincode}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Branch Wise Penalty : </label>
+                            <b class="px-1">{{viewBranchInfo.branch_wise_penalty}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Bonus : </label>
+                            <b class="px-1">{{viewBranchInfo.bonus}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Email Id : </label>
+                            <b class="px-1">{{viewBranchInfo.email_id}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number : </label>
+                            <b class="px-1">{{viewBranchInfo.phone_no}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Address Line 1 : </label>
+                            <b class="px-1">{{viewBranchInfo.address_line_1}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Address Line 2 : </label>
+                            <b class="px-1">{{viewBranchInfo.address_line_2}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Landmark : </label>
+                            <b class="px-1">{{viewBranchInfo.landmark}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Prize Subscriber Penalty : </label>
+                            <b class="px-1">{{viewBranchInfo.prize_subscriber_penalty}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Non Prize Subscriber Penalty : </label>
+                            <b class="px-1">{{viewBranchInfo.non_prize_subscriber_penalty}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Bonus Days : </label>
+                            <b class="px-1">{{viewBranchInfo.bonus_days}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Penalty Days : </label>
+                            <b class="px-1">{{viewBranchInfo.penalty_days}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Business Agent Target : </label>
+                            <b class="px-1">{{viewBranchInfo.business_agent_target}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Branch FD Total Month : </label>
+                            <b class="px-1">{{viewBranchInfo.branch_fd_total_months}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Remarks : </label>
+                            <b class="px-1">{{viewBranchInfo.remarks}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Agent Incentive Percentage : </label>
+                            <b class="px-1">{{viewBranchInfo.agent_incentive_percent}}</b>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-label">Agent Commission Percentage : </label>
+                            <b class="px-1">{{viewBranchInfo.agent_commission_percent}}</b>
+                        </div>
+                    </div>
+	            </div>
+		    </form>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-6 my-auto font-weight-bold">Branch List</div>
+                <div class="col-6 text-right">
+                <a [routerLink]="['/admin-panel/add-branch']" class="bg-success border-0 text-white px-3 py-2"> + Add Branch </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div [hidden]="TableHidden">
+            <table id="dtable"  class="row-border hover">
+                <thead>
+                <tr> 
+                    <th>SNo</th>
+                    <th>Branch Name</th>
+                    <th>Branch Code</th>
+                    <th>Regional Office</th>
+                    <!--<th>Email Id</th>-->
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of dataList;">
+                        <td>{{row.sno}}</td>
+                        <td>{{row.branch_name}}</td>
+                        <td>{{row.branch_code}}</td>
+                        <td>{{row.head_office_info.head_name}}</td>
+                       <!-- <td>{{row.email_id}}</td>-->
+                        <td>  
+                        <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+                        <a [routerLink]="['/admin-panel/update-branch/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+                        <a [routerLink]="['/admin-panel/delete-branch/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+                        <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Branch"><i class="fas fa-check-circle text-success"></i></a>
+                        <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Branch"><i class="fas fa-ban text-danger"></i></a>-->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div *ngIf="TableHidden==true" class="table-loader" > 
+            <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+        </div>
+    </div>
+</div>

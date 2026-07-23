@@ -1,0 +1,296 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Group Detail</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Branch Name: </label>
+              <b class="px-1">{{BranchInfo.branch_name}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Type: </label>
+              <b class="px-1" *ngIf="ViewGroupInfo.group_type==1">Register </b>
+              <b class="px-1" *ngIf="ViewGroupInfo.group_type==2">Non Register </b>
+              <b class="px-1" *ngIf="ViewGroupInfo.group_type==3">Slab </b>
+              <b class="px-1" *ngIf="ViewGroupInfo.group_type==4">Non Register Slab </b>
+              <b class="px-1" *ngIf="ViewGroupInfo.group_type==5">Profit Chit </b>
+            </div>
+          </div>	
+		      <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Name : </label>
+              <b class="px-1">{{ViewGroupInfo.group_name}} </b>
+            </div>
+		      </div>
+		      <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Chit Value : </label>
+              <b class="px-1">{{SchemeInfo.scheme_format}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Auction Date : </label>
+              <b class="px-1">{{ViewGroupInfo.auction_date}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Auction Time : </label>
+              <b class="px-1">{{ViewGroupInfo.auction_time}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Start Date : </label>
+              <b class="px-1">{{ViewGroupInfo.starting_date}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">First Due Date : </label>
+              <b class="px-1">{{ViewGroupInfo.first_due_date}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Commision Percent : </label>
+              <b class="px-1">{{ViewGroupInfo.commission_percent}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Number : </label>
+              <b class="px-1">{{ViewGroupInfo.fd_number}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Total FD : </label>
+              <b class="px-1">{{ViewGroupInfo.total_fd}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Company FD : </label>
+              <b class="px-1">{{ViewGroupInfo.company_fd}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Rate of Interest : </label>
+              <b class="px-1">{{ViewGroupInfo.rate_of_interest}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Rate : </label>
+              <b class="px-1">{{ViewGroupInfo.fd_rate}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Date : </label>
+              <b class="px-1">{{ViewGroupInfo.fd_date}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Maturity Amount : </label>
+              <b class="px-1">{{ViewGroupInfo.maturity_amount}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Bank : </label>
+              <b class="px-1">{{BankInfo.bank_name}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Branch : </label>
+              <b class="px-1">{{ViewGroupInfo.fd_branch}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">PSO Number : </label>
+              <b class="px-1">{{ViewGroupInfo.pso_number}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">PSO Date : </label>
+              <b class="px-1">{{ViewGroupInfo.pso_date}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Blaw Number : </label>
+              <b class="px-1">{{ViewGroupInfo.blaw_number}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Blaw Date : </label>
+              <b class="px-1">{{ViewGroupInfo.blaw_date}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Cheque Number : </label>
+              <b class="px-1">{{ViewGroupInfo.cheque_no}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Company Chit : </label>
+              <b class="px-1">{{ViewGroupInfo.company_chit}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Base Penalty : </label>
+              <b class="px-1">{{ViewGroupInfo.group_base_penalty}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Base Bonus : </label>
+              <b class="px-1">{{ViewGroupInfo.group_base_bonus}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Base Interest : </label>
+              <b class="px-1">{{ViewGroupInfo.group_base_interest}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Base Dividend Cancel Days : </label>
+              <b class="px-1">{{ViewGroupInfo.group_base_dividend_cancel_days}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Penalty Days : </label>
+              <b class="px-1">{{ViewGroupInfo.group_penalty_days}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Bonus Days : </label>
+              <b class="px-1">{{ViewGroupInfo.group_bonus_days}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Base Incentive Percentage : </label>
+              <b class="px-1">{{ViewGroupInfo.group_base_incentive_percentage}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">FD Renewal Date : </label>
+              <b class="px-1">{{ViewGroupInfo.fd_renewal_date}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Commit Date : </label>
+              <b class="px-1">{{ViewGroupInfo.commit_date}}</b>
+            </div>
+          </div>
+          <!-- <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Is Filled : </label>
+              <b class="px-1">{{ViewGroupInfo.is_filled}}</b>
+            </div>
+          </div> -->
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Status : </label>
+              <b class="px-1">{{ViewGroupInfo.group_status}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Group Pending Ticket : </label>
+              <b class="px-1">{{ViewGroupInfo.group_pending_ticket}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Is First Auction Completed : </label>
+              <b class="px-1">{{ViewGroupInfo.is_first_auction_complete}}</b>
+            </div>
+          </div>
+	      </div>
+		  </form>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Group Detail</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/add-group']" class="bg-success border-0 text-white px-3 py-2"> + Add Group </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div [hidden]="TableHidden">
+        <table id="dtable"  class="row-border hover">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Group Name</th>
+              <th>Group Status</th>
+              <th>Branch Name</th>
+              <th>Chit Value</th>
+              <th>Group Type</th>
+              <th>Vacant Count</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.group_name}}</td>
+            <td>{{row.group_status}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.scheme_info.scheme_format}}</td>
+            <td *ngIf="row.group_type==1">Register </td>
+            <td *ngIf="row.group_type==2">Non Register </td>
+            <td *ngIf="row.group_type==3">Slab </td>
+            <td *ngIf="row.group_type==4">Non Register Slab </td>
+            <td *ngIf="row.group_type==5">Profit Chit </td>
+            <td *ngIf="(row.group_type!=1) && (row.group_type!=2) && (row.group_type!=3) && (row.group_type!=4) && (row.group_type!=5)">- </td>
+            <td>{{row.group_pending_ticket}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Group"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-group/'+row.id]" title="Edit Group"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-group/'+row.id]" title="Delete Group"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Group"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Group"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

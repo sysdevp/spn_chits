@@ -1,0 +1,156 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Lead Management Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Employee Name : </label>
+            <b class="px-1">{{employeeInfo.first_name}} {{employeeInfo.last_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Lead Customer Name : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.lead_customer_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Phone no : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.phone_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Mobile no : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.mobile_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Email Id : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.email_id}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line1 : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.address_line_1}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line2 : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.address_line_2}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Land Mark : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.landmark}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">State Name : </label>
+            <b class="px-1">{{stateInfo.state_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">District Name : </label>
+            <b class="px-1">{{district_info.district_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">City Name : </label>
+            <b class="px-1">{{city_info.city_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pincode : </label>
+            <b class="px-1">{{viewLeadmanagementInfo.pincode}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Source Type : </label>
+            <b class="px-1">{{source_type_info.source_type_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Status : </label>
+            <b class="px-1">{{followupstatustype_info.followup_status_name}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Lead Management List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-lead-management']"  class="bg-success border-0 text-white px-3 py-2"> + Add Lead</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Employee Name</th>
+            <th>Customer Name</th>
+            <th>Next Followup Date</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}}</td>
+            <td>{{row.lead_customer_name}}</td>
+            <td>{{row.last_followup_date}}</td>
+            <td>
+              <a *ngIf="row.followup_status_type_id==1" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-success">Won</span></a>
+              <a *ngIf="row.followup_status_type_id==2" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-primary">In Followup</span></a>
+              <a *ngIf="row.followup_status_type_id==3"  style="margin-left:5%;cursor:pointer;" ><i class="badge badge-danger">Drop</i></a>
+            </td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-lead-management/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-lead-management/'+row.id]"><i class="fas fa-trash-alt text-danger mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/view-followups/'+row.id]" title="Followups"><i class="fas fa-bars text-info mx-2"></i></a>
+              <a *ngIf="(row.followup_status_type_id==1) && (row.is_customer==0)" [routerLink]="['/admin-panel/move-to-customer/'+row.id]" title="Move to customer"><i class="fas fa-arrow-right text-primary mx-2"></i></a>
+              <a *ngIf="row.followup_status_type_id==2" [routerLink]="['/admin-panel/add-followups/'+row.id]" title="Add Followup"><i class="fas fa-phone text-dark mx-2"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,868 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Subscriber Details</h5>
+    <button
+      type="button"
+      class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3"
+      id="myDiv"
+      (click)="c('Close click')"
+    >
+      X
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <img
+            *ngIf="ViewCustomerInfo.photo_for_view != ''"
+            src="{{ ViewCustomerInfo.photo_for_view }}"
+            class="img-view"
+          />
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Branch Details</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name: </label>
+            <span class="px-1">{{ BranchInfo.branch_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Lead Customer Name: </label>
+            <span class="px-1">{{ leadmanagementInfo.lead_customer_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Code : </label>
+            <span class="px-1">{{ ViewCustomerInfo.customer_code }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Personal Details</strong>
+          </div>
+        </div>
+
+        <!-- <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Saluation : </label>
+            <span class="px-1">{{ ViewCustomerInfo.saluation }}</span>
+          </div>
+        </div> -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <span class="px-1"
+              >{{ ViewCustomerInfo.saluation }} {{ ViewCustomerInfo.name }}</span
+            >
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Alias Name : </label>
+            <span class="px-1">{{ ViewCustomerInfo.reference_name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Father Name : </label>
+            <span class="px-1">{{ ViewCustomerInfo.father_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Spouse Name</label>
+            <span class="px-1">{{ ViewCustomerInfo.spouse_name }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">DOB: </label>
+            <span class="px-1">{{ ViewCustomerInfo.dob }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Gender: </label>
+            <span class="px-1" *ngIf="ViewCustomerInfo.gender == 1">Male</span>
+            <span class="px-1" *ngIf="ViewCustomerInfo.gender == 2">Female</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Phone Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.phone_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Email Id : </label>
+            <span class="px-1">{{ ViewCustomerInfo.email_id }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Mobile Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.mobile_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Alternative Mobile Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.mobile_no_1 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>KYC Details</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Aadhaarcard Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.adhar_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pancard Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.pan_no }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Ration Card Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.ration_card_no }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">License Number : </label>
+            <span class="px-1">{{ ViewCustomerInfo.license_no }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Date Of Joining: </label>
+            <span class="px-1">{{ ViewCustomerInfo.doj }}</span>
+          </div>
+        </div>
+
+        <!-- <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Door No : </label>
+            <span class="px-1">{{ ViewCustomerInfo.door_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Building Name: </label>
+            <span class="px-1">{{ ViewCustomerInfo.buildling_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 1: </label>
+            <span class="px-1">{{ ViewCustomerInfo.address_line_1 }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 2: </label>
+            <span class="px-1">{{ ViewCustomerInfo.address_line_2 }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Landmark: </label>
+            <span class="px-1">{{ ViewCustomerInfo.landmark }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">State Name: </label>
+            <span class="px-1">{{ StateInfo.state_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">District Name: </label>
+            <span class="px-1">{{ DistrictInfo.district_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">City Name: </label>
+            <span class="px-1">{{ CityInfo.city_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pincode: </label>
+            <span class="px-1">{{ ViewCustomerInfo.pincode }}</span>
+          </div>
+        </div> -->
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Communication Address</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Door No: </label>
+            <span class="px-1">{{ ViewCustomerInfo.communication_door_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Building Name: </label>
+            <span class="px-1">{{
+              ViewCustomerInfo.communication_building_name
+            }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 1: </label>
+            <span class="px-1">{{
+              ViewCustomerInfo.communication_address_line_1
+            }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 2: </label>
+            <span class="px-1">{{
+              ViewCustomerInfo.communication_address_line_2
+            }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">State: </label>
+            <span class="px-1">{{ CommunicationStateInfo.state_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">District: </label>
+            <span class="px-1">{{ CommunicationDistrictInfo.district_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">City: </label>
+            <span class="px-1">{{ CommunicationCityInfo.city_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pincode: </label>
+            <span class="px-1">{{ ViewCustomerInfo.communication_pincode }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Landmark: </label>
+            <span class="px-1">{{ ViewCustomerInfo.communication_land_mark }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Permanent Address</strong>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Door No: </label>
+            <span class="px-1">{{ ViewCustomerInfo.communication_door_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Building Name: </label>
+            <span class="px-1">{{ ViewCustomerInfo.permanent_building_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 1: </label>
+            <span class="px-1">{{ ViewCustomerInfo.permanent_address_line_1 }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Address Line 2: </label>
+            <span class="px-1">{{ ViewCustomerInfo.permanent_address_line_2 }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">State: </label>
+            <span class="px-1">{{ PermanentStateInfo.state_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">District: </label>
+            <span class="px-1">{{ PermanentDistrictInfo.district_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">City: </label>
+            <span class="px-1">{{ PermanentCityInfo.city_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pincode: </label>
+            <span class="px-1">{{ ViewCustomerInfo.permanent_pincode }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Landmark: </label>
+            <span class="px-1">{{ ViewCustomerInfo.permanent_land_mark }}</span>
+          </div>
+        </div>
+      </div>
+      <!--<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Refered By: </label>
+						<span class="px-1">{{ViewCustomerInfo.refered_by}}</span>
+					</div>
+				</div>-->
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Professional Details</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Occupation: </label>
+            <span class="px-1">{{ ViewCustomerInfo.occupation }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Annual Income: </label>
+            <span class="px-1">{{ ViewCustomerInfo.income }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Retirement Date: </label>
+            <span class="px-1">{{ ViewCustomerInfo.retirement }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Source Of Funds: </label>
+            <span class="px-1">{{ ViewCustomerInfo.source_of_funds }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Reference & Relationship</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Reference Type : </label>
+            <span class="px-1" *ngIf="ViewCustomerInfo.reference_type == 1"
+              >Customer</span
+            >
+            <span class="px-1" *ngIf="ViewCustomerInfo.reference_type == 2"
+              >Employee</span
+            >
+            <span class="px-1" *ngIf="ViewCustomerInfo.reference_type == 3"
+              >Business Agent</span
+            >
+            <span class="px-1" *ngIf="ViewCustomerInfo.reference_type == 4"
+              >Self Joining</span
+            >
+            <span class="px-1" *ngIf="ViewCustomerInfo.reference_type == 5"
+              >Others</span
+            >
+          </div>
+        </div>
+
+        <div class="col-md-6" *ngIf="ViewCustomerInfo.reference_type == 5">
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <span class="px-1">{{ ViewCustomerInfo.introducer_name }}</span>
+          </div>
+        </div>
+        <div
+          class="col-md-6"
+          *ngIf="
+            ViewCustomerInfo.reference_type == 1 ||
+            ViewCustomerInfo.reference_type == 2 ||
+            ViewCustomerInfo.reference_type == 3
+          "
+        >
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <span class="px-1">{{ ViewCustomerInfo.introducer_full_name }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Relationship: </label>
+            <span class="px-1">{{ RelationshipInfo.relationship_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Belongs To: </label>
+            <span class="px-1">{{ CustomerInfo.name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Chit Settings (Customer Level)</strong>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Bonus: </label>
+            <span class="px-1">{{ ViewCustomerInfo.customer_bonus }} </span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Penalty Interest: </label>
+            <span class="px-1">{{ ViewCustomerInfo.customer_penalty_interest }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Interest: </label>
+            <span class="px-1">{{ ViewCustomerInfo.customer_interest }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Dividend: </label>
+            <span class="px-1">{{ ViewCustomerInfo.customer_divident }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Sms: </label>
+            <span class="px-1" *ngIf="ViewCustomerInfo.sms == 1">Yes</span>
+            <span class="px-1" *ngIf="ViewCustomerInfo.sms != 1">No</span>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Is Customer: </label>
+						<span class="px-1" *ngIf="ViewCustomerInfo.is_customer==1">Yes</span>
+						<span class="px-1" *ngIf="ViewCustomerInfo.is_customer==2">No</span>
+					</div>
+				</div>-->
+        <!-- <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Is Guarantor: </label>
+            <span class="px-1" *ngIf="ViewCustomerInfo.is_guarantor == 1">Yes</span>
+            <span class="px-1" *ngIf="ViewCustomerInfo.is_guarantor != 1">No</span>
+          </div>
+        </div> -->
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Chit Details</strong>
+          </div>
+          <p class="text-muted small mb-2" *ngIf="customerChitsLoading">Loading chits...</p>
+          <div class="table-responsive" *ngIf="!customerChitsLoading && customerChits.length > 0">
+            <table class="table table-bordered table-sm mb-0">
+              <thead class="bg-secondary text-white">
+                <tr>
+                  <th>#</th>
+                  <th>Chit Value</th>
+                  <th>Slab</th>
+                  <th>RF Amount</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let chit of customerChits; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ getChitSchemeLabel(chit) }}</td>
+                  <td>{{ getChitSlabLabel(chit) }}</td>
+                  <td>{{ getChitRfAmount(chit) }}</td>
+                  <td>{{ chit.due_date || '-' }}</td>
+                  <td>
+                    <span class="badge" [ngClass]="getChitStatusClass(chit)">
+                      {{ getChitStatusLabel(chit) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-muted mb-0" *ngIf="!customerChitsLoading && customerChits.length === 0">
+            No chits found for this subscriber.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Customer Detail</div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/add-customer']"
+          class="bg-success border-0 text-white px-3 py-2"
+        >
+          + Add Customer</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <form
+        class="bs-example form-horizontal"
+        [formGroup]="viewCustomer"
+        (ngSubmit)="onSubmit()"
+      >
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label"
+            >Company Name <span class="error">*</span></label
+          >
+          <div class="col-sm-10 col-md-7 col-9">
+            <select
+              #tenant_id
+              class="form-control form-control w-100 border-dark"
+              formControlName="tenant_id"
+              (change)="companyChg($event)"
+            >
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{ data.id }}">
+                {{ data.chit_fund_name }}
+              </option>
+            </select>
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.tenant_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.tenant_id.errors.required"
+                >Company is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label"
+            >Select Branch <span class="error">*</span></label
+          >
+          <div class="col-sm-10 col-md-7 col-9">
+            <select
+              #branch_id
+              class="form-control form-control w-100 border-dark"
+              formControlName="branch_id"
+            >
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{ data.id }}">
+                {{ data.branch_name }}
+              </option>
+            </select>
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.branch_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.branch_id.errors.required"
+                >Branch is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button
+              type="submit"
+              class="btn btn-primary mr-1"
+              [disabled]="disableBtn"
+            >
+              {{ SubmitbuttonName }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger mr-1"
+              (click)="resetCustomer()"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </form>
+
+      <!--<table id="dtable"  class="row-border hover">
+				<thead>
+					<tr> 
+						<th>SNo</th>
+						<th>Branch Id</th>
+						<th>Customer Code</th>
+						<th>Customer Name</th>
+						<th>Mobile No</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let row of dataList;">
+						<td>{{row.sno}}</td>
+						<td>{{row.branch_info.branch_name}}</td>
+						<td>{{row.customer_code}}</td>
+						<td>{{row.name}}</td>
+						<td>{{row.mobile_no}}</td>
+						<td>  
+							<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+							<a [routerLink]="['/admin-panel/update-customer/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+							<a [routerLink]="['/admin-panel/delete-customer/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+							<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Branch"><i class="fas fa-check-circle text-success"></i></a>
+              				<a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Branch"><i class="fas fa-ban text-danger"></i></a>
+						</td>
+					</tr>
+				</tbody>
+			</table>-->
+      <div class="dataTables_wrapper no-footer">
+        <div class="dataTables_length">
+          <label>
+            Show
+            <select
+              name="dtable_length"
+              aria-controls="dtable"
+              class=""
+              (change)="pageSizeChg($event)"
+            >
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            entries
+          </label>
+        </div>
+        <div class="dataTables_filter">
+          <label>
+            Search:<input
+              type="search"
+              class=""
+              placeholder=""
+              aria-controls="dtable"
+              (keyup)="filterChg($event.target.value)"
+            />
+            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+          </label>
+        </div>
+        <table
+          class="row-border hover dataTable no-footer"
+          role="grid"
+          aria-describedby="dtable_info"
+        >
+          <thead>
+            <tr role="row">
+              <th
+                class="sorting"
+                rowspan="1"
+                colspan="1"
+                style="width: 0px"
+                (click)="sortBy('sno')"
+              >
+                Sno
+              </th>
+
+              <th
+                class="sorting"
+                rowspan="1"
+                colspan="1"
+                style="width: 0px"
+                (click)="sortBy('customer_code')"
+              >
+                Customer Code
+              </th>
+              <th
+                class="sorting"
+                rowspan="1"
+                colspan="1"
+                style="width: 0px"
+                (click)="sortBy('name')"
+              >
+                Customer Name
+              </th>
+              <th
+                class="sorting"
+                rowspan="1"
+                colspan="1"
+                style="width: 0px"
+                (click)="sortBy('mobile_no')"
+              >
+                Mobile No
+              </th>
+              <th rowspan="1" colspan="1" style="width: 0px">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{ row.sno }}</td>
+
+              <td>{{ row.customer_code }}</td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.mobile_no }}</td>
+              <td>
+                <a
+                  href="javascript:void(0)"
+                  (click)="
+                    open(
+                      $event,
+                      uploadModal,
+                      { windowClass: 'modal-lg animate' },
+                      row.id
+                    )
+                  "
+                  ><i class="fas fa-eye text-success"></i
+                ></a>
+                <a
+                  [routerLink]="['/admin-panel/update-customer/' + row.id]"
+                  target="_blank"
+                  ><i class="fas fa-edit text-primary mx-2"></i
+                ></a>
+                <a
+                  *ngIf="row.is_delete == 0"
+                  [routerLink]="['/admin-panel/delete-customer/' + row.id]"
+                  target="_blank"
+                  ><i class="fas fa-trash-alt text-danger"></i
+                ></a>
+                <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Branch"><i class="fas fa-check-circle text-success"></i></a>
+              	<a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Branch"><i class="fas fa-ban text-danger"></i></a>-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dataTables_info" role="status" aria-live="polite">
+          {{ dtableInfo }}
+        </div>
+        <div class="dataTables_paginate paging_simple_numbers">
+          <a
+            *ngIf="pager.currentPage == 1"
+            class="paginate_button previous disabled"
+            aria-controls="dtable"
+            tabindex="0"
+            id="dtable_previous"
+            >Previous</a
+          >
+          <a
+            *ngIf="pager.currentPage != 1"
+            class="paginate_button previous"
+            aria-controls="dtable"
+            tabindex="0"
+            id="dtable_previous"
+            (click)="setPage(pager.currentPage - 1)"
+            >Previous</a
+          >
+          <span *ngFor="let page of pager.pages">
+            <a
+              *ngIf="pager.currentPage == page"
+              class="paginate_button current"
+              aria-controls="dtable"
+              tabindex="0"
+              >{{ page }}</a
+            >
+            <a
+              *ngIf="pager.currentPage != page"
+              class="paginate_button"
+              aria-controls="dtable"
+              tabindex="0"
+              (click)="setPage(page)"
+              >{{ page }}</a
+            >
+          </span>
+          <a
+            *ngIf="pager.currentPage == pager.totalPages"
+            class="paginate_button next disabled"
+            aria-controls="dtable"
+            tabindex="0"
+            id="dtable_next"
+            >Next</a
+          >
+          <a
+            *ngIf="pager.currentPage != pager.totalPages"
+            class="paginate_button next"
+            aria-controls="dtable"
+            tabindex="0"
+            id="dtable_next"
+            (click)="setPage(pager.currentPage + 1)"
+            >Next</a
+          >
+        </div>
+      </div>
+      <div *ngIf="TableHidden == true" class="table-loader">
+        <img
+          style="width: 120px; margin: 20% auto; display: block"
+          src="assets/img/loading.gif"
+        />
+      </div>
+    </div>
+  </div>
+</div>

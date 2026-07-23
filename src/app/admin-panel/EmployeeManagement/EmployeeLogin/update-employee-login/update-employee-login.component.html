@@ -1,0 +1,136 @@
+<div class="card add-employee-login-card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Employee Login</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-employee-login']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Employee Login</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdateEmployeeLogin" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)" disabled>
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company Name is required</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Branch <span class="error">*</span></label>
+        <div class="col-sm-5">
+          <select #branch_id formControlName="branch_id" (change)="branchChg($event)" disabled>
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+            <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Employee <span class="error">*</span></label>
+        <div class="col-sm-5">
+          <select #employee_id formControlName="employee_id" disabled>
+            <option value="">Select Employee</option>
+            <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}} {{data.last_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.employee_id.errors" class="invalid-feedback">
+            <label *ngIf="f.employee_id.errors.required">Employee is required</label>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Email <span class="error">*</span></label>
+        <div class="col-sm-5">
+            <input #email type="text" class="form-control" placeholder="Enter Email Id" formControlName="email" readonly>
+            <div class="col-md-12" *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                <label *ngIf="f.email.errors.required">Email Id is required</label>
+                <label *ngIf="f.email.errors.pattern">Invaild Pattern</label>
+              </div>
+        </div>
+      </div>
+
+
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Password <span class="error">*</span></label>
+        <div class="col-sm-5">
+          <input #password type="password" *ngIf="!showPassword" class="form-control" placeholder="Enter Password" formControlName="password">
+          <input #password type="text" *ngIf="showPassword" class="form-control" placeholder="Enter Password" formControlName="password">
+          <div class="col-md-12" *ngIf="submitted && f.password.errors" class="invalid-feedback">
+            <label *ngIf="f.password.errors.required">Password is required</label>
+            <label *ngIf="f.password.errors.minlength">Password must be at least 8 characters</label>
+          </div>
+        </div>
+        <div class="col-md-4" *ngIf="showPassword" (click)="showHidePassword('password',false);"><i class="fas fa-eye eye_show"></i></div>
+        <div class="col-md-4" *ngIf="!showPassword" (click)="showHidePassword('password',true);"><i class="fas fa-eye-slash eye_hide"></i></div>
+      </div>
+
+
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Confirm Password <span class="error">*</span></label>
+        <div class="col-sm-5">
+          <input #confirmPassword type="password" *ngIf="!showConfirmPassword" class="form-control" placeholder="Enter Confirm Password" formControlName="confirmPassword">
+          <input #confirmPassword type="text" *ngIf="showConfirmPassword" class="form-control" placeholder="Enter Confirm Password" formControlName="confirmPassword">
+          <div class="col-md-12" *ngIf="submitted && f.confirmPassword.errors" class="invalid-feedback">
+            <label *ngIf="f.confirmPassword.errors.required">Confirm password is required</label>
+            <label *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</label>
+          </div>
+        </div>
+        <div class="col-md-4" *ngIf="showConfirmPassword" (click)="showHidePassword('confirmPassword',false);"><i class="fas fa-eye eye_show"></i></div>
+        <div class="col-md-4" *ngIf="!showConfirmPassword" (click)="showHidePassword('confirmPassword',true);"><i class="fas fa-eye-slash eye_hide"></i></div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Role <span class="error">*</span></label>
+        <div class="col-sm-5">
+          <select #role_id formControlName="role_id" (change)="roleChg($event)">
+            <option value="">Select Role</option>
+            <option *ngFor="let data of roleList" value="{{data.id}}">{{data.role_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.role_id.errors" class="invalid-feedback">
+            <label *ngIf="f.role_id.errors.required">Role Id is required</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group row" *ngIf="selectedRoleId">
+        <label class="col-sm-2 col-form-label">Multi Branch Mapping</label>
+        <div class="col-sm-8 add-employee-login-multiselect">
+          <ng-multiselect-dropdown
+            [placeholder]="'Select Branches (Role Hierarchy)'"
+            [data]="mappedBranchDropdownList"
+            formControlName="mapped_branch_ids"
+            [settings]="mappedBranchDropdownSettings"
+          >
+          </ng-multiselect-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group row mb-4" *ngIf="selectedRoleId">
+        <label class="col-sm-2 col-form-label">Map Employees</label>
+        <div class="col-sm-8 add-employee-login-multiselect">
+          <ng-multiselect-dropdown
+            [placeholder]="'Select Employees (filtered by branches above)'"
+            [data]="mappedEmployeeDropdownList"
+            formControlName="mapped_employee_ids"
+            [settings]="mappedEmployeeDropdownSettings"
+          >
+          </ng-multiselect-dropdown>
+        </div>
+      </div>
+
+      <div class="form-group d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-employee-login']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

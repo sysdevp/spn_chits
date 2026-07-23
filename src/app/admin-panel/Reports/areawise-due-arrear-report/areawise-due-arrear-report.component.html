@@ -1,0 +1,101 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Current Dues & Arrears - Areawise</div>
+      <div class="col-4 text-right" [hidden]="backTOGet" ><i class="fas fa-arrow-left p-2 bg-success text-white" (click)="backToView()"></i></div>
+      <div class="col-1 text-right" [hidden]="backTOGet" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div>
+      <form class="bs-example form-horizontal" [formGroup]="DayClosingReport" (ngSubmit)="onSubmit()">
+         <div class="form-group row" [hidden]="details">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+            <div class="col-sm-10">
+              <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+          </div> 
+        </div>
+        <div class="form-group row" [hidden]="details">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Area</label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #area_id class="form-control form-control w-100 border-dark" formControlName="area_id">
+              <option value="">Select Area</option>
+              <option *ngFor="let data of areaList" value="{{data.id}}">{{data.collection_area}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row" [hidden]="details">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+          </div>
+        </div>
+
+<table class="table" border="1" [hidden]="report" id="mygrid">
+    <thead>
+      <tr>1</tr>
+      <tr>2</tr>
+      <tr>
+        <td colspan="14" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Company Name : {{company_name}}</b></td>
+       </tr>
+       <tr>
+        <td colspan="14" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Current Dues & Arrears - Areawise</b></td>
+       </tr>
+       <tr>
+        <td colspan="14" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Area Name : {{area_name}}</b></td>
+       </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>SNO</th>
+        <th><b>Area</b></th>
+        <th><b>Group</b></th>
+        <th><b>ChitValue</b></th>
+        <th><b>Customer</b></th>
+        <th><b>Tickets</b></th>
+        <th><b>No Tickets</b></th>
+        <th><b>Inst</b></th>
+        <th><b>Current Due</b></th>
+        <th><b>Arrears</b></th>
+        <th><b>Due Date</b></th>
+        <th><b>Termn Date</b></th>
+        
+      </tr>
+   
+      <tr *ngFor="let row of dataList;">
+        <td></td>
+        <td><b>{{row.area_name}}</b></td>
+        <td><b>{{row.group_name}}</b></td>
+        <td><b>{{row.chit_value}}</b></td>
+        <td><b>{{row.customer_name}}</b></td>
+        <td><b>{{row.ticket_no}}</b></td>
+        <td><b>{{row.no_of_tickets}}</b></td>
+        <td><b>{{row.pending_inst}}</b></td>
+        <td><b>{{row.current_due_amount}}</b></td>
+        <td><b>{{row.overall_pending_amount}}</b></td>
+        <td><b>20-09-2022</b></td>
+        <td><b>{{row.term_date}}</b></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td colspan="7"><b>Total:</b></td>
+        <td><b>313500</b></td>
+        <td><b>62000</b></td>
+        <td></td>
+        <td></td>
+        
+        
+      </tr>
+    </tbody>
+    
+  </table>
+      </form>
+    </div>
+  </div>
+</div>

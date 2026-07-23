@@ -1,0 +1,194 @@
+/**
+ * Route ↔ menu mapping from `dynamic_menus` (spn_chits dump).
+ * parentMenuId MUST match `dynamic_menus.parent_menu_id` for permission checks.
+ */
+export type MenuPermType = 'add_perm' | 'edit_perm' | 'view_perm' | 'delete_perm' | 'top_perm';
+
+export interface RouteMenuConfig {
+  menuId?: number;
+  parentMenuId?: number;
+  altMenuId?: number;
+  altParentMenuId?: number;
+  title?: string;
+  permType?: MenuPermType;
+  useTopPerm?: boolean;
+}
+
+/** Module / group IDs from dynamic_menus */
+export const MENU = {
+  ROOT: 0,
+  DASHBOARD: 1,
+  MASTERS: 2,
+  SLABS: 19,
+  ACCOUNTS_MODULE: 25,
+  SUBSCRIBER: 28,
+  HR: 34,
+  TRANSACTIONS: 37,
+  REPORTS: 42,
+  OUTSTANDING: 43,
+  PAYMENT_REPORT: 65,
+  ENROLLMENT_REPORT: 48,
+  TXN_REPORT: 66,
+  ACCOUNTS_REPORT: 67,
+  BUSINESS_DEV: 68,
+  LOAN_REPORT: 83,
+  LOG_MONITORING: 88,
+  CUSTOMER_REPORT: 124,
+  OTHER_TXN: 62,
+  LOAN: 85,
+  SECURITY: 53,
+  SPN_ELIGIBILITY: 152,
+};
+
+export const ROUTE_MENU: { [route: string]: RouteMenuConfig } = {
+  dashboard: { menuId: MENU.DASHBOARD, parentMenuId: MENU.ROOT, permType: 'view_perm' },
+
+  'view-scheme': { menuId: 8, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-group': { menuId: 9, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-head-office': { menuId: 6, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-branch': { menuId: 7, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-collection-area': { menuId: 10, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-role': { menuId: 11, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-designation': { menuId: 12, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-charges-type': { menuId: 13, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-city': { menuId: 15, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-auction-on-holidays': { menuId: 16, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-bank-details': { menuId: 17, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-due-slab': { menuId: 20, parentMenuId: MENU.SLABS, permType: 'view_perm' },
+  'view-penalty-slab': { menuId: 21, parentMenuId: MENU.SLABS, permType: 'view_perm' },
+  'view-bonus-slab': { menuId: 22, parentMenuId: MENU.SLABS, permType: 'view_perm' },
+  'view-interest-slab': { menuId: 23, parentMenuId: MENU.SLABS, permType: 'view_perm' },
+  'view-payment-slab': { menuId: 24, parentMenuId: MENU.SLABS, permType: 'view_perm' },
+  'view-country': { menuId: 113, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-state': { menuId: 114, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-district': { menuId: 115, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-source-type': { menuId: 90, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-accounting-group': { menuId: 102, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-accounting-head': { menuId: 103, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-case-stage': { menuId: 116, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+  'view-lawyer': { menuId: 117, parentMenuId: MENU.MASTERS, permType: 'view_perm' },
+
+  'view-employee': { menuId: 3, parentMenuId: MENU.HR, permType: 'view_perm' },
+  'view-employee-login': { menuId: 36, parentMenuId: MENU.HR, permType: 'view_perm' },
+  'employee-salary': { menuId: 101, parentMenuId: MENU.HR, permType: 'add_perm', useTopPerm: true },
+  'view-collection-area-mapping': { menuId: 55, parentMenuId: MENU.HR, permType: 'view_perm' },
+  'view-employee-attendance': { menuId: 35, parentMenuId: MENU.HR, permType: 'view_perm' },
+  'view-employee-document': { menuId: 118, parentMenuId: MENU.HR, permType: 'view_perm' },
+  'add-permission': { menuId: MENU.SECURITY, parentMenuId: MENU.ROOT, permType: 'view_perm' },
+
+  'view-customer': { menuId: 5, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-customer': { menuId: 5, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm', useTopPerm: true },
+  'view-guarantor': { menuId: 4, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-guarantor': { menuId: 4, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm', useTopPerm: true },
+  'view-commitment-chit': { menuId: 32, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'commitment-eligibility-approval': { menuId: MENU.SPN_ELIGIBILITY, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm' },
+  'view-auction': { menuId: 30, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm', useTopPerm: true },
+  'view-documents': { menuId: 38, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm', useTopPerm: true },
+  'view-commitment-payment': { menuId: 56, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-commitment-payment': { menuId: 56, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm', useTopPerm: true },
+  'view-lead-management': { menuId: 41, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'view-feed-back': { menuId: 80, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-pledge-customer': { menuId: 119, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm' },
+  'view-nominee': { menuId: 151, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-nominee': { menuId: 151, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm' },
+  'view-commission-payment': { menuId: 39, parentMenuId: MENU.SUBSCRIBER, permType: 'view_perm' },
+  'add-commission-payment': { menuId: 39, parentMenuId: MENU.SUBSCRIBER, permType: 'add_perm', useTopPerm: true },
+
+  'add-receipt': { menuId: 31, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-commitment-receipt': { menuId: 57, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-advanced-receipt': { menuId: 58, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-bidpayment-adjustment': { menuId: 59, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'view-other-receipt-charges': { menuId: 60, parentMenuId: MENU.TRANSACTIONS, permType: 'view_perm' },
+  'add-other-receipt-charges': { menuId: 60, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'customer-ledger': {
+    menuId: 61,
+    parentMenuId: MENU.TRANSACTIONS,
+    altMenuId: 126,
+    altParentMenuId: MENU.CUSTOMER_REPORT,
+    permType: 'view_perm',
+    useTopPerm: true,
+  },
+  'add-enrol-refund-amount': { menuId: 33, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-commitment-enrol': { menuId: 109, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm' },
+  'add-before-enrol-receipt': { menuId: 120, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-expenses-income': { menuId: 104, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+  'add-employee-incentive': { menuId: 96, parentMenuId: MENU.TRANSACTIONS, permType: 'add_perm', useTopPerm: true },
+
+  'view-petty-cash-expense': { menuId: 26, parentMenuId: MENU.OTHER_TXN, permType: 'view_perm' },
+  'add-petty-cash-expense': { menuId: 26, parentMenuId: MENU.OTHER_TXN, permType: 'add_perm', useTopPerm: true },
+  'view-petty-cash-income': { menuId: 27, parentMenuId: MENU.OTHER_TXN, permType: 'view_perm' },
+  'add-petty-cash-income': { menuId: 27, parentMenuId: MENU.OTHER_TXN, permType: 'add_perm', useTopPerm: true },
+
+  'view-loan': { menuId: 86, parentMenuId: MENU.LOAN, permType: 'view_perm' },
+  'add-loan-receipt': { menuId: 87, parentMenuId: MENU.LOAN, permType: 'add_perm' },
+  'view-loan-customer-document': { menuId: 100, parentMenuId: MENU.LOAN, permType: 'view_perm' },
+
+  'enrollment-report': { menuId: 69, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
+  'commitment-report': { menuId: 69, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
+  'commitment-pending-report': { menuId: 71, parentMenuId: MENU.PAYMENT_REPORT, permType: 'view_perm' },
+  'commitment-payment-report': { menuId: 70, parentMenuId: MENU.PAYMENT_REPORT, permType: 'view_perm' },
+  'payment-refund-report': { menuId: 63, parentMenuId: MENU.PAYMENT_REPORT, permType: 'view_perm' },
+  'commitmentcustomer-outstanding-report': { menuId: 81, parentMenuId: MENU.OUTSTANDING, permType: 'view_perm' },
+  'loan-customerwise-outstanding-report': { menuId: 93, parentMenuId: MENU.OUTSTANDING, permType: 'view_perm' },
+  'commitment-receipt-report': { menuId: 82, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'receipt-report': { menuId: 51, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'employee-collection-report': { menuId: 145, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'before-enrol-receipt-report': { menuId: 146, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'other-receipt-charges-report': { menuId: 74, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'settlement-report': { menuId: 147, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'day-book-report': { menuId: 148, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm', useTopPerm: true },
+  'day-closing-report': { menuId: 75, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'accounts-report': { menuId: 76, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'loan-day-closing-report': { menuId: 94, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'add-expenses-income-report': { menuId: 105, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'trial-balance': { menuId: 106, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'profit-loss-report': { menuId: 108, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'balance-sheet-report': { menuId: 107, parentMenuId: MENU.ACCOUNTS_REPORT, permType: 'view_perm' },
+  'business-agent-report': { menuId: 77, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'commission-pending-report': { menuId: 78, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'commission-payment-report': { menuId: 150, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'incentive-payment-report': { menuId: 98, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'incentive-pending-report': { menuId: 97, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'lead-management-report': { menuId: 95, parentMenuId: MENU.BUSINESS_DEV, permType: 'view_perm' },
+  'loan-receipt-report': { menuId: 84, parentMenuId: MENU.LOAN_REPORT, permType: 'view_perm' },
+  'loan-customer-report': { menuId: 91, parentMenuId: MENU.LOAN_REPORT, permType: 'view_perm' },
+  'log-monitoring-report': { menuId: 89, parentMenuId: MENU.LOG_MONITORING, permType: 'view_perm' },
+  'customer-label-report': { menuId: 125, parentMenuId: MENU.CUSTOMER_REPORT, permType: 'view_perm' },
+  'suit-file-report': { menuId: 133, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
+  'transfer-customer-report': { menuId: 132, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
+  'pledge-customer-report': { menuId: 132, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
+  'historical-performance-report': { menuId: 51, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'business-forecast-report': { menuId: 51, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+};
+
+export interface HeaderMenuItem {
+  label: string;
+  route: string;
+  group: 'subscriber' | 'collection' | 'payment' | 'accounts';
+}
+
+export const HEADER_MENU_ITEMS: HeaderMenuItem[] = [
+  { label: 'Profile Creation', route: 'add-customer', group: 'subscriber' },
+  { label: 'SPN Approved', route: 'view-commitment-chit', group: 'subscriber' },
+  { label: 'SPN Approval', route: 'commitment-eligibility-approval', group: 'subscriber' },
+  { label: 'Nominee', route: 'add-nominee', group: 'subscriber' },
+  { label: 'Guarantor', route: 'add-guarantor', group: 'subscriber' },
+  { label: 'Documents', route: 'view-documents', group: 'subscriber' },
+  { label: 'Ledger', route: 'customer-ledger', group: 'subscriber' },
+  { label: 'Receipt', route: 'add-receipt', group: 'collection' },
+  { label: 'Advance Receipt (Before Enrollment)', route: 'add-before-enrol-receipt', group: 'collection' },
+  { label: 'Advance Receipt (After Enrollment)', route: 'add-advanced-receipt', group: 'collection' },
+  { label: 'Other Charges', route: 'add-other-receipt-charges', group: 'collection' },
+  { label: 'Commitment Chit', route: 'add-commitment-receipt', group: 'collection' },
+  { label: 'Bidpayment', route: 'view-auction', group: 'payment' },
+  { label: 'Bidpayment Adjustment', route: 'add-bidpayment-adjustment', group: 'payment' },
+  { label: 'Refund Enrollment Amount', route: 'add-enrol-refund-amount', group: 'payment' },
+  { label: 'Commitment Payment', route: 'add-commitment-payment', group: 'payment' },
+  { label: 'Income and Expense', route: 'add-expenses-income', group: 'accounts' },
+  { label: 'Petty Cash Income', route: 'add-petty-cash-income', group: 'accounts' },
+  { label: 'Petty cash expenses', route: 'add-petty-cash-expense', group: 'accounts' },
+  { label: 'Salary', route: 'employee-salary', group: 'accounts' },
+  { label: 'Incentive', route: 'add-employee-incentive', group: 'accounts' },
+  { label: 'Commission', route: 'add-commission-payment', group: 'accounts' },
+  { label: 'Day book', route: 'day-book-report', group: 'accounts' },
+];

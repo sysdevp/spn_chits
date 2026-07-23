@@ -1,0 +1,102 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Receipt Report</div>
+      <div class="col-6 text-right">&nbsp;</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div >
+      <form class="bs-example form-horizontal" [formGroup]="customerOutstanding" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name</label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch</label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Customer</label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #customer_id class="form-control form-control w-100 border-dark" formControlName="customer_id">
+              <option value="">Select Customer</option>
+              <option *ngFor="let data of customerList" value="{{data.id}}">{{data.name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetCustomerwiseReport()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="row" style="overflow-x:scroll ">
+        <table id="dtable" class="row-border hover" [hidden]="TableHidden">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Branch Name</th>
+              <th>Customer Name </th>
+              <th>Address </th>
+              <th>Mobile No</th>
+              <th>Total groups </th>
+              <th>Total outstanding   </th>
+              <th>Total Paid</th>
+              <th>Total Penalty </th>
+              <th>Total Bonus</th>
+              <th>Total Discount</th>
+              <th>Group Name</th>
+              <th>Ticket No</th>
+              <th>Pending Amount</th>
+              <th>Penalty </th>
+              <th>Bonus</th>
+              <th>Discount </th>
+              <th>Pending Days </th>
+              <th>Pending Months </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td>{{row.other_branch}}</td>
+              <td>{{row.group_info.group_name}}</td>
+              <td>{{row.ticket_no}}</td>
+              <td>{{row.customer_info.name}}</td>
+              <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}} </td>
+              <td>{{row.created_by}}</td>
+              <td>{{row.receipt_no}}</td>
+              <td>{{row.receipt_date}}</td>
+              <td>{{row.accounts_date}}</td>
+              <td>{{row.payment_info.payment_name}}</td>
+              <td>{{row.received_amount}}</td>
+              <td>{{row.cheque_no}}</td>
+              <td>{{row.cheque_date}}</td>
+              <td>{{row.bank_id}} </td>
+              <td>{{row.neft_adjust_id}} </td>
+              <td>{{row.current_due}}</td>
+              <td>{{row.penaulty_amount}}</td>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

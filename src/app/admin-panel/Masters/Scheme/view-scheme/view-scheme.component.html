@@ -1,0 +1,110 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Scheme Detail</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Chit Value : </label>
+              <b class="px-1">{{ViewSchemeInfo.chit_value}} </b>
+            </div>
+          </div>	
+		      <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">No of Auctions: </label>
+              <b class="px-1">{{ViewSchemeInfo.no_of_months}} </b>
+            </div>
+		      </div>
+		      <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">No of Members : </label>
+              <b class="px-1">{{ViewSchemeInfo.members}}  </b>
+            </div>
+          </div>
+           <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Due Amount: </label>
+              <b class="px-1">{{ViewSchemeInfo.monthly_due}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Registration Fee : </label>
+              <b class="px-1">{{ViewSchemeInfo.register_fees}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Enrollment Fee : </label>
+              <b class="px-1">{{ViewSchemeInfo.enrollment_fees}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Chit Letter : </label>
+              <b class="px-1">{{ViewSchemeInfo.chit_letter}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Short Term : </label>
+              <b class="px-1">{{ViewSchemeInfo.short_term}}  </b>
+            </div>
+          </div>
+         
+	      </div>
+		  </form>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Scheme Detail</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/add-scheme']" class="bg-success border-0 text-white px-3 py-2"> + Add Scheme </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div [hidden]="TableHidden">
+        <table id="dtable"  class="row-border hover">
+          <thead>
+            <tr> 
+              <th>Sno</th>
+              <th>Chit Value</th>
+              <th>Scheme Format</th>
+              <th>Registration Fee</th>
+              <th>Due Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.chit_value}}</td>
+            <td>{{row.scheme_format}}</td>
+            <td>{{row.register_fees}}</td>
+            <td>{{row.monthly_due}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Scheme"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-scheme/'+row.id]" title="Edit Scheme"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-scheme/'+row.id]" title="Delete Scheme"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Scheme"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Scheme"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

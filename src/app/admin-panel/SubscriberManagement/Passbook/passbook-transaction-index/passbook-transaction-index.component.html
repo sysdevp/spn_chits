@@ -1,0 +1,118 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Print Passbook Index</div>
+      <div class="col-6 text-right">
+        <button type="button" class="btn btn-primary mr-1" (click)="generatePdf()">Print</button>
+        <a [routerLink]="['/admin-panel/passbook-entry']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </div>
+  </div>
+  <div id="print-section">
+  <div class="card-body add-maze">
+    <div class="row" >
+      <div  class="contentToConvert" style="overflow: auto; color:black; font-size:13px;"> 
+        <table border-collapse="collapse"  border= "0px solid transparent" style="background:transparent; width: 100%; height:280px; margin:0 auto; padding: 0 15px;">
+          <tr>
+            <td class="tbl-td-header">Customer Name</td>
+            <td><b>{{customerName}}</b></td>
+            <td class="tbl-td-header">Branch Name</td>
+            <td>{{branchName}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Date of Issue</td>
+            <td>{{dateOfIssue}}</td>
+            <td class="tbl-td-header">Group Name / Ticket No:</td>
+            <td>{{groupName}} / {{ticketNo}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">P.S.O No</td>
+            <td>{{psoNo}}</td>
+            <td class="tbl-td-header">No Of Months</td>
+            <td>{{NoMonths}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">By law No</td>
+            <td>{{byLawNo}}</td>
+            <td class="tbl-td-header">Chit Value</td>
+            <td>{{chitValue}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Commencement Date</td>
+            <td>{{CommencementDate}}</td>
+            <td class="tbl-td-header">Termination Date</td>
+            <td>{{TerminationDate}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Introducer Name</td>
+            <td>{{introducerName}}</td>
+            <td class="tbl-td-header">Monthly Installment</td>
+            <td>{{monthlyInstallment}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Auction Time</td>
+            <td>{{auctionTime}}</td>
+            <td class="tbl-td-header">Auction Date</td>
+            <td>{{auctionDate}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Contact No</td>
+            <td>{{contactNo}}</td>
+            <td class="tbl-td-header">Address</td>
+            <td>{{address}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <!--<div class="form-group row d-flex justify-content-center">
+      <button type="button" class="btn btn-primary mr-1" (click)="generatePdf()">Print</button>
+      <a [routerLink]="['/admin-panel/passbook-entry']" class="btn btn-danger mr-1">Cancel</a>
+    </div>-->
+  </div>
+  <div class="card-body add-maze">
+    <div class="row" >
+      <div class="contentToConvert" style="width: 955px; height:2604px; margin:0 auto; font-family:Arial, sans-serif;font-size:15px;">
+        <table border-collapse="collapse" border= "0px solid black" style="width:100%; padding: 0 15px; height: auto;">
+          <thead>
+            <th style="text-align: center;min-width: 30px;">Sno</th>
+            <th style="text-align: center;min-width: 100px;">Date</th>
+            <th style="text-align: center;min-width: 100px;">Receipt No</th>
+            <th style="text-align: center;min-width: 35px;">Mode</th>
+            <th style="text-align: center;min-width: 50px;">Particulars</th>
+            <th style="text-align: center;min-width: 30px;">Inst No</th>
+            <th style="text-align: center;min-width: 75px;">Received Amt</th>
+            <th style="text-align: center;min-width: 75px;">Sub Amt</th>
+            <th style="text-align: center;min-width: 40px;">Others</th>
+            <th style="text-align: center;min-width: 50px;">Dividend</th>
+            <th style="text-align: center;min-width: 50px;">Penalty</th>
+            <th style="text-align: center;min-width: 50px;">Bonus</th>
+            <th style="text-align: center;min-width: 70px;">Total</th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of transactionList">
+              <td style="text-align: center;min-width: 30px;">{{row.sno}}</td>
+              <td style="text-align: center;min-width: 100px;">{{row.date}}</td>
+              <td style="text-align: center;min-width: 100px;">{{row.receipt_no}}</td>
+              <td style="text-align: center;min-width: 35px;">{{row.payment_mode}}</td>
+              <td style="text-align: center;min-width: 50px;">{{row.particulars}}</td>
+              <td style="text-align: center;min-width: 30px;">{{row.installment_no}}</td>
+              <td style="text-align: center;min-width: 75px;">{{row.receipt_amount}}</td>
+              <td style="text-align: center;min-width: 75px;">{{row.sub_amount}}</td>
+              <td style="text-align: center;min-width: 40px;">{{row.others}}</td>
+              <td style="text-align: center;min-width: 50px;">{{row.dividend}}</td>
+              <td style="text-align: center;min-width: 50px;">{{row.penalty}}</td>
+              <td style="text-align: center;min-width: 50px;">{{row.bonus}}</td>
+              <td style="text-align: center;min-width: 70px;">{{row.total}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="col-md-12">&nbsp;</div>
+  </div>
+  </div>
+</div>
+
+  

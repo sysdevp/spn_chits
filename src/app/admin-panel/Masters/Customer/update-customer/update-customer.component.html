@@ -1,0 +1,2072 @@
+<div class="card">
+  <div class="card-header" style="background-color: #d9d9d9">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">
+        Update Subscriber Details
+      </div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-customer']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Subscriber</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="UpdateCustomer"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name </label>
+        <div class="col-sm-10">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Branch Details</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Branch Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #branch_id
+                formControlName="branch_id"
+                (change)="branchChg($event)"
+              >
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{ data.id }}">
+                  {{ data.branch_name }}
+                </option>
+              </select>
+
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-branch']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.branch_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.branch_id.errors.required"
+                >Branch is required</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Scheme </label>
+            <div class="col-sm-8 d-flex">
+              <select #scheme_id formControlName="scheme_id">
+                <option value="0">Select Scheme</option>
+                <option *ngFor="let data of schemeList" value="{{ data.id }}">
+                  {{ data.scheme_format }}
+                </option>
+              </select>
+
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-scheme']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Personal Details</strong></div>
+        </div>
+        <!-- 
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Salutation </label>
+            <div class="col-sm-8">
+              <select
+                #saluation
+                formControlName="saluation"
+                (change)="saluationChg($event)"
+              >
+                <option value="">Select Saluation</option>
+                <option value="M/S">Company</option>
+                <option value="Mr">Mr</option>
+                <option value="Mrs">Mrs</option>
+                <option value="Ms">Ms</option>
+                <option value="Dr">Dr</option>
+              </select>
+            </div>
+          </div>
+        </div> -->
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >First Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #saluation
+                formControlName="saluation"
+                (change)="saluationChg($event)"
+                class="form-control w-auto mr-2"
+                style="max-width: 90px"
+              >
+                <option value="">Select</option>
+                <option value="M/S">Company</option>
+                <option value="Mr">Mr</option>
+                <option value="Mrs">Mrs</option>
+                <option value="Ms">Ms</option>
+                <option value="Dr">Dr</option>
+              </select>
+              <input
+                #name
+                type="text"
+                class="form-control"
+                placeholder="Enter First Name"
+                formControlName="name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.name.errors.required"
+                  >First Name is required</label
+                >
+                <label *ngIf="f.name.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Last Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #last_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Last Name"
+                formControlName="last_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.last_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.last_name.errors.required"
+                  >Last Name is required</label
+                >
+                <label *ngIf="f.last_name.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Alias Name (If any) <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #r_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Alias Name (If any)"
+                formControlName="r_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.r_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.r_name.errors.required"
+                  >Alias Name (If any) is required</label
+                >
+                <label *ngIf="f.r_name.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Code </label>
+            <div class="col-sm-8">
+              <input
+                #customer_code
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Code"
+                formControlName="customer_code"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Father Name</label>
+            <div class="col-sm-8">
+              <input
+                #father_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Father Name"
+                formControlName="father_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.father_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.father_name.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Spouse Name</label>
+            <div class="col-sm-8">
+              <input
+                #spouse_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Spouse Name"
+                formControlName="spouse_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.spouse_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.spouse_name.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Date Of Birth <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #dob
+                type="text"
+                class="form-control"
+                placeholder="Enter Date Of Birth"
+                formControlName="dob"
+                [minDate]="minDate"
+                [maxDate]="maxDate"
+                (click)="d1.toggle()"
+                ngbDatepicker
+                [container]="'body'"
+                #d1="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.dob.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.dob.errors.required"
+                  >Date Of Birth is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Gender <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select #gender formControlName="gender">
+                <option value="">Select Gender</option>
+                <option value="1">Male</option>
+                <option value="2">Female</option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.gender.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.gender.errors.required"
+                  >Gender is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Phone Number</label>
+            <div class="col-sm-8">
+              <input
+                #phone_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Phone Number"
+                formControlName="phone_no"
+                (input)="onKeyUpPhone($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.phone_no.errors) || !isValidPhone"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.phone_no.errors.pattern || !isValidPhone"
+                  >Invalid Phone number</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Email</label>
+            <div class="col-sm-8">
+              <input
+                #email_id
+                type="text"
+                class="form-control"
+                placeholder="Enter Email Id"
+                formControlName="email_id"
+                (input)="onKeyUpMail($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.email_id.errors) || !isValidMail"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.email_id.errors.required"
+                  >Email Id is required</label
+                >
+                <label *ngIf="f.email_id.errors.pattern || !isValidMobile"
+                  >Invalid Email Id</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Mobile Number <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #mobile_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Mobile Number"
+                formControlName="mobile_no"
+                (input)="onKeyUpMobile($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.mobile_no.errors) || !isValidMobile"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.mobile_no.errors.required"
+                  >Mobile Number is required</label
+                >
+                <label *ngIf="f.mobile_no.errors.pattern || !isValidMobile"
+                  >Invalid Mobile number</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Alternative Mobile Number
+            </label>
+            <div class="col-sm-8">
+              <input
+                #mobile_no_1
+                type="text"
+                class="form-control"
+                placeholder="Enter Alternative Mobile Number"
+                formControlName="mobile_no_1"
+                (input)="onKeyUpMobile($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.mobile_no_1.errors) || !isValidMobile"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.mobile_no_1.errors.pattern || !isValidMobile"
+                  >Invalid Alternative Mobile number</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Photo</label>
+            <div class="col-sm-8">
+              <div
+                class="customer-photo-box"
+                [class.customer-photo-box--ready]="photoDisplayUrl"
+                [class.customer-photo-box--uploading]="photoUploading"
+              >
+                <div class="customer-photo-box__preview">
+                  <img
+                    *ngIf="photoDisplayUrl"
+                    [src]="photoDisplayUrl"
+                    alt="Customer photo preview"
+                    class="customer-photo-box__img"
+                  />
+                  <div *ngIf="!photoDisplayUrl" class="customer-photo-box__empty">
+                    <i class="ion ion-md-camera"></i>
+                    <span>Select a photo to preview</span>
+                  </div>
+                  <div *ngIf="photoUploading" class="customer-photo-box__overlay">
+                    <span>Uploading...</span>
+                  </div>
+                </div>
+                <div class="customer-photo-box__actions">
+                  <label class="btn btn-primary btn-sm mb-0 mr-2">
+                    <span *ngIf="!photoUploading">{{ hasUploadedPhoto ? 'Change photo' : 'Choose photo' }}</span>
+                    <span *ngIf="photoUploading">Please wait...</span>
+                    <input
+                      #photo
+                      type="file"
+                      class="d-none"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      (change)="onCustomerPhotoSelected($event)"
+                      [disabled]="photoUploading"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    class="btn btn-outline-danger btn-sm mb-0"
+                    *ngIf="hasUploadedPhoto"
+                    (click)="clearCustomerPhoto()"
+                    [disabled]="photoUploading"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <input type="hidden" id="photo" name="photo" formControlName="photo" />
+                <p class="customer-photo-box__hint text-muted small mb-0">
+                  JPG or PNG, max 5 MB. Upload starts when you pick a file.
+                </p>
+                <p class="customer-photo-box__name text-success small mb-0" *ngIf="hasUploadedPhoto && !photoUploadError">
+                  Saved: {{ customer_photo }}
+                </p>
+                <p class="customer-photo-box__error text-danger small mb-0" *ngIf="photoUploadError">
+                  {{ photoUploadError }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Family Code </label>
+            <div class="col-sm-8 d-flex">
+              <select #family_id formControlName="family_id">
+                <option value="">Select Family Code</option>
+                <option
+                  *ngFor="let data of familyList"
+                  value="{{ data.family_code }}"
+                >
+                  {{ data.family_code }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-family-code']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.family_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.family_id.errors.required"
+                >Family Code is required</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>KYC Details</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Aadhaarcard Number</label>
+            <div class="col-sm-8">
+              <input
+                #adhar_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Adhar Number"
+                formControlName="adhar_no"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && mantFieldAlertMsg != ''"
+                class="invalid-feedback"
+              >
+                <label>{{ mantFieldAlertMsg }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pancard Number</label>
+            <div class="col-sm-8">
+              <input
+                #pan_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Pancard Number"
+                formControlName="pan_no"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.pan_no.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.pan_no.errors.pattern">Invaild Format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Ration Card Number</label>
+            <div class="col-sm-8">
+              <input
+                #ration_card_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Rationcard Number"
+                formControlName="ration_card_no"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">License Number</label>
+            <div class="col-sm-8">
+              <input
+                #license_no
+                type="text"
+                class="form-control"
+                placeholder="Enter License Number"
+                formControlName="license_no"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adress Start -->
+
+      <!-- <div class="col-md-12">
+          <div class="form-group row" style="text-align: start">
+            <label class="col-sm-12 col-form-label"><b>Address</b></label>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">State Name </label>
+            <div class="col-sm-8">
+              <select
+                #state_id
+                formControlName="state_id"
+                (change)="stateChg($event)"
+              >
+                <option value="">Select State</option>
+                <option *ngFor="let data of stateList" value="{{ data.id }}">
+                  {{ data.state_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.state_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.state_id.errors.required"
+                  >State is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">District Name </label>
+            <div class="col-sm-8">
+              <select
+                #district_id
+                formControlName="district_id"
+                (change)="districtChg($event)"
+              >
+                <option value="">Select District</option>
+                <option *ngFor="let data of districtList" value="{{ data.id }}">
+                  {{ data.district_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.district_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.district_id.errors.required"
+                  >District is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="cityselecthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City Name </label>
+            <div class="col-sm-8">
+              <select #city_id formControlName="city_id">
+                <option value="">Select City</option>
+                <option *ngFor="let data of cityList" value="{{ data.id }}">
+                  {{ data.city_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.city_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.city_id.errors.required"
+                  >City is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="citytexthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City Name </label>
+            <div class="col-sm-8">
+              <input
+                #city_id
+                type="text"
+                class="form-control"
+                placeholder="Enter City Name"
+                formControlName="city_id"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.city_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.city_id.errors.required"
+                  >City is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pincode </label>
+            <div class="col-sm-8">
+              <input
+                #pincode
+                type="text"
+                class="form-control"
+                placeholder="Enter Pincode"
+                formControlName="pincode"
+                (input)="onKeyUpPincode($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.pincode.errors) || !isValidPincode"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.pincode.errors.required"
+                  >Pincode is required</label
+                >
+                <label *ngIf="f.pincode.errors.pattern || !isValidPincode"
+                  >Invalid Pincode</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Door Number</label>
+            <div class="col-sm-8">
+              <input
+                #door_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Door Number"
+                formControlName="door_no"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Building Name</label>
+            <div class="col-sm-8">
+              <input
+                #buildling_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Building Name"
+                formControlName="buildling_name"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 1</label>
+            <div class="col-sm-8">
+              <input
+                #address_line_1
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 1"
+                formControlName="address_line_1"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 2</label>
+            <div class="col-sm-8">
+              <input
+                #address_line_2
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 2"
+                formControlName="address_line_2"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Landmark</label>
+            <div class="col-sm-8">
+              <input
+                #landmark
+                type="text"
+                class="form-control"
+                placeholder="Enter Landmark"
+                formControlName="landmark"
+              />
+            </div>
+          </div>
+        </div>
+
+
+
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">&nbsp;</label>
+            <div class="col-sm-10 my-auto">
+              <input type="checkbox" (change)="chkChg($event)" />
+              if Communicate Address (Same as above)
+            </div>
+          </div>
+        </div> -->
+
+      <!-- Adress End  -->
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Communication Address</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">State </label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #communication_state_id
+                formControlName="communication_state_id"
+                (change)="communicationStateChg($event)"
+              >
+                <option value="">Select State</option>
+                <option *ngFor="let data of stateList" value="{{ data.id }}">
+                  {{ data.state_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-state']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.communication_state_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.communication_state_id.errors.required"
+                >State is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"> District </label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #communication_district_id
+                formControlName="communication_district_id"
+                (change)="communicationDistrictChg($event)"
+              >
+                <option value="">Select District</option>
+                <option
+                  *ngFor="let data of communicationDistrictList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.district_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-district']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.communication_district_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.communication_district_id.errors.required"
+                >District is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="cityselecthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City </label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #communication_city_id
+                formControlName="communication_city_id"
+              >
+                <option value="">Select City</option>
+                <option
+                  *ngFor="let data of communicationCityList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.city_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+              <a
+                [routerLink]="['/admin-panel/add-city']"
+                target="_blank"
+                class="btn btn-primary"
+              >
+                <span>+</span>
+              </a>
+            </div>
+            </div>
+
+            
+          </div>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.communication_city_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.communication_city_id.errors.required"
+              >City is required</label
+            >
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="citytexthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City </label>
+            <div class="col-sm-8">
+              <input
+                #communication_city_id
+                type="text"
+                class="form-control"
+                placeholder="Enter City Name"
+                formControlName="communication_city_id"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.communication_city_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.communication_city_id.errors.required"
+                  >Communication city is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pincode </label>
+            <div class="col-sm-8">
+              <input
+                #communication_pincode
+                type="text"
+                class="form-control"
+                placeholder="Enter Pincode"
+                formControlName="communication_pincode"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.communication_pincode.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.communication_pincode.errors.required"
+                  >Pincode is required</label
+                >
+                <label *ngIf="f.communication_pincode.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Door Number </label>
+            <div class="col-sm-8">
+              <input
+                #communication_door_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Door Number"
+                formControlName="communication_door_no"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Building Name </label>
+            <div class="col-sm-8">
+              <input
+                #communication_building_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Building Name"
+                formControlName="communication_building_name"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 1 </label>
+            <div class="col-sm-8">
+              <input
+                #communication_address_line_1
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 1"
+                formControlName="communication_address_line_1"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 2 </label>
+            <div class="col-sm-8">
+              <input
+                #communication_address_line_2
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 2"
+                formControlName="communication_address_line_2"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Landmark </label>
+            <div class="col-sm-8">
+              <input
+                #communication_land_mark
+                type="text"
+                class="form-control"
+                placeholder="Enter Landmark"
+                formControlName="communication_land_mark"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12">
+          <div class="mb-3">
+            <div class="card-header row">
+              <div class="col-md-2">
+                <strong>Permanent Address</strong>
+              </div>
+
+              <div class="form-check m-0">
+                <!-- <input
+                  type="checkbox"
+                  class="form-check-input"
+                  id="sameAddress"
+                  (change)="chkChg1($event)"
+                /> -->
+                <input
+                  type="checkbox"
+                  (change)="chkChg1($event)"
+                  id="sameAddress"
+                  class="form-check-input"
+                />
+                <label class="form-check-label ms-2" for="sameAddress">
+                  Same as above
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- <div class="col-md-12"></div> -->
+        <!-- <div class="col-md-12">
+          <div class="d-flex justify-content-between">
+            <div class="form-group row" style="text-align: start">
+              <label class="col-sm-12 col-form-label"
+                ><b>Permanent Address</b></label
+              >
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-form-label">&nbsp;</label>
+              <div class="col-sm-10 my-auto">
+                <input type="checkbox" (change)="chkChg1($event)" />
+                Same as above
+              </div>
+            </div>
+          </div>
+        </div> -->
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">State </label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #permanent_state_id
+                formControlName="permanent_state_id"
+                (change)="permanentStateChg($event)"
+              >
+                <option value="">Select State</option>
+                <option *ngFor="let data of stateList" value="{{ data.id }}">
+                  {{ data.state_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-state']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.permanent_state_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.permanent_state_id.errors.required"
+                >State is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"> District </label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #permanent_district_id
+                formControlName="permanent_district_id"
+                (change)="permanentDistrictChg($event)"
+              >
+                <option value="">Select District</option>
+                <option
+                  *ngFor="let data of permanentDistrictList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.district_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-district']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.permanent_district_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.permanent_district_id.errors.required"
+                >District is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="cityselecthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City </label>
+            <div class="col-sm-8 d-flex">
+              <select #permanent_city_id formControlName="permanent_city_id">
+                <option value="">Select City</option>
+                <option
+                  *ngFor="let data of permanentCityList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.city_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-scheme']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.permanent_city_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.permanent_city_id.errors.required"
+                >City is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="citytexthide">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_city_id
+                type="text"
+                class="form-control"
+                placeholder="Enter City Name"
+                formControlName="permanent_city_id"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.permanent_city_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.permanent_city_id.errors.required"
+                  >City is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pincode </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_pincode
+                type="text"
+                class="form-control"
+                placeholder="Enter Pincode"
+                formControlName="permanent_pincode"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.permanent_pincode.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.permanent_pincode.errors.required"
+                  >Pincode is required</label
+                >
+                <label *ngIf="f.permanent_pincode.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Door Number </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_door_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Door Number"
+                formControlName="permanent_door_no"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Building Name </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_building_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Building Name"
+                formControlName="permanent_building_name"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 1 </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_address_line_1
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 1"
+                formControlName="permanent_address_line_1"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Address Line 2 </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_address_line_2
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line 2"
+                formControlName="permanent_address_line_2"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Landmark </label>
+            <div class="col-sm-8">
+              <input
+                #permanent_land_mark
+                type="text"
+                class="form-control"
+                placeholder="Enter Landmark"
+                formControlName="permanent_land_mark"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--<div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Refered By </label>
+              <div class="col-sm-8">
+                <input #refered_by type="text" class="form-control" placeholder="Enter Refered By" formControlName="refered_by">
+              </div>
+            </div>
+          </div>-->
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Professional Details</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Occupation</label>
+            <div class="col-sm-8">
+              <input
+                #occupation
+                type="text"
+                class="form-control"
+                placeholder="Enter Occupation"
+                formControlName="occupation"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Annual Income</label>
+            <div class="col-sm-8">
+              <input
+                #income
+                type="text"
+                class="form-control"
+                placeholder="Enter Annual Income"
+                formControlName="income"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.income.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.income.errors.pattern">Invaild Format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Retirement Date</label>
+            <div class="col-sm-8">
+              <input
+                #retirement
+                type="text"
+                class="form-control"
+                placeholder="Enter Retirement Date"
+                formControlName="retirement"
+                (click)="d3.toggle()"
+                ngbDatepicker
+                [container]="'body'"
+                #d3="ngbDatepicker"
+                onkeydown="return false;"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Source Of Fund</label>
+            <div class="col-sm-8">
+              <input
+                #source_of_funds
+                type="text"
+                class="form-control"
+                placeholder="Enter Source Of Fund"
+                formControlName="source_of_funds"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">PF Number</label>
+            <div class="col-sm-8">
+              <input
+                #pf_no
+                type="text"
+                class="form-control"
+                placeholder="Enter PF Number"
+                formControlName="pf_no"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.pf_no.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.pf_no.errors.required"
+                  >PF number is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">ESI Number </label>
+            <div class="col-sm-8">
+              <input
+                #esi_no
+                type="text"
+                class="form-control"
+                placeholder="Enter ESI Number"
+                formControlName="esi_no"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Reference & Relationship</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Refered Type <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select
+                #reference_type
+                formControlName="reference_type"
+                (change)="agentTypeChg($event)"
+              >
+                <option value="">Select Refered Type</option>
+                <option value="1">Customer</option>
+                <option value="2">Employee</option>
+                <option value="3">Business Agent</option>
+                <option value="4">Self Joining</option>
+                <option value="5">Others</option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.reference_type.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.reference_type.errors.required"
+                  >Refered type is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6" [hidden]="!introNameShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Refered Detail <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #introducer_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Introducer Name"
+                formControlName="introducer_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.introducer_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.introducer_name.errors.required"
+                  >Refered detail is required</label
+                >
+                <label *ngIf="f.introducer_name.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="!introListShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 1"
+              >Customer <span class="error">*</span></label
+            >
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 2"
+              >Employee <span class="error">*</span></label
+            >
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 3"
+              >Business Agent <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select #introducer_id formControlName="introducer_id">
+                <option value="" *ngIf="introType == 1">Select Customer</option>
+                <option value="" *ngIf="introType == 2">Select Employee</option>
+                <option value="" *ngIf="introType == 3">
+                  Select Business Agent
+                </option>
+                <option
+                  *ngFor="let data of introducerList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.full_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.introducer_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.introducer_id.errors.required && introType == 1"
+                  >Customer is required</label
+                >
+                <label *ngIf="f.introducer_id.errors.required && introType == 2"
+                  >Employee is required</label
+                >
+                <label *ngIf="f.introducer_id.errors.required && introType == 3"
+                  >Business agent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Relationship</label>
+            <div class="col-sm-8 d-flex">
+              <select #relationship_id formControlName="relationship_id">
+                <option value="">Select Relationship</option>
+                <option
+                  *ngFor="let data of relationshipList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.relationship_name }}
+                </option>
+              </select>
+
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-relationship']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Belongs To</label>
+            <div class="col-sm-8">
+              <select
+                #customer_belongs_to
+                formControlName="customer_belongs_to"
+              >
+                <option value="">Select Customer</option>
+                <option *ngFor="let data of customerList" value="{{ data.id }}">
+                  {{ data.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Chit Settings (Customer Level)</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Bonus Days</label>
+            <div class="col-sm-8">
+              <input
+                #bonus_days
+                type="text"
+                class="form-control"
+                placeholder="Enter Bonus Days"
+                formControlName="bonus_days"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.bonus_days.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.bonus_days.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Bonus %</label>
+            <div class="col-sm-8">
+              <input
+                #customer_bonus
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Bonus"
+                formControlName="customer_bonus"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.customer_bonus.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.customer_bonus.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Penalty Days</label>
+            <div class="col-sm-8">
+              <input
+                #penalty_days
+                type="text"
+                class="form-control"
+                placeholder="Enter Penalty Days"
+                formControlName="penalty_days"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.penalty_days.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.penalty_days.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Penalty %</label>
+            <div class="col-sm-8">
+              <input
+                #customer_penalty_interest
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Penalty"
+                formControlName="customer_penalty_interest"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.customer_penalty_interest.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.customer_penalty_interest.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Interest</label>
+            <div class="col-sm-8">
+              <input
+                #customer_interest
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Interest"
+                formControlName="customer_interest"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.customer_interest.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.customer_interest.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Dividend</label>
+            <div class="col-sm-8">
+              <input
+                #customer_divident
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Dividend"
+                formControlName="customer_divident"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.customer_divident.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.customer_divident.errors.pattern"
+                  >Invaild Format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >DOJ <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #doj
+                type="text"
+                class="form-control"
+                placeholder="Enter DOJ"
+                formControlName="doj"
+                (click)="d2.toggle()"
+                ngbDatepicker
+                [container]="'body'"
+                [placement]="'top-left'"
+                #d2="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.doj.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.doj.errors.required">DOJ is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Enable SMS Service</label>
+            <div class="col-sm-8 my-auto">
+              <input #sms type="checkbox" formControlName="sms" />
+            </div>
+          </div>
+        </div>
+        <!-- <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Is Guarantor</label>
+            <div class="col-sm-8 my-auto">
+              <input
+                #is_guarantor
+                type="checkbox"
+                formControlName="is_guarantor"
+              />
+            </div>
+          </div>
+        </div> -->
+        <div class="col-md-6"></div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Existing Chits</strong>
+          </div>
+          <div class="table-responsive" *ngIf="existingChits.length > 0">
+            <table class="table table-bordered table-sm mb-0">
+              <thead class="bg-secondary text-white">
+                <tr>
+                  <th>#</th>
+                  <th>Chit Value</th>
+                  <th>Slab</th>
+                  <th>RF Amount</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let chit of existingChits; let i = index">
+                  <td>{{ i + 1 }}</td>
+                  <td>{{ getChitSchemeLabel(chit) }}</td>
+                  <td>{{ getChitSlabLabel(chit) }}</td>
+                  <td>{{ chit.advance_amount || chit.needed_amount || '-' }}</td>
+                  <td>{{ chit.due_date || '-' }}</td>
+                  <td>{{ getChitStatusLabel(chit) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-muted mb-0" *ngIf="existingChits.length === 0">No chits added yet.</p>
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>Add New Chit</strong>
+            <button type="button" class="btn btn-sm btn-primary" (click)="addChitRow()">+ Add More</button>
+          </div>
+        </div>
+        <div class="col-md-12" *ngFor="let chit of getChitControls(); let i = index" [formGroup]="chit">
+          <div class="border rounded p-3 mb-3">
+            <div class="d-flex justify-content-between mb-2">
+              <strong>New Chit #{{ i + 1 }}</strong>
+              <button type="button" class="btn btn-sm btn-danger" (click)="removeChitRow(i)">Remove</button>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Chit Value <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <select formControlName="scheme_id" (change)="chitSchemeChg(i, $event)">
+                      <option value="">Select Chit Value</option>
+                      <option *ngFor="let s of chitValueList" [value]="s.id">{{ s.scheme_format || s.chit_value }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Slab Name <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <select formControlName="slab_id">
+                      <option value="">Select Slab</option>
+                      <option *ngFor="let sl of slabLists[i]" [value]="sl.id">{{ sl.slab_name }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Other Charges <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <select formControlName="charge_type_id">
+                      <option value="">Select Other Charges</option>
+                      <option *ngFor="let c of chargesTypeList" [value]="c.id">{{ c.charge_name }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Received Date <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input
+                      type="text"
+                      class="form-control calendar"
+                      formControlName="received_date"
+                      placeholder="Received Date"
+                      [maxDate]="currentChitDate"
+                      (click)="chitDatePicker.toggle()"
+                      ngbDatepicker
+                      #chitDatePicker="ngbDatepicker"
+                      onkeydown="return false"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">RF Amount <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" formControlName="rf_amount" placeholder="Enter RF Amount" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Payment Type <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <select formControlName="payment_type_id" (change)="chitPaymentChg(i, $event)">
+                      <option value="">Select Payment Type</option>
+                      <option value="1">Cash</option>
+                      <option value="2">Cheque</option>
+                      <option value="3">D.D</option>
+                      <option value="4">RTGS/NEFT</option>
+                      <option value="6">B.P.Adjustment</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideDebitTo">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Debit To <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" formControlName="debit_to" placeholder="Debit To" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideChequeNo">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Cheque No <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" formControlName="cheque_no" placeholder="Cheque No" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideChequeDate">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Cheque Date <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="cheque_date"
+                      placeholder="Cheque Date"
+                      (click)="chitChequeDate.toggle()"
+                      ngbDatepicker
+                      #chitChequeDate="ngbDatepicker"
+                      onkeydown="return false"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideBankName">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Bank Name <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <select formControlName="bank_id" (change)="chitBankChg(i, $event)">
+                      <option value="">Select Bank</option>
+                      <option *ngFor="let b of bankList" [value]="b.id">{{ b.bank_name }}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideBranchName">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Bank Branch <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" formControlName="bank_branch_name" readonly />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideTransactionNo">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Transaction No <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input type="text" class="form-control" formControlName="transaction_no" placeholder="Transaction No" />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" [hidden]="chitPaymentUi[i].hideTransactionDate">
+                <div class="form-group row">
+                  <label class="col-sm-4 col-form-label">Transaction Date <span class="error">*</span></label>
+                  <div class="col-sm-8">
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="transaction_date"
+                      placeholder="Transaction Date"
+                      (click)="chitTxnDate.toggle()"
+                      ngbDatepicker
+                      #chitTxnDate="ngbDatepicker"
+                      onkeydown="return false"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group row d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-customer']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,150 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add Scheme</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-scheme']" class="bg-info border-0 text-white px-3 py-2"> <i
+            class="fas fa-eye pr-2"></i> View Scheme</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="AddScheme" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Chit Value <span class="error">*</span></label>
+            <div class="col-sm-8" (mouseover)="changeText=true" (mouseout)="changeText=false">
+              <input #chit_value type="text" class="form-control" placeholder="Enter Chit Value"
+                formControlName="chit_value">
+              <div class="col-md-12" *ngIf="submitted && f.chit_value.errors" class="invalid-feedback">
+                <label *ngIf="f.chit_value.errors.required">Chit value is required</label>
+                <label *ngIf="f.chit_value.errors.pattern">Invalid format</label>
+              </div>
+              <span *ngIf="changeText" style="color: crimson;">Chit Value: (Want to enter the values like 10000 (or)
+                20000 based on your chit value)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No of Auctions<span class="error">*</span></label>
+            <div class="col-sm-8" (mouseover)="changeText1=true" (mouseout)="changeText1=false">
+              <input #no_of_months type="text" class="form-control" placeholder="No of Auctions"
+                formControlName="no_of_months">
+              <div class="col-md-12" *ngIf="submitted && f.no_of_months.errors" class="invalid-feedback">
+                <label *ngIf="f.no_of_months.errors.required">No of months or weeks or Days are required</label>
+                <label *ngIf="f.no_of_months.errors.pattern">Invalid format</label>
+              </div>
+              <span *ngIf="changeText1" style="color: crimson;">Here just mention the number of months or weeks this
+                scheme will contains</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No of Members <span class="error">*</span></label>
+            <div class="col-sm-8" (mouseover)="changeText2=true" (mouseout)="changeText2=false">
+              <input #members type="text" class="form-control" placeholder="Enter No Of Members"
+                formControlName="members">
+              <div class="col-md-12" *ngIf="submitted && f.members.errors" class="invalid-feedback">
+                <label *ngIf="f.members.errors.required">No of members is required</label>
+                <label *ngIf="f.members.errors.pattern">Invalid format</label>
+              </div>
+              <span *ngIf="changeText2" style="color: crimson;">Here just mention the number of members this scheme will
+                contains</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Registration Fee</label>
+          <div class="col-sm-8">
+            <input #register_fees type="text" class="form-control" placeholder="Enter Registration Fee"
+              formControlName="register_fees">
+            <div class="col-md-12" *ngIf="submitted && f.register_fees.errors" class="invalid-feedback">
+              <label *ngIf="f.register_fees.errors.pattern">Invalid format</label>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+    <div class="col-md-6">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label">Enrollment Fee</label>
+        <div class="col-sm-8">
+          <input #enrollment_fees type="text" class="form-control" placeholder="Enter Enrollment Fee"
+            formControlName="enrollment_fees">
+          <div class="col-md-12" *ngIf="submitted && f.enrollment_fees.errors" class="invalid-feedback">
+            <label *ngIf="f.enrollment_fees.errors.pattern">Invalid format</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-6">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label"> Due Amount<span class="error">*</span></label>
+        <div class="col-sm-8" (mouseover)="changeText3=true" (mouseout)="changeText3=false">
+          <input #monthly_due type="text" class="form-control" placeholder="Enter Due Amount"
+            formControlName="monthly_due">
+          <div class="col-md-12" *ngIf="submitted && f.monthly_due.errors" class="invalid-feedback">
+            <label *ngIf="f.monthly_due.errors.required">Due is required</label>
+            <label *ngIf="f.monthly_due.errors.pattern">Invalid format</label>
+          </div>
+          <span *ngIf="changeText3" style="color: crimson;">Want to enter due amount like 4000 (or) 5000 only in
+            numbers</span>
+          <div class="col-md-12" *ngIf="submitted && monthlyDueGreaterAlert" class="invalid-feedback">
+            <label>Invalid Due</label>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+    <div class="col-md-6">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label">Chit Letter</label>
+        <div class="col-sm-8">
+          <input #chit_letter type="text" class="form-control" placeholder="Enter Chit Letter"
+            formControlName="chit_letter">
+        </div>
+      </div>
+    </div>
+
+  
+    <div class="col-md-6">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label">Short Term</label>
+        <div class="col-sm-8">
+          <input #short_term type="text" class="form-control" placeholder="Enter Short Term"
+            formControlName="short_term">
+        </div>
+      </div>
+    </div>
+</div>
+
+  <div class="form-group row d-flex justify-content-center">
+    <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+    <a [routerLink]="['/admin-panel/view-scheme']" class="btn btn-danger mr-1">Cancel</a>
+  </div>
+  </form>
+</div>
+</div>

@@ -1,0 +1,500 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">
+        Add Commitment Chit Enroll Details
+      </div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-commitment-chit']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Commitment Chit</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="AddCommitmentChit"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-10">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Branch Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #branch_id
+                formControlName="branch_id"
+                (change)="branchChg($event)"
+              >
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{ data.id }}">
+                  {{ data.branch_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-branch']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.branch_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.branch_id.errors.required"
+                >Branch is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Customer Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #customer_id
+                class="form-control w-100"
+                formControlName="customer_id"
+              >
+                <option value="">Select Customer Name</option>
+                <option *ngFor="let data of customerList" [value]="data.id">
+                  {{ data.full_name || data.name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-customer']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.customer_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.customer_id.errors.required"
+                >Customer Name is required</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Chit Value <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #scheme_id
+                formControlName="scheme_id"
+                (change)="schemeChg($event)"
+              >
+                <option value="">Select Chit Value</option>
+                <option
+                  *ngFor="let data of chitValueList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.scheme_format }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-scheme']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.scheme_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.scheme_id.errors.required"
+                >Chit Value is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Slab Due Type <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select #slab_id formControlName="slab_id">
+                <option value="">Select Due Type</option>
+                <option *ngFor="let data of slabList" value="{{ data.id }}">
+                  {{ data.slab_name }}
+                </option>
+              </select>
+
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-due-slab']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.slab_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.slab_id.errors.required"
+                >Slab Type is required</label
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Date Of Joining <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #date_introduced
+                type="text"
+                formControlName="date_introduced"
+                class="form-control calendar"
+                placeholder="Enter Date Of Joining"
+                (click)="d1.toggle()"
+                ngbDatepicker
+                #d1="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.date_introduced.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.date_introduced.errors.required"
+                  >Date Of Joining is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Payment Type<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select #payment_type formControlName="payment_type">
+                <option value="">Select Payment Type</option>
+                <option value="1">Daily</option>
+                <option value="2">Weekly</option>
+                <option value="3">Monthly</option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.payment_type.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.payment_type.errors.required"
+                  >Payment Type is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Due Date<span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input
+                #due_date
+                type="text"
+                formControlName="due_date"
+                class="form-control calendar"
+                placeholder="Enter Due Date"
+                (click)="d2.toggle()"
+                ngbDatepicker
+                #d2="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.due_date.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.due_date.errors.required"
+                  >Due Date is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Refered Type <span class="error">*</span>
+            </label>
+            <div class="col-sm-8">
+              <select
+                #agent_type
+                formControlName="agent_type"
+                (change)="agentTypeChg($event)"
+              >
+                <option value="">Select Refered Type</option>
+                <option value="1">Customer</option>
+                <option value="2">Employee</option>
+                <option value="3">Business Agent</option>
+                <option value="4">Self Joining</option>
+                <option value="5">Others</option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.agent_type.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.agent_type.errors.required"
+                  >Agent Type is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6" [hidden]="!introNameShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Refered Detail</label>
+            <div class="col-sm-8">
+              <input
+                #introducer_name
+                type="text"
+                class="form-control"
+                placeholder="Enter Refered Detail"
+                formControlName="introducer_name"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.introducer_name.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.introducer_name.errors.required"
+                  >Refered detail is required</label
+                >
+                <label *ngIf="f.introducer_name.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="!introListShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 1"
+              >Customer <span class="error">*</span></label
+            >
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 2"
+              >Employee <span class="error">*</span></label
+            >
+            <label class="col-sm-4 col-form-label" *ngIf="introType == 3"
+              >Business Agent <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select #introducer_id formControlName="introducer_id">
+                <option value="" *ngIf="introType == 1">Select Customer</option>
+                <option value="" *ngIf="introType == 2">Select Employee</option>
+                <option value="" *ngIf="introType == 3">
+                  Select Business Agent
+                </option>
+                <option
+                  *ngFor="let data of introducerList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.full_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.introducer_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.introducer_id.errors.required && introType == 1"
+                  >Customer is required</label
+                >
+                <label *ngIf="f.introducer_id.errors.required && introType == 2"
+                  >Employee is required</label
+                >
+                <label *ngIf="f.introducer_id.errors.required && introType == 3"
+                  >Business agent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Collection Agent</label>
+            <div class="col-sm-8">
+              <select #collection_agent_id  formControlName="collection_agent_id">
+                <option value="">Select Collection Agent </option>
+                <option *ngFor="let data of collectionAgentList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>-->
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4"
+              >Collection Area <span class="error">*</span></label
+            >
+            <div class="col-sm-8 d-flex">
+              <select
+                #collection_area_id
+                formControlName="collection_area_id"
+                (change)="collectionareaChg($event)"
+              >
+                <option value="">Select Collection Area</option>
+                <option
+                  *ngFor="let data of collectionAreaList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.collection_area }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-collection-area-mapping']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+            <div
+              class="col-md-12"
+              *ngIf="submitted && f.collection_area_id.errors"
+              class="invalid-feedback"
+            >
+              <label *ngIf="f.collection_area_id.errors.required"
+                >Collection Area is required</label
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Pincode <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input
+                #collection_pin
+                type="text"
+                class="form-control px-2"
+                placeholder="Enter Area Pincode"
+                formControlName="collection_pin"
+                value="{{ CollectionAreaPincode }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">AR Number </label>
+            <div class="col-sm-8">
+              <input
+                #ar_no
+                type="text"
+                class="form-control px-2"
+                placeholder="Enter AR No"
+                formControlName="ar_no"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Group Name </label>
+            <div class="col-sm-8">
+              <input
+                #group_name
+                type="text"
+                class="form-control px-2"
+                placeholder="Enter Group Name"
+                formControlName="group_name"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-commitment-chit']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

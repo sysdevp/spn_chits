@@ -1,0 +1,77 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+    <div class="modal-header without-text">
+      <h5 class="float-left px-2 py-2 text-white mb-0">Collection Area Mapping Details</h5>
+      <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+    </div>
+    <div class="modal-body">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-12">
+            <div class="row area_mapg">
+              <div class="col-md-4"><h4>Branch Name: </h4>
+                <h5 class="px-1">{{ViewBranchInfo.branch_name}}</h5></div>
+              <div class="col-md-4"><h4>Collection Employee Name:</h4> 
+                 <h5 class="px-1">{{ViewEmployeeInfo.first_name}}{{ViewEmployeeInfo.last_name}}</h5></div>
+              <div class="col-md-4"><h4>Collection Area </h4>
+                <h6 *ngFor="let row of COllectionArea;">
+                    {{row.item_text}}
+                </h6>
+              </div>
+            </div>
+           <!--  <table class="auc-dta"> 
+                <thead>
+                  <tr>
+                  <th>Collection Area</th>
+                </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of ViewCollectionAreaMappingInfo;">
+                    <td>{{row.area_name}}</td>
+                  </tr>
+                </tbody>
+              </table> -->
+          </div>
+        </div>  
+      </div>
+    </div>
+    <div class="modal-footer"></div>
+  </ng-template>
+ <div class="card maz-vh">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-6 my-auto font-weight-bold">Collection Area Mapping List</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/add-collection-area-mapping']" class="bg-success border-0 text-white px-3 py-2"> + Add Collection Area Mapping </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div [hidden]="TableHidden">
+        <table id="dtable" class="row-border hover">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Branch Name</th>
+              <th>Collection Employee Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td>{{row.employee_info.first_name}}{{row.employee_info.last_name}}</td>
+              <td>  
+                <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Group"><i class="fas fa-eye text-success"></i></a>
+                <a [routerLink]="['/admin-panel/update-collection-area-mapping/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+                <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-collection-area-mapping/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+                </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="TableHidden==true" class="table-loader" > 
+        <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+      </div>
+    </div>
+  </div>

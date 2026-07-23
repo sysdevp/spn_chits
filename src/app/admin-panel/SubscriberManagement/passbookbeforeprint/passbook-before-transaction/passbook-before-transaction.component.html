@@ -1,0 +1,102 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Transaction History</div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <div class="row" [hidden]="!hidePrint">
+      <div class="contentToConvert" style="width: 755px; height:604px; margin:0 auto; font-family:Arial, sans-serif;font-size:15px;">
+        <table border-collapse="collapse" border= "0px solid black" style="width:100%; padding: 0 15px; height: auto;">
+          <thead>
+            <th>Sno</th>
+            <th>Date</th>
+            <th>Installment No</th>
+            <th>Receipt No</th>
+            <th>Payment Mode</th>
+            <th>Received Amt</th>
+            <th>Total</th>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of transactionList">
+              <td>{{row.sno}}</td>
+              <td>{{row.transaction_date}}</td>
+              <td>{{row.installment_no}}</td>
+              <td>{{row.receipt_no}}</td>
+              <td>{{row.payment_mode}}</td>
+              <td>{{row.received_amount}}</td>
+              <td>{{row.total}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <form class="bs-example form-horizontal" [formGroup]="PrintBeforeTransaction" (ngSubmit)="onSubmit()" [hidden]="!hidePrint">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">From (Sno) <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #from_sno type="text" formControlName="from_sno" class="form-control calendar" placeholder="Enter Sno" (change)="snoChg($event)">
+              <div class="col-md-12" *ngIf="submitted && f.from_sno.errors" class="invalid-feedback">
+                <label *ngIf="f.from_sno.errors.required">From is required</label>
+                <label *ngIf="f.from_sno.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No of Lines To Print <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #no_of_lines_to_print type="text" class="form-control" placeholder="Enter No of Lines To Print" formControlName="no_of_lines_to_print">
+              <div class="col-md-12" *ngIf="submitted && f.no_of_lines_to_print.errors" class="invalid-feedback">
+                <label *ngIf="f.no_of_lines_to_print.errors.required">No of lines to print is required</label>
+                <label *ngIf="f.no_of_lines_to_print.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/passbook-before-entry']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+    <div class="row" [hidden]="hidePrint">
+      <div id="print-section" class="contentToConvert" style="width: 755px; height:604px; margin:0 auto;color:black;font-size:15px;"> 
+        <table border-collapse="collapse" border= "0px solid black" style="background:transparent; width:100%; padding: 0 15 px;">
+          <tr [hidden]="headPrint">
+            <th style="text-align: center;min-width: 40px;">Sno</th>
+            <th style="text-align: center;min-width: 130px;">Date</th>
+            <th style="text-align: center;min-width: 155px;">Installment No</th>
+            <th style="text-align: center;min-width: 130px;">Receipt No</th>
+            <th style="text-align: center;min-width: 100px;">Mode</th>
+            <th style="text-align: center;min-width: 100px;">Amount</th>
+            <th style="text-align: center;min-width: 100px;">Total</th>
+          </tr>
+          <tr *ngFor="let row of printList">
+           
+            <td style="text-align: center;min-width: 40px;">{{row.sno}}</td>
+            <td style="text-align: center;min-width: 130px;">{{row.transaction_date}}</td>
+            <td style="text-align: center;min-width: 155px;">{{row.installment_no}}</td>
+            <td style="text-align: center;min-width: 130px;">{{row.receipt_no}}</td>
+            <td style="text-align: center;min-width: 100px;">{{row.payment_mode}}</td>
+            <td style="text-align: center;min-width: 100px;">{{row.received_amount}}</td>
+            <td style="text-align: center;min-width: 100px;">{{row.total}}</td>
+            
+            
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="col-md-12">&nbsp;</div>
+    <div class="col-md-12 text-center" [hidden]="hidePrint">
+      <button type="button" class="btn btn-primary mr-1" (click)="generatePdf()" [hidden]="hidePrintBtn">Print</button>
+      <button type="button" class="btn btn-danger mr-1" (click)="cancelPrint()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+  

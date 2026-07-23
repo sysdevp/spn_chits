@@ -1,0 +1,781 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add Branch</div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-branch']"
+          class="bg-success border-0 text-white px-3 py-2"
+          ><i class="fas fa-eye pr-2"></i>View Branch</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="AddBranch"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-10">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="p-1 mb-3 bg-light border-start border-3 border-primary">
+        <h5 class="mb-0 text-info">Branch Details</h5>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">RO Name </label>
+        <div class="col-sm-4 d-flex">
+          <select
+            #head_office_id
+            class="form-control form-control w-100 border-dark"
+            formControlName="head_office_id"
+          >
+            <option value="">Select Regional Office</option>
+            <option *ngFor="let data of headOfficeList" value="{{ data.id }}">
+              {{ data.head_name }}
+            </option>
+          </select>
+
+          <div class="ps-2">
+            <a
+              [routerLink]="['/admin-panel/add-head-office']"
+              target="_blank"
+              class="btn btn-primary"
+            >
+              <span>+</span>
+            </a>
+          </div>
+        </div>
+        <div
+          class="col-md-12"
+          *ngIf="submitted && f.head_office_id.errors"
+          class="invalid-feedback"
+        >
+          <label *ngIf="f.head_office_id.errors.required"
+            >Regional Office is required</label
+          >
+        </div>
+
+        <label class="col-sm-2 col-form-label"
+          >Branch Name <span class="error">*</span></label
+        >
+        <div class="col-sm-4">
+          <input
+            #branch_name
+            type="text"
+            class="form-control"
+            placeholder="Enter Branch Name"
+            formControlName="branch_name"
+          />
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.branch_name.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.branch_name.errors.required"
+              >Branch name is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Phone No</label>
+            <div class="col-sm-8">
+              <input
+                #phone_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Phone Number"
+                formControlName="phone_no"
+                (input)="onKeyUpPhone($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.phone_no.errors) || !isValidPhone"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.phone_no.errors.pattern || !isValidPhone"
+                  >Invalid Phone number</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Mobile No</label>
+            <div class="col-sm-8">
+              <input
+                #mobile_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Mobile Number"
+                formControlName="mobile_no"
+                (input)="onKeyUpMobile($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.mobile_no.errors) || !isValidMobile"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.mobile_no.errors.pattern || !isValidMobile"
+                  >Invalid Mobile number</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Email<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #email_id
+                type="text"
+                class="form-control"
+                placeholder="Enter Email"
+                formControlName="email_id"
+                (input)="onKeyUpMail($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.mobile_no.errors) || !isValidMail"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.email_id.errors.required"
+                  >Email Id is required</label
+                >
+                <label *ngIf="f.email_id.errors.pattern || !isValidMobile"
+                  >Invalid Email Id</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Branch Starting Date <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #start_date
+                type="text"
+                class="form-control calendar"
+                placeholder="Enter Starting Date"
+                formControlName="start_date"
+                (click)="d1.toggle()"
+                ngbDatepicker
+                #d1="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.start_date.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.start_date.errors.required"
+                  >Starting date is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"> Address line 1</label>
+            <div class="col-sm-8">
+              <input
+                #address_line_1
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line-1"
+                formControlName="address_line_1"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"> Address line 2</label>
+            <div class="col-sm-8">
+              <input
+                #address_line_2
+                type="text"
+                class="form-control"
+                placeholder="Enter Address Line-2"
+                formControlName="address_line_2"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">State</label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #state_id
+                class="form-control form-control w-100 border-dark"
+                formControlName="state_id"
+                (change)="stateChg($event)"
+              >
+                <option value="">Select State</option>
+                <option *ngFor="let data of stateList" value="{{ data.id }}">
+                  {{ data.state_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-state']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">District</label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #district_id
+                class="form-control form-control w-100 border-dark"
+                formControlName="district_id"
+                (change)="districteChg($event)"
+              >
+                <option value="">Select District</option>
+                <option *ngFor="let data of districtList" value="{{ data.id }}">
+                  {{ data.district_name }}
+                </option>
+              </select>
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-district']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">City</label>
+            <div class="col-sm-8 d-flex">
+              <select
+                #city_id
+                class="form-control form-control w-100 border-dark"
+                formControlName="city_id"
+              >
+                <option value="">Select City</option>
+                <option *ngFor="let data of cityList" value="{{ data.id }}">
+                  {{ data.city_name }}
+                </option>
+              </select>
+
+              <div class="ps-2">
+                <a
+                  [routerLink]="['/admin-panel/add-city']"
+                  target="_blank"
+                  class="btn btn-primary"
+                >
+                  <span>+</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pincode</label>
+            <div class="col-sm-8">
+              <input
+                #pincode
+                type="text"
+                class="form-control"
+                placeholder="Enter Pincode"
+                formControlName="pincode"
+                (input)="onKeyUpPincode($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="(submitted && f.pincode.errors) || !isValidPincode"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.pincode.errors.pattern || !isValidPincode"
+                  >Invalid Pincode</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Landmark</label>
+            <div class="col-sm-8">
+              <textarea
+                #landmark
+                class="form-control"
+                rows="3"
+                placeholder="Enter Landmark"
+                formControlName="landmark"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-1 mb-3 bg-light border-start border-3 border-primary">
+        <h5 class="mb-0 text-info">Bonus and Penalty Configuration</h5>
+      </div>
+      <div class="form-group row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Bonus Days<span class="error">*</span></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText = true"
+              (mouseout)="changeText = false"
+            >
+              <input
+                #bonus_days
+                type="text"
+                class="form-control"
+                placeholder=""
+                formControlName="bonus_days"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.bonus_days.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.bonus_days.errors.required"
+                  >Bonus Days is required</label
+                >
+                <label *ngIf="f.bonus_days.errors.pattern"
+                  >Numbers only allowed</label
+                >
+              </div>
+              <span *ngIf="changeText" style="color: crimson"
+                >Here we can set the bonus days for subscriber due payment
+                discount will apply in between these days after the
+                auction</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Bonus %<span class="error">*</span></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText1 = true"
+              (mouseout)="changeText1 = false"
+            >
+              <input
+                #bonus
+                type="text"
+                class="form-control"
+                placeholder=""
+                formControlName="bonus"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.bonus.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.bonus.errors.required"
+                  >Bonus Perentage is required</label
+                >
+                <label *ngIf="f.bonus.errors.pattern">Invalid format</label>
+              </div>
+              <span *ngIf="changeText1" style="color: crimson"
+                >Here we can set the bonus percentage for subscriber due payment
+                discount</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Penalty Days<span class="error">*</span></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText4 = true"
+              (mouseout)="changeText4 = false"
+            >
+              <input
+                #penalty_days
+                type="text"
+                class="form-control"
+                placeholder="Enter Penalty Days"
+                formControlName="penalty_days"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.penalty_days.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.penalty_days.errors.required"
+                  >Penalty Days is required</label
+                >
+                <label *ngIf="f.penalty_days.errors.pattern"
+                  >Numbers only allowed</label
+                >
+              </div>
+              <span *ngIf="changeText4" style="color: crimson"
+                >Here we can set the penalty days for subscriber due payment
+                charges will apply after the auction for later payment</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Penalty % (Prized Subscriber)<span class="error">*</span></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText2 = true"
+              (mouseout)="changeText2 = false"
+            >
+              <input
+                #prize_subscriber_penalty
+                type="text"
+                class="form-control"
+                placeholder="Penalty % (Prized Subscriber)"
+                formControlName="prize_subscriber_penalty"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.prize_subscriber_penalty.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.prize_subscriber_penalty.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.prize_subscriber_penalty.errors.required"
+                  >Non-Prized Subscriber Penalty Percentage is required</label
+                >
+              </div>
+              <span *ngIf="changeText2" style="color: crimson"
+                >Here we can set the penalty percentage for only prized
+                subscriber</span
+              >
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Penalty % (Non Prized Subscriber)<span class="error"
+                >*</span
+              ></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText3 = true"
+              (mouseout)="changeText3 = false"
+            >
+              <input
+                #non_prize_subscriber_penalty
+                type="text"
+                class="form-control"
+                placeholder="Penalty % (Non Prized Subscriber)"
+                formControlName="non_prize_subscriber_penalty"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.non_prize_subscriber_penalty.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.non_prize_subscriber_penalty.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.non_prize_subscriber_penalty.errors.required"
+                  >Non-Prized Subscriber Penalty Percentage is required</label
+                >
+              </div>
+              <span *ngIf="changeText3" style="color: crimson"
+                >Here we can set the penalty percentage for only nonprized
+                subscriber</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Branchwise Penalty %<span class="error">*</span></label
+            >
+            <div
+              class="col-sm-8"
+              (mouseover)="changeText5 = true"
+              (mouseout)="changeText5 = false"
+            >
+              <input
+                #branch_wise_penalty
+                type="text"
+                class="form-control"
+                placeholder="Enter Branch Wise Penalty %"
+                formControlName="branch_wise_penalty"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.branch_wise_penalty.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.branch_wise_penalty.errors.pattern"
+                  >Invalid Pattern</label
+                >
+                <label *ngIf="f.branch_wise_penalty.errors.required"
+                  >Penalty Perentage is required</label
+                >
+              </div>
+              <span *ngIf="changeText5" style="color: crimson"
+                >Here we can set the penalty percentage for subscriber due later
+                payment
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-1 mb-3 bg-light border-start border-3 border-primary">
+        <h5 class="mb-0 text-info">Targets, Incentives and Taxation</h5>
+      </div>
+
+      <div class="row">
+        <label class="col-sm-2 col-form-label">Business Agent Target</label>
+        <div class="col-sm-4 form-group">
+          <input
+            #business_agent_target
+            type="text"
+            class="form-control"
+            placeholder="Enter Business Agent Target"
+            formControlName="business_agent_target"
+          />
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.business_agent_target.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.business_agent_target.errors.pattern"
+              >Numbers only allowed</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Employee Incentive %<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #agent_incentive_percent
+                type="text"
+                class="form-control"
+                placeholder="Enter Employee Incentive %"
+                formControlName="agent_incentive_percent"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.agent_incentive_percent.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.agent_incentive_percent.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.agent_incentive_percent.errors.required"
+                  >Employee Incentive Percent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Agent Commission %<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #agent_commission_percent
+                type="text"
+                class="form-control"
+                placeholder="Enter Agent Commission %"
+                formControlName="agent_commission_percent"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.agent_commission_percent.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.agent_commission_percent.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.agent_commission_percent.errors.required"
+                  >Agent Commission Percent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >CGST %<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter CGST %"
+                formControlName="cgst_percent"
+                (blur)="cgstAmt($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.cgst_percent.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.cgst_percent.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.cgst_percent.errors.required"
+                  >CGST Percent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >SGST %<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter SGST %"
+                formControlName="sgst_percent"
+                (blur)="sgstAmt($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.sgst_percent.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.sgst_percent.errors.pattern"
+                  >Invalid format</label
+                >
+                <label *ngIf="f.sgst_percent.errors.required"
+                  >SGST Percent is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">GST %</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter GST %"
+                formControlName="gst_percent"
+                value="{{ gstValue }}"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.gst_percent.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.gst_percent.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Remarks</label>
+        <div class="col-sm-10">
+          <textarea
+            #remarks
+            class="form-control"
+            rows="3"
+            placeholder="Remarks"
+            formControlName="remarks"
+          ></textarea>
+        </div>
+      </div>
+      <div class="form-group d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-branch']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

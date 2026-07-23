@@ -1,0 +1,309 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Auction Minutes Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Group Name : </label>
+            <b class="px-1">{{groupInfo.group_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Installment No : </label>
+            <b class="px-1">{{viewAuctionInfo.installment_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{customerInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Chit Value : </label>
+            <b class="px-1">{{viewAuctionInfo.chit_value}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Auction Date : </label>
+            <b class="px-1">{{viewAuctionInfo.auction_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Bidding Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.bidding_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Commission Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.commission_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">CGST : </label>
+            <b class="px-1">{{viewAuctionInfo.cgst}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">SGST : </label>
+            <b class="px-1">{{viewAuctionInfo.sgst}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">IGST : </label>
+            <b class="px-1">{{viewAuctionInfo.igst}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">GST : </label>
+            <b class="px-1">{{viewAuctionInfo.gst}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Total Deduction : </label>
+            <b class="px-1">{{viewAuctionInfo.total_deduction}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pending Due Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.pending_due_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Total Release Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.total_release_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Released Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.customer_released}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pending Release Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.pending_release}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Each Member Dividend Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.divident_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Installment Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.installment_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Profit Amount : </label>
+            <b class="px-1">{{viewAuctionInfo.profit_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Auction Date : </label>
+            <b class="px-1">{{viewAuctionInfo.auction_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Next Auction Date : </label>
+            <b class="px-1">{{viewAuctionInfo.next_auction_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Auction Type : </label>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='duplicate'">Duplicate</b>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='normal'">Normal</b>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='slab'">Slab</b>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='slab_duplicate'">Slab Duplicate</b>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='profit'">Profit</b>
+            <b class="px-1" *ngIf="viewAuctionInfo.auction_type=='profit_normal'">Normal</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Remark : </label>
+            <b class="px-1">{{viewAuctionInfo.remark}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Auctions Minutes List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/minutes-of-auction']" class="bg-success border-0 text-white px-3 py-2"> + Add Auction Minutes</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <form class="bs-example form-horizontal" [formGroup]="viewAuctionMinutes" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetAuction()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="dataTables_wrapper no-footer">
+        <div class="dataTables_length">
+          <label>
+            Show 
+            <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select> 
+            entries
+          </label>
+        </div>
+        <div class="dataTables_filter">
+          <label>
+            Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+          </label>
+        </div>
+        <table class="row-border hover dataTable no-footer" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('branch_name')">Branch Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Group Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('installment_no')">Installment No</th>
+              <!--<th class="sorting" rowspan="1" colspan="1" style="width: 0px;">Payments</th>-->
+              <th rowspan="1" colspan="1" style="width: 0px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{row.sno}}</td>
+              <td>{{row.branch_name}}</td>
+              <td>{{row.group_name}}</td>
+              <td>{{row.customer_name}}</td>
+              <td>{{row.installment_no}}</td>
+              <!--<td>
+                <a [routerLink]="['/admin-panel/add-payment/'+row.id]" *ngIf="row.payment_type=='initial_payment'" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-primary">Initial Payment</span></a>
+                <a [routerLink]="['/admin-panel/add-payment/'+row.id]" *ngIf="row.payment_type=='part_payment'" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-info">Part Payment</span></a>
+                <a [routerLink]="['/admin-panel/view-payments/'+row.id]" *ngIf="row.payment_type=='no_outstanding'" style="margin-left:5%;cursor:pointer;" ><i class="badge badge-success">No Outstanding</i></a>
+              </td>-->
+              <td>  
+                <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+                <!--<a [routerLink]="['/admin-panel/update-auction/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+                <a *ngIf="row.deleted_option==0" [routerLink]="['/admin-panel/delete-auction/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dataTables_info" role="status" aria-live="polite">
+          {{dtableInfo}}
+        </div>
+        <div class="dataTables_paginate paging_simple_numbers">
+          <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+          <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+          <span *ngFor="let page of pager.pages">
+            <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+            <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+          </span>
+          <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+          <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+        </div>
+      </div>
+    <!--<div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>Sno</th>
+            <th>Branch Name</th>
+            <th>Group Name</th>
+            <th>Customer Name</th>
+            <th>Installment No</th>
+            <th>Payments</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.group_info.group_name}}</td>
+            <td>{{row.customer_name_det}}</td>
+            <td>{{row.installment_no}}</td>
+            <td>
+              <a [routerLink]="['/admin-panel/add-payment/'+row.id]" *ngIf="row.payment_type=='initial_payment'" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-primary">Initial Payment</span></a>
+              <a [routerLink]="['/admin-panel/add-payment/'+row.id]" *ngIf="row.payment_type=='part_payment'" style="margin-left:5%;cursor:pointer;" ><span class="badge badge-info">Part Payment</span></a>
+              <a [routerLink]="['/admin-panel/view-payments/'+row.id]" *ngIf="row.payment_type=='no_outstanding'" style="margin-left:5%;cursor:pointer;" ><i class="badge badge-success">No Outstanding</i></a>
+            </td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-auction/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-auction/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+             </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>-->
+    <div *ngIf="TableHidden==false" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

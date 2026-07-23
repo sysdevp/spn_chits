@@ -1,0 +1,183 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Petty Cash Income</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-petty-cash-income']"  class="bg-primary border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Petty Cash Income</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze ">
+    <form class="bs-example form-horizontal" [formGroup]="UpdatePettyCashIncome" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id  formControlName="branch_id" (change)="branchChg($event)" >
+                <option value=""> Select Branch </option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Available Cash</label>
+            <div class="col-sm-8">
+              <input id="available_cash" type="text" class="form-control" placeholder="Enter Available Cash"  value="{{balanceAmount}}" name="available_cash"  readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Received Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #received_date type="text" formControlName="received_date" class="form-control calendar" placeholder="Enter Received Date" [maxDate]=currentDate (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.received_date.errors" class="invalid-feedback">
+                <label *ngIf="f.received_date.errors.required">Received date  is required</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Received Amount <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #amount_received	 type="text" class="form-control" placeholder="Enter Received Amount"  formControlName="amount_received" >
+              <div class="col-md-12" *ngIf="submitted && f.amount_received.errors" class="invalid-feedback">
+                <label *ngIf="f.amount_received.errors.required">Expense amount is required</label>
+                <label *ngIf="f.amount_received.errors.pattern">Invalid format</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Payment Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #payment_type_id  formControlName="payment_type_id" (change)="paymentChg($event)">
+                <option value="">Select Payment Type</option>
+                <option value="1">Cash</option>
+                <option value="2">Cheque</option>
+                <option value="3">D.D</option>
+                <option value="4">RTGS/NEFT</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.payment_type_id.errors" class="invalid-feedback">
+                <label *ngIf="f.payment_type_id.errors.required">Payment type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="DebitTo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Debit To <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #debit_to type="text" class="form-control" placeholder="Debit To" formControlName="debit_to" >
+              <div class="col-md-12" *ngIf="submitted && f.debit_to.errors" class="invalid-feedback">
+                <label *ngIf="f.debit_to.errors.required">Debit to is required</label>
+                <label *ngIf="f.debit_to.errors.pattern">Invaild Pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="ChequeNo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Cheque No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #cheque_no type="text" class="form-control" placeholder="Cheque No" formControlName="cheque_no" >
+              <div class="col-md-12" *ngIf="submitted && f.cheque_no.errors" class="invalid-feedback">
+                <label *ngIf="f.cheque_no.errors.required">Cheque no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="ChequeDate">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Cheque Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #cheque_date type="text" class="form-control" placeholder="Cheque Date" formControlName="cheque_date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.cheque_date.errors" class="invalid-feedback">
+                <label *ngIf="f.cheque_date.errors.required">Cheque date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="BankName">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bank Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+            <select #bank_id formControlName="bank_id" (change)="bankChg($event)" >
+              <option value="">Select Bank</option>
+              <option *ngFor="let data of BankList" value="{{data.id}}">{{data.bank_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.bank_id.errors" class="invalid-feedback">
+              <label *ngIf="f.bank_id.errors.required">Bank name is required</label>
+            </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="BranchName">
+          <div class="form-group row">
+            <label for="exampleFormControlSelect1" class="col-sm-4">Branch Name</label>
+            <div class="col-sm-8">
+              <input #bank_branch_name type="text" class="form-control col-sm-12" placeholder="Bank Branch Name" formControlName="bank_branch_name" disabled>
+              <div class="col-md-12" *ngIf="submitted && f.bank_branch_name.errors" class="invalid-feedback">
+                <label *ngIf="f.bank_branch_name.errors.required">Bank branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="TransactionDate">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Transaction Date <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #transaction_date type="text" class="form-control" placeholder="Transaction Date" formControlName="transaction_date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.transaction_date.errors" class="invalid-feedback">
+                <label *ngIf="f.transaction_date.errors.required">Transaction date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="TransactionNo">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Transaction No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #transaction_no type="text" class="form-control" placeholder="Transaction No" formControlName="transaction_no" >
+              <div class="col-md-12" *ngIf="submitted && f.transaction_no.errors" class="invalid-feedback">
+                <label *ngIf="f.transaction_no.errors.required">Transaction no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row" >
+        <label class="col-sm-2 col-form-label">Remarks</label>
+        <div class="col-sm-10">
+          <textarea #remarks class="form-control px-2" placeholder="Enter Remarks" rows="3" formControlName="remarks"></textarea>
+        </div>
+      </div>
+      <div class="form-group row ">
+        <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-petty-cash-income']" class="btn btn-danger mr-1">Cancel</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

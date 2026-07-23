@@ -1,0 +1,131 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Permission</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-permission']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> Add Permissions</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdatePermission" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Role <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #role_id formControlName="role_id" (change)="roleChgFn($event)">
+            <option value="">Select Role</option>
+            <option *ngFor="let data of roleList" value="{{data.id}}">{{data.role_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.role_id.errors" class="invalid-feedback">
+            <label *ngIf="f.role_id.errors.required">Role is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12" [hidden]="hidePermission">
+        <div class="row mb-2">
+          <h5 class="col-md-12 text-center bg-light text-dark mb-0 py-3">
+            <input type="checkbox" class="form-check-input" (change)="allMenuChg($event)"> All (same order as sidebar + top bar)
+          </h5>
+        </div>
+      </div>
+      <p class="text-muted small col-md-12 mb-2" [hidden]="hidePermission">Sections follow the left sidebar order. Use <strong>Top Bar (Header Shortcuts)</strong> for navbar Subscriber / Collection / Payment / Accounts menus.</p>
+      <div class="col-md-12" formArrayName="Permissions" [hidden]="hidePermission">
+        <ng-container *ngFor="let section of sidebarSections; let si = index">
+          <div class="row mb-2" [formGroupName]="si">
+            <h5 class="col-md-12 text-center bg-primary text-white mb-0 py-3">
+              <input type="checkbox" class="form-check-input main-chk" (change)="mainMenuChg($event, si)">
+              {{ section.title }}
+            </h5>
+
+            <div class="col-md-12 py-3" *ngIf="!section.leaves?.length && !section.groups?.length">
+              <div class="form-check">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input"
+                    [checked]="Permissions.at(si).get('view_perm').value==1"
+                    (change)="Permissions.at(si).get('view_perm').setValue($event.target.checked ? 1 : 0)"> View
+                </label>
+              </div>
+            </div>
+
+            <div class="col-md-12" *ngIf="section.leaves?.length">
+              <div class="row" formArrayName="Submenus">
+                <ng-container *ngFor="let leaf of section.leaves">
+                  <div class="col-md-4" *ngIf="getSubmenuIndex(si, leaf.menuId, leaf.title) >= 0" [formGroupName]="getSubmenuIndex(si, leaf.menuId, leaf.title)">
+                    <ng-container *ngTemplateOutlet="permCard; context: { si: si, idx: getSubmenuIndex(si, leaf.menuId, leaf.title) }"></ng-container>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+
+            <div class="col-md-12" *ngIf="section.groups?.length">
+              <div formArrayName="Submenus">
+                <div class="mb-3" *ngFor="let group of section.groups">
+                  <h6 class="bg-light py-2 px-3 mb-2 font-weight-bold">{{ group.title }}</h6>
+                  <div class="row">
+                    <ng-container *ngFor="let leaf of group.leaves">
+                      <div class="col-md-4" *ngIf="getSubmenuIndex(si, leaf.menuId, leaf.title) >= 0" [formGroupName]="getSubmenuIndex(si, leaf.menuId, leaf.title)">
+                        <ng-container *ngTemplateOutlet="permCard; context: { si: si, idx: getSubmenuIndex(si, leaf.menuId, leaf.title) }"></ng-container>
+                      </div>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <ng-template #permCard let-si="si" let-idx="idx">
+        <div class="card border mb-2">
+          <div class="card-body py-2">
+            <div class="form-check">
+              <label class="form-check-label font-weight-bold">
+                <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('top_perm').value)==1" (change)="subMainChg($event, si, idx)">
+                {{ Permissions.at(si).get('Submenus').at(idx).get('menu_title').value }}
+              </label>
+            </div>
+            <ng-container *ngIf="(Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=2 && (Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=4">
+              <div class="form-check ml-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('add_perm').value)==1" (change)="addPermChg($event, si, idx)"> Add
+                </label>
+              </div>
+              <div class="form-check ml-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('edit_perm').value)==1" (change)="editPermChg($event, si, idx)"> Edit
+                </label>
+              </div>
+              <div class="form-check ml-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('view_perm').value)==1" (change)="viewPermChg($event, si, idx)"> View
+                </label>
+              </div>
+              <div class="form-check ml-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('delete_perm').value)==1" (change)="deletePermChg($event, si, idx)"> Delete
+                </label>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-template>
+
+      <div class="row">&nbsp;</div>
+      <div class="form-group row d-flex justify-content-center" [hidden]="hidePermission">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+      </div>
+    </form>
+  </div>
+</div>

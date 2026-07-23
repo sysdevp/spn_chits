@@ -1,0 +1,100 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Employee Salary Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body py-0">
+      <div class="row">
+        
+        <div class="row emp_hrm">
+          <h5 class="col-md-12 py-1 mb-0"> Employee Salary List</h5>
+          <div class="col-md-12 border pt-3">
+            <div class="row" >
+                  <table class="table table-striped">
+                      <thead>
+                          <tr> 
+                            <th>Branch Name</th>
+                            <th>Date</th>
+                            <th>Employee Name</th>
+                            <th>Working Days</th>
+                            <th>Salary</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of viewEmployeeSalaryInfo;">
+                            <td>{{row.branch_info.branch_name}} </td>
+                            <td>{{row.month_year}} </td>
+                            <td>{{row.employee_name}} </td>
+                            <td>{{row.working_days}} </td>
+                            <td>{{row.salary}} </td>
+                          </tr>
+                        </tbody>
+                    
+                     <!--  <tr>
+                        <td>Employee Name</td>
+                        <td>{{EmployeeInfo.first_name}} {{EmployeeInfo.last_name}}</td>
+                        <td>Attendance Type</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.attendance_type==0">Absent</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.attendance_type==1">Present</td>
+                      </tr>
+                      <tr>
+                        <td>Leave Type</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.leave_type==1">Paid</td>
+                        <td *ngIf="viewEmployeeAttendanceInfo.leave_type==2">Unpaid</td>
+                        <td>Leave Sessions</td>
+                        <td>
+                          <span *ngIf="viewEmployeeAttendanceInfo.forenoon_session==1">Forenoon --</span> 
+                          <span *ngIf="viewEmployeeAttendanceInfo.afternoon_session==1">Afternoon</span> 
+                        </td>
+                      </tr> -->
+                  </table>
+             
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Employee Salary List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/employee-salary']"  class="bg-success border-0 text-white px-3 py-2"> + Add Employee Salary</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.month_year}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.branch_id,row.att_year,row.att_month,row.att_date)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-employee-salary/'+row.branch_id+'/'+row.att_year+'/'+row.att_month+'/'+row.att_date]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-employee-salary/'+row.branch_id+'/'+row.att_year+'/'+row.att_month+'/'+row.att_date]"><i class="fas fa-trash-alt text-danger"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

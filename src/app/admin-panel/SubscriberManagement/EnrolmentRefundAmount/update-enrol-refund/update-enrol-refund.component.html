@@ -1,0 +1,208 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Enrol Refund Amount Details</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-enrol-refund-amount']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Enrol Refunf Amount</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdateEnrolRefundAmount" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Select Group Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #group_id formControlName="group_id"(change)="groupChg($event)">
+                <option value="">Select Group Name </option>
+                <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Select Customer <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #customer_id formControlName="customer_id" (change)="customerChg($event)">
+                <option value="">Select Customer</option>
+                <option *ngFor="let data of customerList" value="{{data.id}}">{{data.customer_info.name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Refund Date<span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #payment_date type="text" formControlName="payment_date" class="form-control calendar" placeholder="Enter Refund Date" [maxDate]=currentDate (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false" (blur)="AvailableRefundCal()" >
+              <div class="col-md-12" *ngIf="submitted && f.payment_date.errors" class="invalid-feedback">
+                  <label *ngIf="f.payment_date.errors.required">Refund Date is required</label>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Collect Employee <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #employee_id formControlName="employee_id">
+                <option value="">Collect Employee</option>
+                <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Customer Paid Amount</label>
+            <div class="col-sm-8">
+              <input  type="text" class="form-control calendar" value="{{PaidAmt}}" readonly>
+             </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Released Amount</label>
+            <div class="col-sm-8">
+              <input  type="text"  class="form-control calendar" value="{{CancelAmt}}">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Penalty Amount</label>
+            <div class="col-sm-8">
+              <input  type="text"  class="form-control calendar" value="{{penaltyAmt}}" readonly>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Available Refund Amount <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input  class="form-control calendar"  value="{{AvailableRefund}}" readonly>
+           </div>
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Refund Amount <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #total_amount type="text" formControlName="total_amount" class="form-control calendar" placeholder="Enter Refund Amount" >
+            </div>
+          </div>
+        </div>
+        </div>
+        <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Payment Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #payment_type_id formControlName="payment_type_id" (change)="paymentChg($event)">
+                <option value="">Select Payment Type</option>
+                <option value="1">Cash</option>
+                <option value="2">Cheque</option>
+                <option value="3">D.D</option>
+                <option value="4">RTGS/NEFT</option>
+              </select>
+            </div>
+          </div>
+      </div>
+      <div class="col-md-6" [hidden]="hideDebitTo">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Debit To <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #debit_to type="text" class="form-control" placeholder="Debit To" formControlName="debit_to" >
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" [hidden]="hideChequeNo">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Cheque No <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #cheque_no type="text" class="form-control" placeholder="Cheque No" formControlName="cheque_no" >
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6" [hidden]="hideChequeDate">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Cheque Date <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #cheque_date type="text" class="form-control" placeholder="Cheque Date"  formControlName="cheque_date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+          </div>
+        </div>
+      </div> 
+    </div>
+    <div class="row">
+      <div class="col-md-6" [hidden]="hideBankName">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Bank Name <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <select #bank_id formControlName="bank_id">
+              <option value="">Select Bank</option>
+              <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6" [hidden]="hideBranchName">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #bank_branch_name type="text" class="form-control" formControlName="bank_branch_name" readonly>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6" [hidden]="hideTransactionDate">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Transaction Date <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #transaction_date type="text" class="form-control" placeholder="Transaction Date"  formControlName="transaction_date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+          </div>
+        </div>
+      </div>
+    </div>
+      <div class="form-group d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-commitment-chit']" class="btn btn-danger mr-1">Cancel</a>
+      </div> 
+    </form>
+  </div>
+</div>

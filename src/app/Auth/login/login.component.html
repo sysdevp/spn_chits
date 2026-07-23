@@ -1,0 +1,56 @@
+<div class="spn-login-page">
+  <div class="spn-login-brand">
+    <img src="assets/img/spn-logo.png" alt="SRI SPN Chit Funds" class="spn-login-logo">
+    <h1 class="spn-login-brand-title">SRI SPN CHIT FUNDS</h1>
+    <p class="spn-login-brand-subtitle">Private Limited</p>
+    <p class="spn-login-tagline">Secure &bull; Transparent &bull; Trusted</p>
+  </div>
+
+  <div class="spn-login-panel">
+    <div class="spn-login-card">
+      <img src="assets/img/spn-logo.png" alt="SRI SPN Chit Funds" class="spn-login-card-logo">
+
+      <h2 class="spn-login-heading">Welcome back</h2>
+      <p class="spn-login-subtitle">Sign in to your account to continue</p>
+
+      <form class="spn-login-form" #loginForm="ngForm" (ngSubmit)="onSubmit()">
+        <div class="alert alert-danger spn-login-alert py-2" [hidden]="!error">
+          {{ error }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input
+            name="email"
+            type="text"
+            class="form-control"
+            placeholder="Enter your email"
+            [(ngModel)]="form.email"
+            autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input
+            name="password"
+            type="password"
+            class="form-control"
+            placeholder="Enter your password"
+            [(ngModel)]="form.password"
+            autocomplete="current-password">
+          <input name="slag" type="hidden" [(ngModel)]="form.slag">
+        </div>
+
+        <div class="spn-login-forgot">
+          <a [routerLink]="[forgotUrl]">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="spn-login-submit" [disabled]="disableBtn">
+          {{ SubmitbuttonName }}
+        </button>
+      </form>
+
+      <p class="spn-login-footer-text">&copy; {{ year }} SRI SPN Chit Funds Private Limited</p>
+    </div>
+  </div>
+</div>

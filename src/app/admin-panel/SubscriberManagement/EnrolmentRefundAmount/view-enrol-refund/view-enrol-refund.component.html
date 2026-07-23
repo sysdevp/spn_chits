@@ -1,0 +1,168 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Enrol Refund Amount Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Group Name: </label>
+            <b class="px-1">{{customerInfo.group_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{schemeInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Due Type: </label>
+            <b class="px-1"></b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Refund Date : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.payment_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collect Employee: </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Paid Amount : </label>
+            <b class="px-1">{{collectionAgentInfo.paid_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Released Amount : </label>
+            <b class="px-1">{{collectionAgentInfo.cancel_amount_payment}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Penalty Amount : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.Penalty_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Available Refund Amount : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.available_amt}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label"> Refund Amount : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.refund_amt}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Payment Type : </label>
+						<b class="px-1">{{paymentTypeInfo.payment_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Debit To : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.debit_to}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque No : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.cheque_no}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque Date : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.cheque_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Name : </label>
+						<b class="px-1">{{BankInfo.bank_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Branch Name : </label>
+						<b class="px-1">{{BankInfo.bank_branch_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction Date : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.transaction_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction No : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.transaction_no}}  </b>
+					</div>
+				</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Enrol Refund Amount List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-enrol-refund-amount']" class="bg-success border-0 text-white px-3 py-2"> + Add Commitment Chit</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Group Name</th>
+            <th>Customer Name</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.group_info.group_name}}</td>
+            <td>{{row.customer_info.name}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-enrol-refund-amount/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-enrol-refund-amount/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

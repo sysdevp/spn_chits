@@ -1,0 +1,432 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Customer Enrollment</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-customer-enrollment']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Customer Enrollment</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="UpdateCustomerEnrollment" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)" disabled>
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id formControlName="branch_id" (change)="branchChg($event)" disabled>
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Group Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #group_id formControlName="group_id" (change)="groupChg($event)" disabled>
+                <option value="">Select Group Name</option>
+                <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+                <label *ngIf="f.group_id.errors.required">Group Name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Name<span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #customer_id formControlName="customer_id" (change)="customerChg()">
+                <option value="">Select Customer Name</option>
+                <option *ngFor="let data of customerList" value="{{data.id}}">{{data.name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+                <label *ngIf="f.customer_id.errors.required">Customer Name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Ticket No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #ticket_no formControlName="ticket_no">
+                <option value="">Select Ticket</option>
+                <option value="{{item}}" *ngFor="let item of ticketList; let i = index;">{{item}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.ticket_no.errors" class="invalid-feedback">
+                <label *ngIf="f.ticket_no.errors.required">Ticket no is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Pending Tickets</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" value="{{pendingTickets}}" readonly>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Payment Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #payment_type formControlName="payment_type">
+                <option value="0">Select Payment Type</option>
+                <option value="1">Daily</option>
+                <option value="2">Weekly</option>
+                <option value="3">Monthly</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.payment_type.errors" class="invalid-feedback">
+                <label *ngIf="f.payment_type.errors.required">Payment type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Collection Area <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #collection_area_id formControlName="collection_area_id" (change)="collectionarea($event)">
+                <option value="">Select Collection Area</option>
+                <option *ngFor="let data of collectionAreaList" value="{{data.id}}">{{data.collection_area}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.collection_area_id.errors" class="invalid-feedback">
+                <label *ngIf="f.collection_area_id.errors.required">Collection area is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Collection Agent</label>
+            <div class="col-sm-8">
+              <select #collection_agent_id formControlName="collection_agent_id">
+                <option value="">Select Collection Agent</option>
+                <option *ngFor="let data of collectionAgentList" value="{{data.id}}">{{data.employee_info.first_name}} {{data.employee_info.last_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.collection_agent_id.errors" class="invalid-feedback">
+                <label *ngIf="f.collection_agent_id.errors.required">Collection agent is required</label>
+              </div>
+            </div>
+          </div>
+        </div>-->
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Collection Pincode </label>
+            <div class="col-sm-8">
+              <input #collection_pin type="text" class="form-control" placeholder="Enter Collection Pincode" formControlName="collection_pin" value="{{CollectionAreaPincode}}" readonly>
+              <div class="col-md-12" *ngIf="submitted && f.collection_pin.errors" class="invalid-feedback">
+                <label *ngIf="f.collection_pin.errors.required">Collection Pincode is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Refered Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #agent_type formControlName="agent_type" (change)="agentTypeChg($event)">
+                <option value="0">Select Refered Type</option>
+                <option value="1">Customer</option>
+                <option value="2">Employee</option>
+                <option value="3">Business Agent</option>
+                <option value="4">Self Joining</option>
+                <option value="5">Others</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.agent_type.errors" class="invalid-feedback">
+                <label *ngIf="f.agent_type.errors.required">Refered type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+         <div class="col-md-6" [hidden]="!introNameShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Refered Detail <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #introducer_name type="text" class="form-control" placeholder="Enter Introducer Name" formControlName="introducer_name">
+              <div class="col-md-12" *ngIf="submitted && f.introducer_name.errors" class="invalid-feedback">
+                <label *ngIf="f.introducer_name.errors.required">Refered detail is required</label>
+                <label *ngIf="f.introducer_name.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div> 
+        <div class="col-md-6" [hidden]="!introListShow">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label" *ngIf="introType==1">Customer <span class="error">*</span></label>
+            <label class="col-sm-4 col-form-label" *ngIf="introType==2">Employee <span class="error">*</span></label>
+            <label class="col-sm-4 col-form-label" *ngIf="introType==3">Business Agent <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #introducer_id formControlName="introducer_id">
+                <option value="" *ngIf="introType==1">Select Customer</option>
+                <option value="" *ngIf="introType==2">Select Employee</option>
+                <option value="" *ngIf="introType==3">Select Business Agent</option>
+                <option *ngFor="let data of introducerList" value="{{data.id}}">{{data.full_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.introducer_id.errors" class="invalid-feedback">
+                <label *ngIf="(f.introducer_id.errors.required) && (introType==1)">Customer is required</label>
+                <label *ngIf="(f.introducer_id.errors.required) && (introType==2)">Employee is required</label>
+                <label *ngIf="(f.introducer_id.errors.required) && (introType==3)">Business agent is required</label>
+              </div>
+            </div>
+          </div>
+        </div> 
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Date of Joining <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #date_introduced type="text" formControlName="date_introduced" class="form-control calendar" placeholder="Enter Date Introduced" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.date_introduced.errors" class="invalid-feedback">
+                <label *ngIf="f.date_introduced.errors.required">Date of joining is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #customer_type formControlName="customer_type">
+                <option value="0">Select Customer Type</option>
+                <option value="1">Normal Customer</option>
+                <option value="2">Cut Customer</option>
+                <option value="3">Full Customer</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.customer_type.errors" class="invalid-feedback">
+                <label *ngIf="f.customer_type.errors.required">Customer type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>-->
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bonus %</label>
+            <div class="col-sm-8">
+              <input #bonus_percentage type="text" class="form-control" placeholder="Enter Bonus Percentage" formControlName="bonus_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.bonus_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.bonus_percentage.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Penalty %</label>
+            <div class="col-sm-8">
+              <input #penalty_percentage type="text" class="form-control" placeholder="Enter Penalty Percentage" formControlName="penalty_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.penalty_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.penalty_percentage.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Interest %</label>
+            <div class="col-sm-8">
+              <input #interest_percentage type="text" class="form-control" placeholder="Enter Interest Percentage" formControlName="interest_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.interest_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.interest_percentage.errors.pattern">Invalid format</label>
+              </div>
+            </div>
+          </div>
+        </div>
+    <!--     <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Cancel Dividend</label>
+            <div class="col-sm-8">
+              <select #dividend_cancel formControlName="dividend_cancel">
+                <option value="">Select Cancel Dividend</option>
+                <option value="1">Yes</option>
+                <option value="0">No </option>
+              </select>
+            </div>
+          </div>
+        </div> -->
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Ticket Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #ticket_type formControlName="ticket_type">
+                <option value="0">Select Ticket Type</option>
+                <!--<option value="1">Full Ticket</option>
+                <option value="2">Half Ticket</option>-->
+                <!--<option *ngIf="showFullTicket" value="1">Full Ticket</option>
+                <option value="2">Half Ticket</option>-->
+                <option value="0.01">0.01</option>
+                <option value="0.02">0.02</option>
+                <option value="0.03">0.03</option>
+                <option value="0.04">0.04</option>
+                <option value="0.05">0.05</option>
+                <option value="0.06">0.06</option>
+                <option value="0.07">0.07</option>
+                <option value="0.08">0.08</option>
+                <option value="0.09">0.09</option>
+                <option value="0.10">0.10</option>
+                <option value="0.11">0.11</option>
+                <option value="0.12">0.12</option>
+                <option value="0.13">0.13</option>
+                <option value="0.14">0.14</option>
+                <option value="0.15">0.15</option>
+                <option value="0.16">0.16</option>
+                <option value="0.17">0.17</option>
+                <option value="0.18">0.18</option>
+                <option value="0.19">0.19</option>
+                <option value="0.20">0.20</option>
+                <option value="0.21">0.21</option>
+                <option value="0.22">0.22</option>
+                <option value="0.23">0.23</option>
+                <option value="0.24">0.24</option>
+                <option value="0.25">0.25</option>
+                <option value="0.26">0.26</option>
+                <option value="0.27">0.27</option>
+                <option value="0.28">0.28</option>
+                <option value="0.29">0.29</option>
+                <option value="0.30">0.30</option>
+                <option value="0.31">0.31</option>
+                <option value="0.32">0.32</option>
+                <option value="0.33">0.33</option>
+                <option value="0.34">0.34</option>
+                <option value="0.35">0.35</option>
+                <option value="0.36">0.36</option>
+                <option value="0.37">0.37</option>
+                <option value="0.38">0.38</option>
+                <option value="0.39">0.39</option>
+                <option value="0.40">0.40</option>
+                <option value="0.49">0.41</option>
+                <option value="0.49">0.42</option>
+                <option value="0.49">0.43</option>
+                <option value="0.49">0.44</option>
+                <option value="0.49">0.45</option>
+                <option value="0.49">0.46</option>
+                <option value="0.49">0.47</option>
+                <option value="0.49">0.48</option>
+                <option value="0.49">0.49</option>
+                <option value="0.50">0.50</option>
+                <option value="0.51">0.51</option>
+                <option value="0.52">0.52</option>
+                <option value="0.53">0.53</option>
+                <option value="0.54">0.54</option>
+                <option value="0.55">0.55</option>
+                <option value="0.56">0.56</option>
+                <option value="0.57">0.57</option>
+                <option value="0.58">0.58</option>
+                <option value="0.59">0.59</option>
+                <option value="0.60">0.60</option>
+                <option value="0.61">0.61</option>
+                <option value="0.62">0.62</option>
+                <option value="0.63">0.63</option>
+                <option value="0.64">0.64</option>
+                <option value="0.65">0.65</option>
+                <option value="0.66">0.66</option>
+                <option value="0.67">0.67</option>
+                <option value="0.68">0.68</option>
+                <option value="0.69">0.69</option>
+                <option value="0.70">0.70</option>
+                <option value="0.71">0.71</option>
+                <option value="0.72">0.72</option>
+                <option value="0.73">0.73</option>
+                <option value="0.74">0.74</option>
+                <option value="0.75">0.75</option>
+                <option value="0.76">0.76</option>
+                <option value="0.77">0.77</option>
+                <option value="0.78">0.78</option>
+                <option value="0.79">0.79</option>
+                <option value="0.80">0.80</option>
+                <option value="0.81">0.81</option>
+                <option value="0.82">0.82</option>
+                <option value="0.83">0.83</option>
+                <option value="0.84">0.84</option>
+                <option value="0.85">0.85</option>
+                <option value="0.86">0.86</option>
+                <option value="0.87">0.87</option>
+                <option value="0.88">0.88</option>
+                <option value="0.89">0.89</option>
+                <option value="0.90">0.90</option>
+                <option value="0.91">0.91</option>
+                <option value="0.92">0.92</option>
+                <option value="0.93">0.93</option>
+                <option value="0.94">0.94</option>
+                <option value="0.95">0.95</option>
+                <option value="0.96">0.96</option>
+                <option value="0.97">0.97</option>
+                <option value="0.98">0.98</option>
+                <option value="0.99">0.99</option>
+                <option value="1.00">1</option>
+               
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.ticket_type.errors" class="invalid-feedback">
+                <label *ngIf="f.ticket_type.errors.required">Ticket type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Enrollment Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #enrolment_type formControlName="enrolment_type">
+                <option value="0">Select Enrollment Type</option>
+                <option value="1">Active</option>
+                <option value="2">In Active</option>
+                <option value="3">On Hold</option>
+                <option value="4">Adjustments</option>
+                <option value="5">Cancel</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.enrolment_type.errors" class="invalid-feedback">
+                <label *ngIf="f.enrolment_type.errors.required">Enrollment type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Chit Type <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #chit_type formControlName="chit_type">
+                <option value="0">Select Chit Type</option>
+                <option value="1">Dummy Chit</option>
+                <option value="2">Regular Chit</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.chit_type.errors" class="invalid-feedback">
+                <label *ngIf="f.chit_type.errors.required">Chit type is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="form-group row">
+            <label class="col-sm-2 col-form-label">Remarks</label>
+            <div class="col-sm-10">
+              <textarea #remarks class="form-control" placeholder="Enter Remarks" formControlName="remarks"></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-customer-enrollment']" class="btn btn-danger mr-1">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

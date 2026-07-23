@@ -1,0 +1,206 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Role Detail</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Role Name: </label>
+              <b class="px-1">{{viewRoleInfo.role_name}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Mobile Role Type: </label>
+              <b class="px-1">{{viewRoleTypeInfo.role_type_name}} </b>
+            </div>
+          </div>	
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Role code : </label>
+              <b class="px-1">{{viewRoleInfo.role_code}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Hierarchy Level (Map View): </label>
+              <b
+                class="px-1"
+                style="white-space: pre-line; cursor: pointer;"
+                (click)="selectedHierarchyRoleId = viewRoleInfo.id; openHierarchyPopup(hierarchyPopup, viewRoleInfo.id)"
+              >
+                {{formatHierarchyLevel(viewRoleInfo.hierarchy_level) || '-'}}
+              </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Remarks: </label>
+              <b class="px-1">{{viewRoleInfo.remarks}}  </b>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<ng-template #hierarchyPopup let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Role Hierarchy Tree</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="hierarchy-tree-wrap" style="max-height:65vh; overflow:auto; padding: 10px;">
+      <style>
+        /* Simple tree connectors */
+        .hierarchy-tree-wrap .tree ul {
+          padding-top: 20px;
+          position: relative;
+          transition: all 0.5s;
+          -webkit-transition: all 0.5s;
+          -moz-transition: all 0.5s;
+          -o-transition: all 0.5s;
+        }
+        .hierarchy-tree-wrap .tree li {
+          float: left;
+          text-align: center;
+          list-style-type: none;
+          position: relative;
+          padding: 20px 5px 0 5px;
+        }
+        .hierarchy-tree-wrap .tree li::before,
+        .hierarchy-tree-wrap .tree li::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          right: 50%;
+          border-top: 1px solid #c8d0dc;
+          width: 50%;
+          height: 20px;
+        }
+        .hierarchy-tree-wrap .tree li::after {
+          right: auto;
+          left: 50%;
+          border-left: 1px solid #c8d0dc;
+        }
+        .hierarchy-tree-wrap .tree li:only-child::after,
+        .hierarchy-tree-wrap .tree li:only-child::before {
+          display: none;
+        }
+        .hierarchy-tree-wrap .tree li:only-child {
+          padding-top: 0;
+        }
+        .hierarchy-tree-wrap .tree li:first-child::before,
+        .hierarchy-tree-wrap .tree li:last-child::after {
+          border: 0 none;
+        }
+        .hierarchy-tree-wrap .tree ul ul::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 50%;
+          border-left: 1px solid #c8d0dc;
+          width: 0;
+          height: 20px;
+        }
+        .hierarchy-tree-wrap .tree .node {
+          display: inline-block;
+          padding: 10px 14px;
+          border-radius: 6px;
+          background: #6177ff;
+          color: #fff;
+          border: 1px solid rgba(255,255,255,0.25);
+          min-width: 110px;
+          font-weight: 600;
+        }
+        .hierarchy-tree-wrap .tree .node.root {
+          background: #5b74b8;
+        }
+      </style>
+      <div class="tree" *ngIf="hierarchyTreeRoots && hierarchyTreeRoots.length">
+        <ul>
+          <li *ngFor="let root of hierarchyTreeRoots">
+            <div class="node root">{{root.name}}</div>
+            <ul *ngIf="root.children && root.children.length">
+              <ng-container *ngTemplateOutlet="treeNodeTpl; context: { $implicit: root.children }"></ng-container>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div *ngIf="!hierarchyTreeRoots || hierarchyTreeRoots.length === 0" class="text-muted">
+        No hierarchy found.
+      </div>
+    </div>
+
+    <ng-template #treeNodeTpl let-children>
+      <li *ngFor="let child of children">
+        <div class="node">{{child.name}}</div>
+        <ul *ngIf="child.children && child.children.length">
+          <ng-container *ngTemplateOutlet="treeNodeTpl; context: { $implicit: child.children }"></ng-container>
+        </ul>
+      </li>
+    </ng-template>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Role List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-role']" class="bg-success border-0 text-white px-3 py-2"> + Add Role </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable" class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Role Name</th>
+            <th>Role Code</th>
+            <th>Under Role</th>
+            <th>Mobile Role Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.role_name}}</td>
+            <td>{{row.role_code}}</td>
+            <td>
+              {{getDirectUnderRoleName(row) || '-'}}
+              <a
+                class="ml-2"
+                style="cursor:pointer; color:#1e69ff;"
+                (click)="selectedHierarchyRoleId = row.id; openHierarchyPopup(hierarchyPopup, row.id)"
+                title="View hierarchy tree"
+              >
+                View
+              </a>
+            </td>
+            <td>{{row.role_type_det.role_type_name}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-role/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-role/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Role"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Role"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

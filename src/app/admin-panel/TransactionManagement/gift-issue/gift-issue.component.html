@@ -1,0 +1,101 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Gift Issue</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-gift']" class="bg-success border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Gift</a>
+      </div>
+      </div>
+    </div>
+    <div class="card-body add-maze ">
+      <form class="bs-example form-horizontal" [formGroup]="UpdateCustomerEnrollment" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #branch_id formControlName="branch_id" (change)="branchChg($event)" disabled>
+                  <option value="">Select Branch</option>
+                  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Name <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #group_id formControlName="group_id" (change)="groupChg($event)" disabled>
+                  <option value="">Select Group Name</option>
+                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_id.errors.required">Group Name is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Customer Name<span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #customer_id formControlName="customer_id" (change)="customerChg()" disabled>
+                  <option value="">Select Customer Name</option>
+                  <option *ngFor="let data of customerList" value="{{data.id}}">{{data.name}}</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+                  <label *ngIf="f.customer_id.errors.required">Customer Name is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Gift <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <select #gift_id class="form-control form-control w-100 border-dark" formControlName="gift_id">
+              <option value="">Select Gift</option>
+              <option *ngFor="let data of giftList" value="{{data.id}}">{{data.gift_name}}</option>
+            </select>
+             <div class="col-md-12" *ngIf="submitted && f.gift_name.errors" class="invalid-feedback">
+              <label *ngIf="f.gift_name.errors.required">Gift name is required</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Date <span class="error">*</span></label>
+          <div class="col-sm-8">
+            <input #issue_date type="text" class="form-control calendar" placeholder="Enter issue Date" formControlName="issue_date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+            <div class="col-md-12" *ngIf="submitted && f.Price.errors" class="invalid-feedback">
+              <label *ngIf="f.Price.errors.required">Price is required</label>
+             
+            </div>  
+          </div>
+        </div>
+      </div>
+    </div> 
+        <div class="form-group d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-city']" class="btn btn-danger mr-1">Cancel</a>
+        </div> 
+     
+    </form>
+  </div>
+</div>

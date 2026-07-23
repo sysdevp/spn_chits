@@ -1,0 +1,35 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Country</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-country']" class="bg-success border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Country</a>
+      </div>
+      </div>
+    </div>
+    <div class="card-body add-maze ">
+      <form class="bs-example form-horizontal" [formGroup]="UpdateCountry" (ngSubmit)="onSubmit()">
+       
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Country <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <input #country_name type="text" class="form-control" placeholder="Enter Country Name" formControlName="country_name" >
+            <div class="col-md-12" *ngIf="submitted && f.country_name.errors" class="invalid-feedback">
+              <label *ngIf="f.country_name.errors.required">Country name is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Remarks <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9 w">
+            <input #remarks type="text" class="form-control" placeholder="Enter Remarks" formControlName="remarks">
+            
+          </div>
+        </div>
+        <div class="form-group d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-country']" class="btn btn-danger mr-1">Cancel</a>
+        </div> 
+    </form>
+  </div>
+</div>

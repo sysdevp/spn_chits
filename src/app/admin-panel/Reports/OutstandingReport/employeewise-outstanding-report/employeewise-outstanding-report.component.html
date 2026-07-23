@@ -1,0 +1,228 @@
+<!--<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Commission Amount Pending Details</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+		<div class="card-body">
+      <div class="row" style="overflow-x:scroll ">
+        <table id="dtable" class="row-border hover das-auc-t c_a_t" [hidden]="TableHidden">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Branch Name</th>
+              <th>Customer Name</th>
+              <th>Group Name</th>
+              <th>Ticket No</th>
+              <th>Chit Value</th>
+              <th>Paid Month</th>
+              <th>Total Commission</th>
+              <th>Balance Commission</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of ViewCommissionAmountPendingInfo;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td>{{row.customer_info.name}}</td>
+              <td>{{row.group_info.group_name}}</td>
+              <td>{{row.ticket_no}}</td>
+              <td>{{row.scheme_info.chit_value}}</td>
+              <td></td>
+              <td>{{row.total_business_agent_commission}}</td>
+              <td>{{row.balance_business_agent_commission}} </td>
+          </tbody>
+        </table>
+      </div>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>-->
+<ngx-smart-modal class="ngx-msg-modal cheque" #myModal identifier="myModal">
+  <div class="modal-header without-text custm-modal">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Employeewise Outstanding Details</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="myModal.close()">X</button>
+	</div>
+	<div class="modal-body" id="modal-body">
+	</div>
+	<div class="modal-footer"></div>
+</ngx-smart-modal>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Employeewise Outstanding Report</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-employee']" class="bg-success border-0 text-white px-3 py-2"> + Add Employee</a>
+      </div>
+      <div class="col-6 text-right">&nbsp;</div>
+    </div>
+    <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
+        <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
+      </div>
+      <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+        <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
+      </div>
+  </div>
+  <div class="card-body">
+    <div>
+      <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="employeewiseOutstandingReport" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+              <option value="">Select Branch</option>
+              <option value="0">All Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Employee</label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #employee_id class="form-control form-control w-100 border-dark" formControlName="employee_id">
+              <option value="">Select Employee</option>
+              <option *ngFor="let data of agentList" value="{{data.id}}">{{data.first_name}} {{data.last_name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetemployeeoutstandingReport()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+        <table class="table ">
+          <thead>
+          <tr>
+            <th>S No</th>
+            <th>Branch Name</th>
+            <th>Employee Name</th>
+            <th>Phone No</th>
+            <th>Paid Amount</th>
+            <th>Pending Amount</th>
+            <th>View</th>
+          </tr>
+        </thead>
+          <tbody>
+            <tr>
+              <td colspan="12" style="color: #d9534f;
+              border: transparent;
+              font-size: 20px;">
+                No Records Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+	  <div class="row recp_rep" [hidden]="hideReport">
+        <div class="test-header col-5">
+          Show:
+          <select (change)="onPageSizeChanged()" id="page-size">
+            <option value="10" selected="">10</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+          entries
+        </div>
+        <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
+          <button (click)="onBtnExport()" >Excel</button>
+          <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
+        </div>
+        <div class="col-3 r_rep">
+          <span >Search</span> 
+          <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
+        </div> 
+        <ag-grid-angular *ngIf="showReportGrid" #agGrid
+          style="width: 100%; height: 450px; margin-top: 15px;" 
+          class="ag-theme-balham chq"
+          [rowData]="rowData" 
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [pagination]="true"
+          [paginationPageSize]="paginationPageSize"
+          [paginationNumberFormatter]="paginationNumberFormatter"
+          [rowHeight]="50"
+          [headerHeight]="50"
+          [suppressExcelExport] = "true" 
+          (gridReady)="onGridReady($event)"
+          [gridOptions]="gridOptions"
+        >     
+        </ag-grid-angular>
+        <h4 class="text-center col-12">Grand Total </h4>
+        <table class="table text-center mx-3 table-bordered">
+          <tr>
+            <th class="bg-secondary text-white">Total Paid Amount</th>
+            <th class="bg-secondary text-white">Total Pending  Amount</th>
+          </tr>
+          <tr>
+            <td>{{paidAmt}}</td>
+            <td>{{pendingAmt}}</td>
+          </tr>
+        </table>
+      </div>
+      <!--<div class="row" style="overflow-x:scroll ">
+        <table id="dtable" class="row-border hover" [hidden]="TableHidden">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Branch Name</th>
+              <th>Agent Name</th>
+              <th>Phone No</th>
+              <th>Pending Commission</th>
+              <th>Full View</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}}</td>
+              <td>{{row.employee_info.mobile_no}}</td>
+              <td>{{row.pending_commission}}</td>
+              <td>
+                <a class="bg-success border-0 text-white px-3 py-2" (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.introducer_id)">View</a>
+              </td>
+          </tbody>
+        </table>
+      </div>-->
+      <div>
+      <table class="table text-center mx-3 table-bordered" [hidden]="pdfrectab" id="mygrid">
+        <tr>
+          <th class="bg-secondary text-white">Sno</th>
+          <th class="bg-secondary text-white">Branch Name</th>
+          <th class="bg-secondary text-white">Employee Name</th>
+          <th class="bg-secondary text-white">Phone No</th>
+          <th class="bg-secondary text-white">Paid Amount</th>
+          <th class="bg-secondary text-white">Pending Amount</th>
+        </tr>
+        <tr *ngFor="let row of dataList;">
+          <td>{{row.sno}}</td>
+          <td>{{row.branch_name}}</td>
+          <td>{{row.employee_name}}</td>
+          <td>{{row.mobile_no}}</td>
+          <td>{{row.overall_total_paid}}</td>
+          <td>{{row.overall_total_pending}}</td>
+        </tr>
+      </table>
+    </div>
+    </div>
+  </div>
+</div>

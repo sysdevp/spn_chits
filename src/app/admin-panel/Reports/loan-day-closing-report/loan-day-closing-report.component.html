@@ -1,0 +1,288 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Loan Day Closing Report</div>
+      <div class="col-4 text-right" [hidden]="backTOGet" ><i class="fas fa-arrow-left p-2 bg-success text-white" (click)="backToView()"></i></div>
+      <div class="col-1 text-right" [hidden]="backTOGet" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div>
+      <form class="bs-example form-horizontal" [formGroup]="loanDayClosingReport" (ngSubmit)="onSubmit()">
+         <div class="form-group row" [hidden]="details">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+            <div class="col-sm-10">
+              <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" >
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+          </div> 
+        </div>
+        <div class="col-6" [hidden]="details">
+          <div class="form-group row">
+            <label class="col-sm-4">Date<span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #start_date type="text" formControlName="start_date" class="form-control calendar" placeholder="Enter Start Date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+              <div class="col-md-12" *ngIf="submitted && f.start_date.errors" class="invalid-feedback">
+                <label *ngIf="f.start_date.errors.required">Date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row" [hidden]="details">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+          </div>
+        </div>
+
+<table class="table" border="1" [hidden]="report" id="mygrid">
+    <thead>
+      <tr>
+        <th>Branch</th>
+        <th>{{BranchName}}</th>
+        <th>Date</th>
+        <th>{{StartDate}}</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td colspan="4" class="text-center" style="color:red"> <b>Cash Collections</b></td>
+        </tr>
+      <tr>
+        <td>Cash Collection :</td>
+        <td>{{cashCollection}}</td>
+        <td>Interest Cash Amount:	</td>
+        <td>{{cashPenalty}}</td>
+      </tr>
+   
+      <tr>
+        <td>Total Cash : </td>
+        <td>{{totalCash}}</td>
+        <td></td>
+        <td></td>
+      </tr>
+    </tbody>
+    <tbody>
+    <tr>
+        <td colspan="4" class="text-center" style="color:red"><b>Bank Payments</b></td>
+    </tr>
+    <tr>
+     <td colspan="4" class="text-center" style="color:blue"><b>NEFT Or RTGS</b></td>
+    </tr>
+          <tr>
+            <td>NEFT Collection :</td>
+            <td>{{neftCollection}}</td>
+            <td>Interest Neft Amount:</td>
+            <td>{{neftPenalty}}</td>
+          </tr>
+         
+          <tr>
+            <td>Total NEFT Or RTGS Amount</td>
+            <td>{{totalNEFT}}</td>
+            <td></td>
+            <td></td>
+            </tr>
+        </tbody>
+        <tbody>
+            <tr>
+                <td colspan="4" class="text-center" style="color:blue"><b>Cheque</b></td>
+            </tr>
+                <tr>
+                <td>Cheque Received :</td>
+                <td>{{chequeReceived}}</td>
+                <td>Cleared Cheque :</td>
+                <td>{{chequeCleared}}</td>
+                </tr>
+               
+                <tr>
+                <td>Interest Cheque Amount:	</td>
+                <td>{{chequePenalty}}</td>
+                <td>Cleared Cheque Interest:	</td>
+                <td>{{chequeClearedPenalty}}</td>
+                </tr>
+              
+                <tr>
+                <td>Total Amount :		</td>
+                <td>{{totalChequeleft}}</td>
+                <td>Total Amount :</td>
+                <td>{{totalChequeright}}</td>
+                </tr>
+            </tbody>
+    <tbody>
+            <tr>
+                <td colspan="4" class="text-center" style="color:blue"><b>DD</b></td>
+            </tr>
+                <tr>
+                <td>DD Collection :	</td>
+                <td>{{ddCollection}}</td>
+                <td>Interest DD Amount:	</td>
+                <td>{{ddPenalty}}</td>
+                </tr>
+              
+                <tr>
+                <td>Total DD Amount	</td>
+                <td>{{totalDD}}</td>
+                <td></td>
+                <td></td>
+                </tr>
+            </tbody>
+        <tbody>
+                <tr>
+                    <td colspan="4" class="text-center" style="color:blue"><b>Card</b></td>
+                </tr>
+                  <tr>
+                    <td>Card Collection:	</td>
+                    <td>{{cardCollection}}</td>
+                    <td>Card Interest :</td>
+                    <td>{{cardPenalty}}</td>
+                    </tr>
+                   
+                    <tr>
+                    <td>Total Card Amount</td>
+                    <td>{{totalCard}}</td>
+                    <td></td>
+                    <td></td>
+                    </tr>
+                </tbody>
+     <!--        <tbody>
+                    <tr>
+                        <td colspan="4" class="text-center" style="color:blue"><b>Adjustments </b></td>
+                    </tr>
+                        <tr>
+                          <td>Advance Adjust Due:	</td>
+                          <td>{{advancetAmt}}</td>
+                          <td>Advance Adjust Interest:	</td>
+                          <td>{{advancePenalty}}</td>
+                          </tr>
+                        <tr>
+                        <td>Total Adjustment Amount		</td>
+                        <td>{{totalAdjustment}}</td>
+                        <td>	</td>
+                        <td></td>
+                        </tr>
+                    </tbody> -->
+              <tbody>
+                <tr>
+                    <td colspan="4" class="text-center" style="color:blue"><b>Payment</b></td>
+                </tr>
+                    <tr>
+                    <td colspan="2">Cash Payment :</td>
+                    <td colspan="2">{{cashPayment}}</td>
+                    </tr>
+                    <tr>
+                    <td colspan="2">Card Payment :</td>
+                    <td colspan="2">{{cardPayment}}</td>
+                    </tr>
+                    <tr>
+                    <td colspan="2">Cheque Payment :</td>
+                    <td colspan="2">{{chequePayment}}</td>
+                    </tr>
+                    <tr>
+                    <td colspan="2">DD Payment :</td>
+                    <td colspan="2">{{DDPayment}}</td>
+                    </tr>
+                    <tr>
+                    <td colspan="2">Neft Payment :</td>
+                    <td colspan="2">{{NEFTPayment}}</td>
+                    </tr>
+                    <tr>
+                      <td colspan="2">Total Payment :</td>
+                      <td colspan="2">{{totalPayment}}</td>
+                      </tr>
+                </tbody> 
+          <!--  <tbody>
+                <tr>
+                <td colspan="4" class="text-center" style="color:blue"><b>Other Branch Collection</b></td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch Cash Collection :	</td>
+                <td colspan="2">{{otherBranchCashCollection}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch Cash Penalty :</td>
+                <td colspan="2">{{otherBranchCashPenalty}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch Cheque Collection :</td>
+                <td colspan="2">{{otherBranchChequeCollection}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch Cheque Penalty :</td>
+                <td colspan="2">{{otherBranchChequePenalty}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch DD Collection :</td>
+                <td colspan="2">{{otherBranchDDCollection}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch DD Penalty :</td>
+                <td colspan="2">{{otherBranchDDPenalty}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch NEFT Collection :</td>
+                <td colspan="2">{{otherBranchNEFTCollection}}</td>
+                </tr>
+                <tr>
+                <td colspan="2">Other Branch NEFT Penalty :</td>
+                <td colspan="2">{{otherBranchNEFTPenalty}}</td>
+                </tr>
+                </tbody>  -->
+
+                <tbody>
+                  <tr>
+                  <td colspan="4" class="text-center" style="color:red"><b>Amount Calculation</b></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >2000 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >500 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >200 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >100 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2">50 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >20 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >10 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2"  >5 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2" >2 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2"  >1 </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  <tr>
+                  <td colspan="2"  >Total  </td>
+                  <td colspan="2"></td>
+                  </tr>
+                  </tbody> 
+  </table>
+      </form>
+    </div>
+  </div>
+</div>

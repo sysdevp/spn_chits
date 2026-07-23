@@ -1,0 +1,844 @@
+<div class="card">
+  <div class="card-header">
+    <h4>Customer Information</h4>
+  </div>
+  <div class="card-body cus_ledt">
+    <form class="bs-example form-horizontal" [formGroup]="CustomerLedger" (ngSubmit)="onSubmit()" >
+      <div class="row">
+        <div class="col-md-4" [hidden]="!isSuperAdmin">
+          <label class="col-12 px-0">Company Name <span class="error">*</span></label>
+          <select #tenant_id class="col-12" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="col-12 px-0">Branch Name <span class="error">*</span></label>
+          <select class="col-12" (change)="branchChg($event)" formControlName="branch_id">
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+            <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="col-12 px-0">Customer Name <span class="error">*</span></label>
+          <select #customer_id class="col-12" formControlName="customer_id" (change)="customerChg($event)">
+            <option value="">Select Customer Name</option>
+            <option *ngFor="let data of customerList" value="{{data.id}}">{{data.full_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+            <label *ngIf="f.customer_id.errors.required">Customer Name is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row float-right mt-2">
+        <div class="form-group col-md-4 mt-auto mb-0">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        </div>
+    </div>
+    </form>
+<div class="" [hidden]="hidecustomerLedger">
+    <div class="row cus_led_info" >
+
+      <div class="col-md-5">
+        <div class="media">
+          <img *ngIf="photo!=''" src={{photo}} class="img-view"/>
+          <div class="media-body mt-auto">
+            <h1 class="mb-0">{{name}}</h1>
+            <h5 class="mb-0">{{branchName}}</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-auto">
+        <!--     <h3><i class="fas fa-download pr-3"></i>Export Subscriber Information</h3>-->
+      </div>
+ <!--      <div class="col-md-3 mt-auto">
+          <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider round"></span>
+              <b>Lock</b>
+            </label>
+      </div> -->
+
+    </div>
+
+    <!-- tabs -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" 
+          role="tab" aria-controls="home" aria-selected="true">Customer Information</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-tab" data-toggle="tab"
+           href="#profile" role="tab" aria-controls="profile" aria-selected="false">Account Information</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-loan" data-toggle="tab"
+           href="#profileloan" role="tab" aria-controls="profileloan" aria-selected="false">Loan Information</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="profile-statement-tab" data-toggle="tab"
+           href="#profilestatement" role="tab" aria-controls="profilestatement" aria-selected="false">Customer Statement</a>
+        </li>
+        
+      </ul>
+      <div class="tab-content cus_led_subr pt-3" id="myTabContent">
+        <!-- Subscrieber -->
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <h3 class="mb-0">General Information</h3>
+          <div class="row py-4">
+
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Name:</label>
+              <h4>{{name}}</h4>
+            </div>
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Mobile Number:</label>
+              <h4>{{MobileNo}}</h4>
+            </div>
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Customer Status:</label>
+              <h4 *ngIf="Status==2">Blacklist</h4>
+              <h4 *ngIf="Status==1">Active</h4>
+              <h4 *ngIf="Status==0">Not Active</h4>
+            </div>
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Customer Liabilities:</label>
+              <h4>Some text here...</h4>
+            </div>
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Average Payment Days:</label>
+              <h4>1</h4>
+            </div>
+            <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Permanent Address:</label>
+              <address>
+               {{Address_1}}<br/>{{Address_2}}
+              </address>
+            </div>
+             <div class="col-md-4 col-12">
+              <label class="col-12 px-0">Present Address:</label>
+              <address>
+                {{communicationAddress_1}}<br/>{{communicationAddress_2}}
+              </address>
+            </div>
+            <table class="col-12">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Relationship</th>
+                    <th>Chit Group</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of relationshipList;">
+                    <td>{{row.customer_belongs_to}}</td>
+                    <td>{{row.relationship_info}}</td>
+                    <td>{{groupName}}{{ticketNo}}</td>
+                  </tr>
+                </tbody>
+              </table> 
+
+          </div>
+
+          <h3 class="acct-section-title">Enrollment Information</h3>
+          <div class="stmt-sheet enrollment-card">
+            <div class="stmt-table-wrap" style="padding-top:16px;">
+              <table class="stmt-table">
+                <thead>
+                  <tr>
+                    <th>S No</th>
+                    <th>Slab Name</th>
+                    <th>Chit Value</th>
+                    <th>Prized Status</th>
+                    <th>Subscriber Paid</th>
+                    <th>Subscriber Pending</th>
+                    <th>Advance</th>
+                    <th>Company Released</th>
+                    <th>Company Pending</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of enrollmentInfo; let i=index">
+                    <td>{{i+1}}</td>
+                    <td>{{row.slab_name || '-'}}</td>
+                    <td style="text-align:right">{{row.chit_value | number:'1.2-2'}}</td>
+                    <td>
+                      <span class="stmt-badge" [ngClass]="row.prized_status==1 ? 'prized' : 'not-prized'">
+                        {{row.prized_status==1 ? 'Prized' : 'Not Prized'}}
+                      </span>
+                    </td>
+                    <td style="text-align:right">{{row.paid_amount | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.pending_amount | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.advance_amount | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.prized_amount | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.prized_pending_amount | number:'1.2-2'}}</td>
+                    <td><a (click)="myClickFunction(row.id)" class="stmt-link">View</a></td>
+                  </tr>
+                  <tr *ngIf="!enrollmentInfo || enrollmentInfo.length === 0">
+                    <td colspan="10" class="stmt-empty">No commitment enrollments found.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+              <div class="col-md-12 mt-3">
+                <h3 class="acct-section-title">Before Enrollment Advance Details for {{name}}</h3>
+                   <table class="col-12">  
+             <thead>
+               <tr>
+                 <th colspan="2"></th>
+                 <th colspan="2">Advance Collection Details</th>
+                 <th colspan="2">Advance Adjustment Details</th>
+                 <th colspan="2">Return Details</th>
+                 <th rowspan="2">Payment Mode</th>
+                 <th rowspan="2">Advance Balance</th>
+               </tr>
+               <tr>
+                 <th >Date</th>
+                 <th >Receipt No</th>
+                 <th >Amount</th>
+                 <th >Collected By</th>
+                 <th>Reference</th>
+                 <th >Amount</th>
+                 <th >Return By</th>
+                 <th >Amount</th>
+               </tr>
+             </thead>
+             <tbody>
+               <tr *ngFor="let row of beforeenrolreceipts;let i=index" >
+                 <td >{{row.receipt_date}}</td>
+                 <td >{{row.receipt_no}}</td>
+                 <td >{{row.amount}}</td>
+                 <td >{{row.collection_employee_name}}</td>
+                 <td >{{row.reference_by}}</td>
+                 <td >{{row.receipt_amount}}</td>
+                 <td >{{row.return_by}}</td>
+                 <td >{{row.return_amount}}</td>
+                 <td >{{row.payment_type_name}}</td>
+                 <td >{{row.balance_avance}}</td>
+               </tr>
+               
+             </tbody>
+           </table>
+               </div>
+
+               
+
+               <div class="row mt-3 px-3" >
+
+                <h3 class="col-12 pt-3">Other Charges Information</h3>
+                <table class="col-12">
+                    <thead>
+                      <tr>
+                      <th rowspan="2">S No</th>
+                      <th rowspan="2">Group Name</th>
+                      <th rowspan="2">Chit Value</th>
+                      <th rowspan="2">Ticket Number</th>
+                      <th rowspan="2">Other Charges Name</th>
+                      <th rowspan="2">Amount</th>
+                      <th rowspan="2">Payment Mode</th>
+                      <th rowspan="2">Narration</th>
+                    </tr>
+                 
+                        
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of otherchargeInfo;let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{row.group_name}}</td>
+                        <td>{{row.chit_value}}</td>
+                        <td>{{row.ticket_no}}</td>
+                        <td>{{row.other_charge_name}}</td>
+                        <td>{{row.amount}}</td>
+                        <td>{{row.payment_type_name}}</td>
+                        <td>{{row.narration}}</td>
+                        
+                      </tr>
+                      <!--<tr class="cus_led_total" >
+                        <td colspan="2">
+                          Total Chit Value
+                        </td>
+                        <td >
+                          {{gurantorDocumentTotalChitValue}}
+                        </td>
+                      </tr>-->
+                      </tbody>
+                    
+                  </table> 
+             
+              <div class="row mt-3 px-3">
+
+                <h3 class="col-12 pt-3">Pledge Information</h3>
+                <table class="col-12">
+                    <thead>
+                      <tr>
+                      <th rowspan="2">S No</th>
+                      <th rowspan="2">Group Name</th>
+                      <th rowspan="2">Chit Value</th>
+                      <th rowspan="2">Ticket Number</th>
+                      <th rowspan="2">Pledge Customer Name</th>
+                      <th rowspan="2">Pledge Group Name</th>
+                      <th rowspan="2">Pledge Chit Value</th>
+                      <th rowspan="2">Pledge Ticket Number</th>
+                    </tr>
+                 
+                        
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of pledgeInfo;let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{row.enrol_det.group_det.group_name}}</td>
+                        <td>{{row.chit_value}}</td>
+                        <td>{{row.enrol_det.ticket_no}}</td>
+                        <td>{{row.pledge_customer_name}}</td>
+                        <td>{{row.pledge_group_name}}</td>
+                        <td>{{row.pledge_chit_value}}</td>
+                        <td>{{row.pledge_ticket_no}</td>
+                        
+                      </tr>
+                      <!--<tr class="cus_led_total" >
+                        <td colspan="2">
+                          Total Chit Value
+                        </td>
+                        <td >
+                          {{gurantorDocumentTotalChitValue}}
+                        </td>
+                      </tr>-->
+                      </tbody>
+                    
+                  </table> 
+              
+                  <h3 class="col-12 pt-3">Guarantor Information</h3>
+                <table class="col-12">
+                    <thead>
+                      <tr>
+                      <th rowspan="2">S No</th>
+                      <th rowspan="2">Group Name</th>
+                      <th rowspan="2">Chit Value</th>
+                      <th rowspan="2">Ticket Number</th>
+                      <th colspan="5">Gurantor</th>
+                    </tr>
+                 
+                        <tr>
+                      
+                        <th>Name</th>
+                        <th>MobileNo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of gurantorInfo;let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{row.enrol_det.group_det.group_name}}</td>
+                        <td>{{row.chit_value}}</td>
+                        <td>{{row.enrol_det.ticket_no}}</td>
+                        <td>{{row.guarantor_name}}</td>
+                        <td>{{row.guarantor_det.mobile_no}}</td>
+                      </tr>
+                      <!--<tr class="cus_led_total" >
+                        <td colspan="2">
+                          Total Chit Value
+                        </td>
+                        <td >
+                          {{gurantorDocumentTotalChitValue}}
+                        </td>
+                      </tr>-->
+                      </tbody>
+                    
+                  </table> 
+                  <h3 class="col-12 pt-3">Nominee Information</h3>
+                <table class="col-12">
+                    <thead>
+                      <tr>
+                      <th colspan="5">Nominee</th>
+                    </tr>
+                 
+                        <tr>
+                          <th>S No</th>
+                          <th>Name</th>
+                          <th>MobileNo</th>
+                          <th>Address</th>
+                          <th>Pincode</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of nomineeInfo;let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{row.name}}</td>
+                        <td>{{row.mobile_no}}</td>
+                        <td>{{row.address_line_1}}</td>
+                        <td>{{row.pincode}}</td>
+                      </tr>
+                      <!--<tr class="cus_led_total" >
+                        <td colspan="2">
+                          Total Chit Value
+                        </td>
+                        <td >
+                          {{nomineeDocumentTotalChitValue}}
+                        </td>
+                      </tr>-->
+                      </tbody>
+                    
+                  </table> 
+                <h3 class="col-12 pt-3">Customer Document File</h3>
+                 <div class="col-12 mt-3 cus_led_doc">
+                    
+                  
+                     
+                      <table class="col-12">
+                        <thead>
+                          <tr>
+                          <th colspan="5">Documents</th>
+                        </tr>
+                     
+                            <tr>
+                              <th>S No</th>
+                              <th>Name</th>
+                              <th>File</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr *ngFor="let row of customerDocumentInfo;let i=index">
+                            <td>{{i+1}}</td>
+                            <td>{{row.document_type}}</td>
+                            <td><img src="{{row.document_path}}" class="img-view"/></td>
+                          </tr>
+                          <!--<tr class="cus_led_total" >
+                            <td colspan="2">
+                              Total Chit Value
+                            </td>
+                            <td >
+                              {{nomineeDocumentTotalChitValue}}
+                            </td>
+                          </tr>-->
+                          </tbody>
+                        
+                      </table> 
+                  
+                  </div> 
+              </div>
+            </div>
+
+        </div>
+        <!-- Accounts -->
+        <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+          <div class="stmt-toolbar no-print">
+            <div class="form-group mb-0">
+              <label>Select Commitment Enrollment</label>
+              <select id="accountEnrollSelect" class="form-control" (change)="enrollChg($event)">
+                <option value="">Select Enrollment</option>
+                <option *ngFor="let data of enrolList" [value]="data.id">{{data.enrol_name}}</option>
+              </select>
+            </div>
+            <button type="button" (click)="onAccountPdf()" class="btn btn-success" [disabled]="hideEnrolmentDetails">
+              <i class="fa fa-file-pdf-o"></i> Download PDF
+            </button>
+          </div>
+
+          <div id="accountInfoPrint" [hidden]="hideEnrolmentDetails">
+            <div class="stmt-sheet">
+              <div class="stmt-head">
+                <div class="stmt-head-left">
+                  <h2>Account Information</h2>
+                  <p>Commitment Chit — Month-wise Ledger</p>
+                </div>
+                <div class="stmt-head-right">
+                  <img [src]="companyLogo" alt="Logo" onerror="this.style.display='none'" />
+                </div>
+              </div>
+
+              <div class="stmt-customer">
+                <div class="stmt-customer-grid">
+                  <div><span>Customer</span><strong>{{name}} ({{customer_code}})</strong></div>
+                  <div><span>Branch</span><strong>{{branchName}}</strong></div>
+                  <div><span>Slab Name</span><strong>{{accountSlabName || '-'}}</strong></div>
+                  <div><span>Mobile</span><strong>{{MobileNo}}</strong></div>
+                </div>
+              </div>
+
+              <div class="stmt-metrics">
+                <div class="stmt-metric highlight">
+                  <label>Chit Value</label>
+                  <div class="val">{{accountChitValue | number:'1.2-2'}}</div>
+                </div>
+                <div class="stmt-metric">
+                  <label>Total Months</label>
+                  <div class="val">{{accountTotalMonths}}</div>
+                </div>
+                <div class="stmt-metric">
+                  <label>Running Month</label>
+                  <div class="val">{{accountRunningMonth}}</div>
+                </div>
+                <div class="stmt-metric">
+                  <label>Subscriber Paid</label>
+                  <div class="val">{{accountPaidAmount | number:'1.2-2'}}</div>
+                </div>
+                <div class="stmt-metric warn">
+                  <label>Subscriber Pending</label>
+                  <div class="val">{{accountPendingAmount | number:'1.2-2'}}</div>
+                </div>
+                <div class="stmt-metric">
+                  <label>Company Released</label>
+                  <div class="val">{{accountCompanyReleased | number:'1.2-2'}}</div>
+                </div>
+                <div class="stmt-metric warn">
+                  <label>Company Pending</label>
+                  <div class="val">{{accountCompanyPending | number:'1.2-2'}}</div>
+                </div>
+              </div>
+
+              <div class="acct-section">
+                <h4>Month-wise Collection Details</h4>
+                <div class="stmt-table-wrap">
+                  <table class="stmt-table">
+                    <thead>
+                      <tr>
+                        <th>Month No</th>
+                        <th>Due Date</th>
+                        <th>Due Amount</th>
+                        <th>Receipt Date</th>
+                        <th>Payment Mode</th>
+                        <th style="text-align:right">Paid</th>
+                        <th style="text-align:right">Bonus</th>
+                        <th style="text-align:right">Penalty</th>
+                        <th style="text-align:right">Net Collected</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let data of auctionwiseReceiptList">
+                        <tr *ngIf="!data.auction_details || data.auction_details.length === 0">
+                          <td>{{data.installment_no}}</td>
+                          <td>{{data.auction_date}}</td>
+                          <td style="text-align:right">{{getAccountDueAmount(data) | number:'1.2-2'}}</td>
+                          <td colspan="6" class="stmt-empty">No receipt</td>
+                        </tr>
+                        <tr *ngFor="let rcpt of data.auction_details; let first = first">
+                          <td *ngIf="first">{{data.installment_no}}</td>
+                          <td *ngIf="!first"></td>
+                          <td *ngIf="first">{{data.auction_date}}</td>
+                          <td *ngIf="!first"></td>
+                          <td *ngIf="first" style="text-align:right">{{getAccountDueAmount(data) | number:'1.2-2'}}</td>
+                          <td *ngIf="!first"></td>
+                          <td>{{rcpt.receipt_date}}</td>
+                          <td>{{rcpt.receipt_no}}</td>
+                          <td style="text-align:right">{{rcpt.receipt_amount | number:'1.2-2'}}</td>
+                          <td style="text-align:right">{{rcpt.receipt_bonus | number:'1.2-2'}}</td>
+                          <td style="text-align:right">{{rcpt.receipt_penalty | number:'1.2-2'}}</td>
+                          <td style="text-align:right">{{rcpt.net_collected_receipt_amount | number:'1.2-2'}}</td>
+                        </tr>
+                      </ng-container>
+                      <tr *ngIf="!auctionwiseReceiptList || auctionwiseReceiptList.length === 0">
+                        <td colspan="9" class="stmt-empty">No collection data available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="acct-section">
+                <h4>Month-wise Pending Details</h4>
+                <div class="stmt-table-wrap">
+                  <table class="stmt-table">
+                    <thead>
+                      <tr>
+                        <th>Month No</th>
+                        <th>Due Amount</th>
+                        <th>Pending Days</th>
+                        <th style="text-align:right">Due Pending</th>
+                        <th style="text-align:right">Bonus</th>
+                        <th style="text-align:right">Penalty</th>
+                        <th style="text-align:right">Net Pending</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of auctionwiseList">
+                        <td>{{row.installment_no}}</td>
+                        <td style="text-align:right">{{row.inst_amt_wise | number:'1.2-2'}}</td>
+                        <td>{{getAccountPendingDays(row)}}</td>
+                        <td style="text-align:right">{{row.inst_amt_wise_pending | number:'1.2-2'}}</td>
+                        <td style="text-align:right">{{row.bonus | number:'1.2-2'}}</td>
+                        <td style="text-align:right">{{row.penalty_amounts | number:'1.2-2'}}</td>
+                        <td style="text-align:right">{{row.installment_wise_overall_pending | number:'1.2-2'}}</td>
+                      </tr>
+                      <tr *ngIf="!auctionwiseList || auctionwiseList.length === 0">
+                        <td colspan="7" class="stmt-empty">No pending data available.</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="acct-section" *ngIf="commitmentPaymentList && commitmentPaymentList.length > 0">
+                <h4>Company Payment Details</h4>
+                <div class="stmt-table-wrap">
+                  <table class="stmt-table">
+                    <thead>
+                      <tr>
+                        <th>S No</th>
+                        <th>Payment Date</th>
+                        <th>Receipt No</th>
+                        <th style="text-align:right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let p of commitmentPaymentList; let i=index">
+                        <td>{{i+1}}</td>
+                        <td>{{p.payment_date}}</td>
+                        <td>{{p.receipt_no || '-'}}</td>
+                        <td style="text-align:right">{{p.total_amount | number:'1.2-2'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="acct-section" *ngIf="groupadvanceList && groupadvanceList.length > 0">
+                <h4>Advance Details</h4>
+                <div class="stmt-table-wrap">
+                  <table class="stmt-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Receipt No</th>
+                        <th style="text-align:right">Amount</th>
+                        <th>Collected By</th>
+                        <th style="text-align:right">Balance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let row of groupadvanceList">
+                        <td>{{row.date || row.receipt_date}}</td>
+                        <td>{{row.receipt_no}}</td>
+                        <td style="text-align:right">{{row.amount | number:'1.2-2'}}</td>
+                        <td>{{row.collected_by || row.collection_employee_name}}</td>
+                        <td style="text-align:right">{{row.balance_avance | number:'1.2-2'}}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="profileloan" role="tabpanel" aria-labelledby="profile-loan">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label>Loan Details for: </label>
+                <select (change)="loanChg($event)">
+                    <option value="">Select Loan</option>
+                    <option *ngFor="let data of loanList" value="{{data.id}}">{{data.loan_amount}}</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6" [hidden]="hideLoanDetails">
+              <div class="form-group">
+                <div class="col-1 text-right"><a (click)="onpdfloan()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>
+              </div>
+            </div>
+          </div>
+          <div class="" id="mygrid1"> 
+            <div class="row">
+            <div class="col-md-6">
+              <div class="media">
+                <div class="media-body mt-auto">
+                  <h5 class="mb-0">Customer Name :{{name}}</h5><br>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="media">
+                <div class="media-body mt-auto">
+                  <h5 class="mb-0">Branch Name :{{branchName}}</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12 mt-3" > 
+          <h3 class="col-12 pt-3">Loan Collection Details</h3>
+          <table class="col-12">  
+            <thead>
+              <tr>
+                <th colspan="12">Loan Collection Details</th>
+              </tr>
+              <tr>
+                <th rowspan="2">Sno</th>
+                <th rowspan="2">Loan Amount</th>
+                <th rowspan="2">Receipt No</th>
+                <th rowspan="2">Receipt Date</th>
+                <th rowspan="2">Received Amount</th>
+                <th rowspan="2">Received Interest</th>
+              </tr>
+              </thead>
+              <tbody>
+              <ng-container *ngFor="let data of loanreceiptList"> 
+                <tr>
+                  <td >{{data.sno}}</td>
+                  <td >{{data.loan_amount}}</td>
+                  <td >{{data.receipt_no}}</td>
+                  <td >{{data.receipt_date}}</td>
+                  <td >{{data.amount}}</td>
+                  <td >{{data.interest_amount}}</td>
+                </tr>
+              </ng-container>  
+            </tbody>
+          </table>
+          <div class="col-md-12 mt-3">
+            <h3 class="col-12 pt-3">Loan Details </h3>
+             <table class="col-12">  
+               <thead>
+                 <tr>
+                   <th colspan="2">Loan Details</th>
+                   
+                 </tr>
+                 <tr>
+                   <th >Pending Loan Amount</th>
+                   <th >Pending Loan Interest</th>
+                 </tr>
+               </thead>
+               <tbody>
+                 <tr *ngFor="let row of loandetailList;let i=index" >
+                   <td >{{row.pending_loan_amt}}</td>
+                   <td >{{row.pending_interest_amt}}</td>
+                 </tr>
+                 
+               </tbody>
+             </table>
+           </div>
+          </div>
+        </div>
+        </div>
+
+        <div class="tab-pane fade" id="profilestatement" role="tabpanel" aria-labelledby="profile-statement-tab">
+        <div class="stmt-toolbar no-print">
+          <div class="form-group mb-0">
+            <label>Select Commitment Enrollment</label>
+            <select class="form-control" (change)="enrollstatementChg($event)">
+              <option value="">Select Enrollment</option>
+              <option *ngFor="let data of enrolList" [value]="data.id">{{data.enrol_name}}</option>
+            </select>
+          </div>
+          <button type="button" (click)="onpdfcustomerstatement()" class="btn btn-success" [disabled]="hideEnrolment2Details">
+            <i class="fa fa-file-pdf-o"></i> Download PDF
+          </button>
+          <button type="button" (click)="exportAsXLSX()" class="btn btn-info" [disabled]="hideEnrolment2Details">
+            <i class="fa fa-file-excel-o"></i> Export Excel
+          </button>
+        </div>
+
+        <div id="customerStatementPrint" [hidden]="hideEnrolment2Details">
+          <div class="stmt-sheet">
+            <div class="stmt-head">
+              <div class="stmt-head-left">
+                <h2>Customer Statement</h2>
+                <p>Commitment Chit — Account Summary</p>
+              </div>
+              <div class="stmt-head-right">
+                <img [src]="logo || companyLogo" alt="Logo" onerror="this.style.display='none'" />
+                <div class="stmt-date">Generated: {{statement_date}}</div>
+              </div>
+            </div>
+
+            <div class="stmt-customer">
+              <div class="stmt-customer-grid">
+                <div><span>Customer Name</span><strong>{{name}}</strong></div>
+                <div><span>Customer Code</span><strong>{{customer_code}}</strong></div>
+                <div><span>Branch</span><strong>{{branchName}}</strong></div>
+                <div><span>Slab Name</span><strong>{{slab_name || '-'}}</strong></div>
+                <div><span>First Due Date</span><strong>{{first_auction_date || '-'}}</strong></div>
+                <div><span>Prized Status</span>
+                  <strong>
+                    <span class="stmt-badge" [ngClass]="prized_status == 1 ? 'prized' : 'not-prized'">{{prized_status_label}}</span>
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="stmt-metrics">
+              <div class="stmt-metric highlight">
+                <label>Chit Value</label>
+                <div class="val">{{chit_value | number:'1.2-2'}}</div>
+              </div>
+              <div class="stmt-metric">
+                <label>Monthly Subscription</label>
+                <div class="val">{{monthly_subscription | number:'1.2-2'}}</div>
+              </div>
+              <div class="stmt-metric">
+                <label>Total Months</label>
+                <div class="val">{{total_months}}</div>
+              </div>
+              <div class="stmt-metric">
+                <label>Running Month</label>
+                <div class="val">{{running_month}}</div>
+              </div>
+              <div class="stmt-metric">
+                <label>Amount To Be Paid</label>
+                <div class="val">{{amount_to_be_paid | number:'1.2-2'}}</div>
+              </div>
+              <div class="stmt-metric">
+                <label>Total Paid</label>
+                <div class="val">{{paid_amount | number:'1.2-2'}}</div>
+              </div>
+              <div class="stmt-metric warn">
+                <label>Due Balance</label>
+                <div class="val">{{due_balance | number:'1.2-2'}}</div>
+              </div>
+            </div>
+
+            <div class="stmt-table-wrap">
+              <table class="stmt-table" id="stmtTransactionsTable">
+                <thead>
+                  <tr>
+                    <th>S.No</th>
+                    <th>Date</th>
+                    <th>Receipt No</th>
+                    <th>Particulars</th>
+                    <th style="text-align:right">Subscriber Paid</th>
+                    <th style="text-align:right">Penalty</th>
+                    <th style="text-align:right">Company Payment</th>
+                    <th style="text-align:right">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of statementList">
+                    <td>{{row.sno}}</td>
+                    <td>{{row.date}}</td>
+                    <td>{{row.receipt_no || '-'}}</td>
+                    <td>{{row.type_shown}}</td>
+                    <td style="text-align:right">{{getStatementCredit(row) | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.penalty | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{getStatementDebit(row) | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{row.balance_avance | number:'1.2-2'}}</td>
+                  </tr>
+                  <tr *ngIf="!statementList || statementList.length === 0">
+                    <td colspan="8" class="stmt-empty">No transactions recorded for this enrollment.</td>
+                  </tr>
+                </tbody>
+                <tfoot *ngIf="statementList && statementList.length > 0">
+                  <tr>
+                    <td colspan="4" style="text-align:right">Total</td>
+                    <td style="text-align:right">{{receipt_total | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{penalty_total | number:'1.2-2'}}</td>
+                    <td style="text-align:right">{{total_received_back | number:'1.2-2'}}</td>
+                    <td></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+        </div>
+
+      </div>
+
+  </div>
+</div>
+</div>

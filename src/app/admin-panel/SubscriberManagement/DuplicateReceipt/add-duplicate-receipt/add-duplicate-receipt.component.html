@@ -1,0 +1,353 @@
+<div class="card">
+  <div class="card-header">
+  <div class="row">
+  <div class="col-6 my-auto font-weight-bold">Add Duplicate Receipt</div>
+  <div class="col-6 text-right">
+  <a [routerLink]="['/admin-panel/receipt-report']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> Receipt Report</a>
+  </div>
+  </div>
+  </div>
+  <div class="card-body add-maze">
+  <form class="bs-example form-horizontal" [formGroup]="AddReceipt" (ngSubmit)="onSubmit()">
+  <div class="form-group row" [hidden]="!isSuperAdmin">
+  <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+  <div class="col-sm-10">
+  <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+  <option value="">Select Company</option>
+  <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+  <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+  </div>
+  </div>
+  </div>
+  <div class="row">
+  <div class="col-md-6">
+  <div class="form-group row">
+  <label class="col-sm-4">Branch Name<span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #branch_id class="form-control col-sm-12" (change)="branchChg($event)" formControlName="branch_id">
+  <option value="">Select Branch</option>
+  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6 my-auto pl-5">
+  <div class="form-group form-check mx-auto" row>
+  <input #other_branch type="checkbox" class="form-check-input" formControlName="other_branch">
+  <label class="form-check-label" for="exampleCheck1">Other Branch Collection</label>
+  </div>
+  </div>
+  <div class="col-md-6">
+  <div class="form-group row">
+  <label class="col-sm-4">Receipt Date <span class="error">*</span> </label>
+  <div class="col-sm-8">
+  <input #receipt_date type="text" class="form-control col-sm-12" placeholder="Receipt Date" formControlName="receipt_date" [minDate]=currentDate (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+  <div class="col-md-12" *ngIf="submitted && f.receipt_date.errors" class="invalid-feedback">
+  <label *ngIf="f.receipt_date.errors.required">Receipt date is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" >
+  <div class="form-group row">
+  <label class="col-sm-4">Collect Employee <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #employee_id class="form-control col-sm-12" formControlName="employee_id" (change)="employeeChg()" >
+  <option value="">Select Employee</option>
+  <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.employee_id.errors" class="invalid-feedback">
+  <label *ngIf="f.employee_id.errors.required">Collect employee is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="row" [hidden]="employeeSet">
+  <div class="col-md-6">
+  <div class="form-group row">
+  <label class="col-sm-4">Group Name <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #group_id class="form-control col-sm-12" formControlName="group_id" (change)="grpChg($event)">
+  <option value="">Select Group</option>
+  <option value="all">All Group</option>
+  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+  <label *ngIf="f.group_id.errors.required">Group is required</label>
+  </div>
+  </div>
+  </div> 
+  </div>
+  <div class="col-md-6">
+  <div class="form-group row">
+  <label class="col-sm-4">Customer Name <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #customer_id class="form-control col-sm-12" formControlName="customer_id" (change)="customerChg($event)">
+  <option value="">Select Customer</option>
+  <option *ngFor="let data of customerList" value="{{data.customer_id}}">{{data.customer_info.name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.customer_id.errors" class="invalid-feedback">
+  <label *ngIf="f.customer_id.errors.required">Customer is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6">
+  <div class="form-group row">
+  <label class="col-sm-4">Select Enrollment<span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #enrollment_id class="form-control col-sm-12" formControlName="enrollment_id" (change)="enrollementChg($event)" >
+  <option value="">Select Enrollment</option>
+  <option *ngFor="let data of enrollementList" value="{{data.id}}">{{data.enrol_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.enrollment_id.errors" class="invalid-feedback">
+  <label *ngIf="f.enrollment_id.errors.required">Enrollment is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideReceiptType">
+  <div class="form-group row">
+     <label class="col-sm-4">Receipt Type<span class="error">*</span></label>
+     <div class="col-sm-8">
+       <select #receipt_type class="form-control col-sm-12" formControlName="receipt_type" (change)="receiptTypeChg($event)" >
+         <option value="">Select Receipt Type</option>
+         <option value="Advanced Receipt">Advanced Adjust Receipt</option>
+         <option value="Normal Receipt">Normal Receipt</option>
+       </select>
+     <div class="col-md-12" *ngIf="submitted && f.receipt_type.errors" class="invalid-feedback">
+     <label *ngIf="f.receipt_type.errors.required">Receipt type is required</label>
+     </div>
+     </div>
+ 
+ 
+ 
+  <!--<div class="col-sm-8">
+  <input type="radio" name="receipt_type" value="Advanced Receipt" (change)="setAdvancedReceipt($event)" required>&nbsp;&nbsp;Advanced Adjust Receipt&nbsp;&nbsp;
+  <input type="radio" name="receipt_type" value="Normal Receipt" (change)="setNormalReceipt($event)">&nbsp;&nbsp;Normal Receipt
+  </div>-->
+  </div>
+  </div>
+  <div class="col-md-6 my-auto pl-5" [hidden]="hideReceiptType">
+  <div class="form-group form-check mx-auto" row>
+  <input #cancel_dividend type="checkbox" value="1" class="form-check-input" formControlName="cancel_dividend" (change)="cancelDividendChg($event)">
+  <label class="form-check-label" for="exampleCheck1">Cancel Dividend</label>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideAdvancedamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Advanced Available Amount</label>
+  <div class="col-sm-8">
+  <input type="text" class="form-control col-sm-12" value="{{AdvanceReceiptAmt}}">
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Pending Installment Amount</label>
+  <div class="col-sm-8">
+  <input type="text" class="form-control col-sm-12" placeholder="Pending Installment Amount" value="{{totalPendingAmt}}" readonly>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Total Pending Amount <span style="color:red">(Including Penalty or Bonus)</span></label>
+  <div class="col-sm-8">
+  <input type="text" class="form-control col-sm-12" placeholder="Total Pending Amount" value="{{pendingwithbonusandPenalty}}" readonly>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Total Penalty Amount </label>
+  <div class="col-sm-8">
+  <input type="text" class="form-control col-sm-12" placeholder="Total Penalty Amount" value="{{totalPenaltyAmt}}" readonly>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Total Bonus Amount</label>
+  <div class="col-sm-8">
+  <input type="text" class="form-control col-sm-12" placeholder="Total Bonus Amount" value="{{totalBonusAmt}}" readonly>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideamount">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Receipt Amount <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #amount type="text" class="form-control col-sm-12" placeholder="Receipt Amount" formControlName="amount" (blur)="onAmtChange($event)">
+  <div class="col-md-12" *ngIf="submitted && f.amount.errors" class="invalid-feedback">
+  <label *ngIf="f.amount.errors.required">Receipt amount is required</label>
+  <label *ngIf="f.amount.errors.pattern">Invalid format</label>
+  </div>
+  <div class="col-md-12" *ngIf="receiptAmtAlertMsg" class="invalid-feedback">
+  <label>Receipt amount should less than or equal total pending amount</label>
+  </div>
+  <div class="col-md-12" *ngIf="AdvanceReleaseAmtAlertMsg" class="invalid-feedback">
+  <label>Receipt amount should less than or equal Advance Release Amount</label>
+  </div>
+  </div>
+  </div>
+  </div>
+ </div>
+  <div class="row" [hidden]="hideChitDetails" formArrayName="Installments">
+  <table class="table col-sm-12 receipt-add" >
+  <thead class="thead-light">
+  <tr>
+  <th>SNo</th>
+  <th>Installment No</th>
+  <th>Group Name</th>
+  <th>Chit Type</th>
+  <th>Ticket No</th>
+  <th>chit value</th>
+  <th>Installment Amount</th>
+  <th>Amount Paid</th>
+  <th>Pending Days</th>
+  <th>Penalty</th>
+  <th>Bonus</th>
+  <th>Due Amount</th>
+  <th>Cancel Dividend</th>
+  <th>Overall Pending</th>
+  <th>Due Deduction</th>
+  <th>Penalty Deduction</th>
+  <th>Cancel Dividend Deduction</th>
+  </tr>
+  </thead>
+  <tr *ngFor="let install of Installments['controls']; let i = index;" formGroupName="{{i}}">
+  <td *ngIf="enrolChg">{{i+1}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].installment_no}}</td>
+  <td *ngIf="enrolChg">{{enrolList.group_info.group_name}}</td>
+  <td *ngIf="(enrolChg) && (enrolList.chit_type==1)">Dummy chit</td>
+  <td *ngIf="(enrolChg) && (enrolList.chit_type==2)">Regular Chit</td>
+  <td *ngIf="(enrolChg) && ((enrolList.chit_type!=1) && (enrolList.chit_type!=2))">-</td>
+  <td *ngIf="enrolChg">{{enrolList.ticket_no}}</td>
+  <td *ngIf="enrolChg">{{enrolList.scheme_info.chit_value}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].inst_amt_wise}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].amount_paid}}</td>
+  <td *ngIf="enrolChg" class="text-success">{{pendingDetail[i].pending_days}}</td>
+  <td *ngIf="enrolChg" class="text-danger">{{pendingDetail[i].penalty_amounts}}</td>
+  <td *ngIf="enrolChg" class="text-danger">{{pendingDetail[i].bonus}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].inst_amt_wise_pending}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].cancel_dividend_amount}}</td>
+  <td *ngIf="enrolChg">{{pendingDetail[i].installment_wise_overall_pending}}</td>
+  <td *ngIf="enrolChg"><input type="text" class="form-control" formControlName="received_amount" readonly></td>
+  <td *ngIf="enrolChg"><input type="text" class="form-control" formControlName="penalty_inst_wise" readonly></td>
+  <td *ngIf="enrolChg"><input type="text" class="form-control" formControlName="cancel_dividend_inst_wise" readonly></td>
+  </tr>
+  </table>
+  <div class="col-md-12 text-right">
+  <p><b>Total ( ₹ ) {{totalAmt}}</b></p>
+  </div>
+  </div>
+  <div class="row">
+  <div class="col-md-6" [hidden]="hidePayment">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Payment Type <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #payment_type_id class="form-control col-sm-12" formControlName="payment_type_id" (change)="paymentChg($event)">
+  <option value="">Select Payment Type</option>
+  <option value="1">Cash</option>
+  <option value="2">Cheque</option>
+  <option value="3">D.D</option>
+  <option value="4">RTGS/NEFT</option>
+  </select>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideDebitTo">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Debit To <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #debit_to type="text" class="form-control col-sm-12" placeholder="Debit To" formControlName="debit_to">
+  <div class="col-md-12" *ngIf="submitted && f.debit_to.errors" class="invalid-feedback">
+  <label *ngIf="f.debit_to.errors.required">Debit to is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideCheque">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Cheque No <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #cheque_no type="text" class="form-control col-sm-12" placeholder="Cheque No" formControlName="cheque_no">
+  <div class="col-md-12" *ngIf="submitted && f.cheque_no.errors" class="invalid-feedback">
+  <label *ngIf="f.cheque_no.errors.required">Cheque no is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideCheque">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Cheque Date <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #cheque_date type="text" class="form-control col-sm-12" placeholder="Cheque Date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false" formControlName="cheque_date">
+  <div class="col-md-12" *ngIf="submitted && f.cheque_date.errors" class="invalid-feedback">
+  <label *ngIf="f.cheque_date.errors.required">Cheque date is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideBank">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Bank <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <select #bank_name_id class="col-sm-12" formControlName="bank_name_id">
+  <option value="">Select Bank</option>
+  <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+  </select>
+  <div class="col-md-12" *ngIf="submitted && f.bank_name_id.errors" class="invalid-feedback">
+  <label *ngIf="f.bank_name_id.errors.required">Bank is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideBank">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Branch Name <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #branch_name type="text" class="form-control col-sm-12" placeholder="Branch Name" formControlName="branch_name">
+  <div class="col-md-12" *ngIf="submitted && f.branch_name.errors" class="invalid-feedback">
+  <label *ngIf="f.branch_name.errors.required">Bank branch is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideTransaction">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Transaction Date <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #transaction_date type="text" class="form-control col-sm-12" placeholder="Transaction Date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false" formControlName="transaction_date">
+  <div class="col-md-12" *ngIf="submitted && f.transaction_date.errors" class="invalid-feedback">
+  <label *ngIf="f.transaction_date.errors.required">Transaction date is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="col-md-6" [hidden]="hideTransaction">
+  <div class="form-group row">
+  <label for="exampleFormControlSelect1" class="col-sm-4">Transaction No <span class="error">*</span></label>
+  <div class="col-sm-8">
+  <input #transaction_no type="text" class="form-control col-sm-12" placeholder="Transaction No" formControlName="transaction_no">
+  <div class="col-md-12" *ngIf="submitted && f.transaction_no.errors" class="invalid-feedback">
+  <label *ngIf="f.transaction_no.errors.required">Transaction no is required</label>
+  </div>
+  </div>
+  </div>
+  </div>
+  </div>
+  <div class="form-group d-flex justify-content-center">
+  <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+  <a [routerLink]="['/admin-panel/receipt-report']" class="btn btn-danger mr-1">Cancel</a> 
+  </div> 
+  </form> 
+  </div>
+ </div>

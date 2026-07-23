@@ -1,0 +1,154 @@
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Customer Birthday List</div>
+      <div class="col-6 text-right">
+        
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <form class="bs-example form-horizontal" [formGroup]="ViewBank" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <!-- <a [routerLink]="['/admin-panel/view-bank-details']" class="btn btn-danger mr-1"> Reset </a> -->
+            <button type="button" class="btn btn-danger mr-1" (click)="resetBank()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="dataTables_wrapper no-footer">
+        <div class="dataTables_length">
+          <label>
+            Show 
+            <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select> 
+            entries
+          </label>
+        </div>
+        <div class="dataTables_filter">
+          <label>
+            Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+          </label>
+        </div><br><br>
+        <h3>Today Birthday</h3>
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('account_number')">Mobile Number</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ifsc_code')">Email Id</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_code')">Customer Code</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_branch_name')">Mail</th>
+              <th rowspan="1" colspan="1" style="width: 0px;">SMS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{row.sno}}</td>
+              <td>{{row.bank_name}}</td>
+              <td>{{row.account_number}}</td>
+              <td>{{row.ifsc_code}}</td>
+              <td>{{row.bank_code}}</td>
+              <td>  
+                <a  [routerLink]="['/admin-panel/birthday-mail/'+row.id]"><span class="badge badge-danger">Mail</span></a>
+              </td>
+              <td>  
+                <a  [routerLink]="['/admin-panel/birthday-message/'+row.id]"><span class="badge badge-primary">SMS</span></a>
+                
+              </td>
+            </tr>
+          </tbody>
+        </table><br><br>
+        <h3>Completed Birthday</h3>
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('account_number')">Mobile Number</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ifsc_code')">Email Id</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_code')">Customer Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{row.sno}}</td>
+              <td>{{row.bank_name}}</td>
+              <td>{{row.account_number}}</td>
+              <td>{{row.ifsc_code}}</td>
+              <td>{{row.bank_code}}</td>
+            </tr>
+          </tbody>
+        </table><br><br>
+        <h3>Upcoming Birthday</h3>
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('account_number')">Mobile Number</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ifsc_code')">Email Id</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bank_code')">Customer Code</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{row.sno}}</td>
+              <td>{{row.bank_name}}</td>
+              <td>{{row.account_number}}</td>
+              <td>{{row.ifsc_code}}</td>
+              <td>{{row.bank_code}}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dataTables_info" role="status" aria-live="polite">
+          {{dtableInfo}}
+        </div>
+        <div class="dataTables_paginate paging_simple_numbers">
+          <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+          <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+          <span *ngFor="let page of pager.pages">
+            <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+            <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+          </span>
+          <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+          <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>

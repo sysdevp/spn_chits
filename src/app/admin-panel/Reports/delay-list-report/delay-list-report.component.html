@@ -1,0 +1,151 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Delay List Report</h3>
+  </div>
+  <div class="card-body cus_ledt">
+    <form class="bs-example form-horizontal" [formGroup]="CustomerLedger" (ngSubmit)="onSubmit()" >
+      <div class="row">
+        <div class="col-md-4" [hidden]="!isSuperAdmin">
+          <label class="col-12 px-0">Company Name <span class="error">*</span></label>
+          <select #tenant_id class="col-12" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="col-12 px-0">Branch Name <span class="error">*</span></label>
+          <select class="col-12" (change)="branchChg($event)" formControlName="branch_id">
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+            <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="col-12 px-0">Group Details <span class="error">*</span></label>
+          <select class="col-12"  formControlName="group_id">
+            <option value="">Select Group Details</option>
+            <option *ngFor="let data of customerList" value="{{data.id}}">{{data.group_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+            <label *ngIf="f.group_id.errors.required">Group Details is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row float-right mt-2">
+        <div class="form-group col-md-4 mt-auto mb-0">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        </div>
+    </div>
+    </form>
+<div class="" [hidden]="hidecustomerLedger">
+    <div class="row cus_led_info" >
+
+      <div class="col-md-5">
+        <div class="media">
+          <img *ngIf="photo!=''" src={{photo}} class="img-view"/>
+          <div class="media-body mt-auto">
+            <h1 class="mb-0">{{name}}</h1>
+            <h5 class="mb-0">{{branchName}}</h5>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mt-auto">
+        <!--     <h3><i class="fas fa-download pr-3"></i>Export Subscriber Information</h3>-->
+      </div>
+ 
+    </div>
+
+    <!-- tabs -->
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <li class="nav-item">
+         <!-- <a class="nav-link active" id="home-tab" data-toggle="tab" href="#home" 
+          role="tab" aria-controls="home" aria-selected="true">Customer Information</a>-->
+        </li>
+      </ul>
+      <div class="tab-content cus_led_subr pt-3" id="myTabContent">
+        <!-- Subscrieber -->
+        <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+          
+          <div class="row" >
+            <div class="col-md-6"> 
+              
+            </div>
+            <div class="col-md-6 text-right">
+              <div class="form-group">
+                <!--<div class="col-1 text-right" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>-->
+                <button (click)="exportAsXLSX()" class="btn btn-info" ><i class="fa fa-file-excel-o" style="font-size:18px;color:white;padding-right:10px; "></i>Export </button>
+              </div>
+          </div>
+            </div>
+          <table class="col-12" style="display: block;overflow: auto;" id="mygrid" [hidden]="datafound">  
+           
+            <thead>
+              <tr>
+                <th rowspan="3">Sno</th>
+                <th rowspan="3">Customer Name</th>
+                <th rowspan="3">Total</th>
+                <th rowspan="3">Avg</th>
+                <th rowspan="3">HighDays</th>
+              </tr>
+            </thead>
+              <tbody>
+              <ng-container *ngFor="let data of viewgroupwiseoutstandingInfo; let i = index"> 
+                <tr>
+                  <td >{{i+1}}</td>
+                  <td >{{data.customer_details.customer_name}}</td>
+                  <td >{{data.customer_details.total_pending_days}}</td>
+                  <td >{{data.customer_details.average}}</td>
+                  <td >{{data.customer_details.high_days}}</td>
+                <ng-container *ngFor="let number of data.data1;">
+                    
+              
+                    <td >{{number.pending_days}}</td>
+                 
+                 
+                  </ng-container>
+                  
+                  </tr>
+                
+              </ng-container>  
+            </tbody>
+          </table>
+          <table class="col-12" style="display: block;overflow: auto;" [hidden]="nodatafound">  
+           
+            <thead>
+              <tr>
+                <th rowspan="3">Sno</th>
+                <th rowspan="3">Customer Name</th>
+                <th rowspan="3">Total</th>
+                <th rowspan="3">Avg</th>
+                <th rowspan="3">HighDays</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="12" style="color: #d9534f;
+                border: transparent;
+                font-size: 20px;">
+                  No Records Found
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="row" [hidden]="pendingreport">
+            <div class="col-md-6">
+             
+            </div>
+            
+            </div>
+
+        </div>
+      
+  </div>
+</div>
+</div>  
+

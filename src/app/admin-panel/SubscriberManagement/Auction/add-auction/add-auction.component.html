@@ -1,0 +1,659 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add Auction</div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-auction']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Auctions</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="AddAuction"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-10">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Auction Details</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Branch Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select
+                #branch_id
+                formControlName="branch_id"
+                (change)="branchChg($event)"
+              >
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{ data.id }}">
+                  {{ data.branch_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.branch_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.branch_id.errors.required"
+                  >Branch is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Group Name <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select
+                #group_id
+                formControlName="group_id"
+                (change)="groupChg($event)"
+              >
+                <option value="">Select Group</option>
+                <option *ngFor="let data of groupList" value="{{ data.id }}">
+                  {{ data.group_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.group_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.group_id.errors.required"
+                  >Group is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Installment Number <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #installment_no
+                type="text"
+                class="form-control"
+                placeholder="Enter Installment No"
+                formControlName="installment_no"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.installment_no.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.installment_no.errors.required"
+                  >Installment no is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Customer Name<span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select
+                #enrollment_id
+                formControlName="enrollment_id"
+                (change)="customerChg($event)"
+              >
+                <option value="">Select Customer Name</option>
+                <option
+                  *ngFor="let data of enrollmentList"
+                  value="{{ data.id }}"
+                >
+                  {{ data.customer_name_det }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.enrollment_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.enrollment_id.errors.required"
+                  >Customer is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-12" [hidden]="hideLoanDetail">
+          <div class="form-group row" [hidden]="hideLoanDetail">
+            <label class="col-sm-2"></label>
+            <div class="col-sm-10">
+              <table style="width: 100%" class="table">
+                <tr>
+                  <th>SNo</th>
+                  <th>Loan Value</th>
+                  <th>Pending Amount</th>
+                  <th>Paid Amount</th>
+                </tr>
+                <tr *ngFor="let loan of LoanList; let i = index">
+                  <td>{{ loan.sno }}</td>
+                  <td>{{ loan.loan_amount }}</td>
+                  <td>{{ loan.pending_amount }}</td>
+                  <td>{{ loan.paid_amount }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 my-auto">
+          <div class="form-group form-check mx-auto pl-0" row>
+            <label class="form-check-label col-md-5 pl-0" for="exampleCheck1"
+              >GST Initialization</label
+            >
+            <input
+              #gst_init
+              type="checkbox"
+              value="1"
+              class="form-check-input"
+              formControlName="gst_init"
+              (change)="gst_init_Chg($event)"
+            />
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="!showAuctionType">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Auction Type <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select
+                #auction_type
+                formControlName="auction_type"
+                [hidden]="!nonRegister"
+              >
+                <option value="">Select Auction Type</option>
+                <option value="duplicate">Duplicate</option>
+                <option value="normal">Normal</option>
+              </select>
+              <select
+                #auction_type
+                formControlName="auction_type"
+                [hidden]="!slabNonRegister"
+              >
+                <option value="">Select Auction Type</option>
+                <option value="normal">Slab</option>
+                <option value="duplicate">Duplicate</option>
+              </select>
+              <select
+                #auction_type
+                formControlName="auction_type"
+                [hidden]="!profit"
+              >
+                <option value="">Select Auction Type</option>
+                <option value="profit">Profit</option>
+                <option value="normal">Normal</option>
+                <option value="duplicate">Duplicate</option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.auction_type.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.auction_type.errors.required"
+                  >Auction type is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Chit Value <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #chit_value
+                type="text"
+                class="form-control"
+                placeholder="Enter Chit Value"
+                formControlName="chit_value"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.chit_value.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.chit_value.errors.required"
+                  >Chit value is required</label
+                >
+                <label *ngIf="f.chit_value.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12 mb-3">
+          <div class="card-header"><strong>Amount Details</strong></div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Group Type</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter Group Type"
+                value="{{ groupName }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Bidding Amount <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #bidding_amount
+                *ngIf="biddingReadonly"
+                type="text"
+                class="form-control"
+                placeholder="Enter Bidding Amount"
+                formControlName="bidding_amount"
+                readonly
+              />
+              <input
+                #bidding_amount
+                *ngIf="!biddingReadonly"
+                type="text"
+                class="form-control"
+                placeholder="Enter Bidding Amount"
+                formControlName="bidding_amount"
+                (blur)="biddingChg($event)"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.bidding_amount.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.bidding_amount.errors.required"
+                  >Bidding amount is required</label
+                >
+                <label *ngIf="f.bidding_amount.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+              <div
+                class="col-md-12"
+                *ngIf="biddingAlert"
+                class="invalid-feedback"
+              >
+                <label
+                  >Bidding amount should be greater than commission
+                  amount</label
+                >
+              </div>
+              <div
+                class="col-md-12"
+                *ngIf="auctionalert"
+                class="invalid-feedback"
+              >
+                <label
+                  >Bidding amount should be less than or equal to Chit
+                  amount</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="!profit">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Profit Amount</label>
+            <div class="col-sm-8">
+              <input
+                #profit_amount
+                type="text"
+                class="form-control"
+                placeholder="Enter Profit Amount"
+                formControlName="profit_amount"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.profit_amount.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.profit_amount.errors.required"
+                  >Bidding amount is required</label
+                >
+                <label *ngIf="f.profit_amount.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Min Auc Amount</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" value="" readonly />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Max Auc Amount</label>
+            <div class="col-sm-8">
+              <input type="text" class="form-control" value="" readonly />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Monthly Due</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                value="{{ monthlyDue }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No of Members</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                value="{{ noOfMembers }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Commission Percentage</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                value="{{ commissionPercentage }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Commission Amount</label>
+            <div class="col-sm-8">
+              <input
+                #commission_amount
+                type="text"
+                class="form-control"
+                placeholder="Enter Commission Amount"
+                formControlName="commission_amount"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.commission_amount.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.commission_amount.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Each Member Dividend</label>
+            <div class="col-sm-8">
+              <input
+                #divident_amount
+                type="text"
+                class="form-control"
+                placeholder="Enter Each Member Dividend"
+                formControlName="divident_amount"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.divident_amount.errors"
+                class="invalid-feedback"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Monthly Installment</label>
+            <div class="col-sm-8">
+              <input
+                #installment_amount
+                type="text"
+                class="form-control"
+                placeholder="Enter Monthly Installment"
+                formControlName="installment_amount"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.installment_amount.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.installment_amount.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Total Dividend</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Enter Total Dividend"
+                value="{{ totalDividend }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Bid Advance Amount</label>
+            <div class="col-sm-8">
+              <input
+                type="text"
+                class="form-control"
+                value="{{ bidAdvanceAmount }}"
+                readonly
+              />
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Auction Date <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #auction_date
+                type="text"
+                formControlName="auction_date"
+                class="form-control calendar"
+                placeholder="Auction Date"
+                [maxDate]="currentDate"
+                (click)="d2.toggle()"
+                ngbDatepicker
+                #d2="ngbDatepicker"
+                (dateSelect)="auctionDateChg()"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.auction_date.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.auction_date.errors.required"
+                  >Auction date is required</label
+                >
+              </div>
+              <div
+                class="col-md-12"
+                *ngIf="auctionDateAlertMsg != ''"
+                class="invalid-feedback"
+              >
+                <label>{{ auctionDateAlertMsg }}</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Next Auction Date <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #next_auction_date
+                type="text"
+                formControlName="next_auction_date"
+                class="form-control calendar"
+                placeholder="Enter Date Introduced"
+                (click)="d1.toggle()"
+                ngbDatepicker
+                #d1="ngbDatepicker"
+                onkeydown="return false;"
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.next_auction_date.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.next_auction_date.errors.required"
+                  >Next auction date is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Customer Release Amount</label
+            >
+            <div class="col-sm-8">
+              <input
+                #total_release_amount
+                type="text"
+                class="form-control"
+                placeholder="Enter Customer Release Amount"
+                formControlName="total_release_amount"
+                readonly
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.total_release_amount.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.total_release_amount.errors.pattern"
+                  >Invalid format</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-12">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group row">
+                <label class="col-sm-4 col-form-label">Remark</label>
+                <div class="col-sm-8">
+                  <textarea
+                    #remark
+                    class="form-control"
+                    placeholder="Enter Remark"
+                    formControlName="remark"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-auction']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

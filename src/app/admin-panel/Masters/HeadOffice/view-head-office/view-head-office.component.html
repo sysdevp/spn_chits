@@ -1,0 +1,139 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Regional Office Detail</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">RO Name: </label>
+						<b class="px-1">{{viewHeadOfficeInfo.head_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">RO Code: </label>
+						<b class="px-1">{{viewHeadOfficeInfo.head_code}} </b>
+					</div>
+				</div>	
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Mobile Number : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.mobile_no}} </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Phone Number : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.phone_no}}  </b>
+					</div>
+				</div>
+				<div class="col-md-12">
+					<div class="form-group">
+						<label class="form-label">Email : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.email_id}}  </b>
+					</div>
+				</div>
+				
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Address Line 1 : </label>
+							<b class="px-1">{{viewHeadOfficeInfo.address_line_1}}  </b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Address Line 2 : </label>
+							<b class="px-1">{{viewHeadOfficeInfo.address_line_2}}  </b>
+						</div>
+					</div>
+				
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">State : </label>
+						<b class="px-1">{{stateInfo.state_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">District : </label>
+						<b class="px-1">{{districtInfo.district_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">City : </label>
+						<b class="px-1">{{cityInfo.city_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Pincode : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.pincode}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Landmark : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.landmark}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Remarks : </label>
+						<b class="px-1">{{viewHeadOfficeInfo.remarks}}  </b>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+	<div class="card-header">
+		<div class="row">
+			<div class="col-6 my-auto font-weight-bold">Regional Office List</div>
+			<div class="col-6 text-right">
+				<a [routerLink]="['/admin-panel/add-head-office']"  class="bg-success border-0 text-white px-3 py-2"> + Add Regional Office </a>
+			</div>
+		</div>
+	</div>
+	<div class="card-body">
+		<div [hidden]="TableHidden">
+			<table id="dtable"  class="row-border hover">
+				<thead>
+					<tr> 
+						<th>SNo</th>
+						<th>RO Name</th>
+						<th>RO Code</th>
+						<th>Mobile Number</th>
+						<th>Email</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let row of dataList;">
+						<td>{{row.sno}}</td>
+						<td>{{row.head_name}}</td>
+						<td>{{row.head_code}}</td>
+						<td>{{row.mobile_no}}</td>
+						<td>{{row.email_id}}</td>
+						<td>  
+							<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+							<a [routerLink]="['/admin-panel/update-head-office/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+							<a [routerLink]="['/admin-panel/delete-head-office/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+							<!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Head Office"><i class="fas fa-check-circle text-success"></i></a>
+							<a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Head Office"><i class="fas fa-ban text-danger"></i></a>-->
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div *ngIf="TableHidden==true" class="table-loader" > 
+			<img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+		</div>
+	</div>
+</div>

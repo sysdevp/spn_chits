@@ -1,0 +1,193 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">View Payment Detail</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-auction']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Auction List</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <div class="row">
+      <div class="col-md-6" [hidden]="!isSuperAdmin">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Company Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{companyName}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Branch Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{branchName}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Group Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{groupName}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Ticket No </label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{ticketNo}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Customer Name</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{customerName}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Chit Value</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{chitValue}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Bidding Amount</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{biddingAmount}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Commission Amount</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{commissionAmount}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Bid Advance Amount</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{bidAdvanceAmount}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">CGST</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{cgst}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">SGST</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{sgst}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">GST</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{gst}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Bid Payment Adjustment</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{bidPaymentAdjustment}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label">Total Release Amount</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{totalReleaseAmount}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group row">
+          <label class="col-sm-4 col-form-label"> Customer Released Amount</label>
+          <div class="col-sm-8">
+            <input type="text" class="form-control" value="{{customerReleasedAmount}}" readonly>
+          </div>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus">
+        <h5 class="col-md-12 py-3 text-center">Payment History</h5>
+        <div class="col-md-12">
+          <table class="table table-responsive">
+            <thead class="bg-light">
+              <tr>
+                <th>Sno</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Payment Type</th>
+                <th>Cheque No</th>
+                <th>Cheque Date</th>
+                <th>Transaction No</th>
+                <th>Transaction Date</th>
+                <th>Debit From</th>
+                <th>Employee</th>
+              </tr>
+            </thead>
+            <tr *ngFor="let pay of paymentList; let i = index;">
+              <td>{{i+1}}</td>
+              <td>{{pay.payment_date}}</td>
+              <td>{{pay.total_amount}}</td>
+              <td>{{pay.payment_type}}</td>
+              <td>{{pay.cheque_no}}</td>
+              <td>{{pay.cheque_date}}</td>
+              <td>{{pay.transaction_no}}</td>
+              <td>{{pay.transaction_date}}</td>
+              <td>{{pay.debit_to}}</td>
+              <td>{{pay.emp_name}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="row border emp_hrm mz-add-cus">
+        <h5 class="col-md-12 py-3 text-center">Adjustment History</h5>
+        <div class="col-md-12">
+          <table class="table table-responsive">
+            <thead class="bg-light">
+              <tr>
+                <th>Sno</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Customer Name</th>
+                <th>Group Name</th>
+                <th>Ticket No</th>
+              </tr>
+            </thead>
+            <tr *ngFor="let pay of adjustpaymentList; let i = index;">
+              <td>{{i+1}}</td>
+              <td>{{pay.receipt_date}}</td>
+              <td>{{pay.amount}}</td>
+              <td>{{pay.customer_name}}</td>
+              <td>{{pay.group_name}}</td>
+              <td>{{pay.ticket_no}}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

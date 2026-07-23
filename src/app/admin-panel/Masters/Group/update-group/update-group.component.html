@@ -1,0 +1,428 @@
+<div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-6 my-auto font-weight-bold">Update Group Details</div>
+          <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/view-group']" class="bg-success border-0 text-white px-3 py-2"><i class="fas fa-eye pr-2"></i>View Group</a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body add-maze">
+      <form class="bs-example form-horizontal" [formGroup]="UpdateGroup" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="0">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Branch Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #branch_id formControlName="branch_id">
+              <option value="0">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch name is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Type <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #group_type class="form-control form-control w-100 border-dark" formControlName="group_type">
+                  <option value="0">Select Group Type</option>
+                  <option value="1">Register</option>
+                  <option value="2">Non Register</option>
+                  <option value="3">Slab</option>
+                  <option value="4">Non Register Slab</option>
+                  <option value="5">Profit Chit</option>
+                  <option value="6">2nd Due Slab</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.group_type.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_type.errors.required">Group type is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Name <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #group_name type="text" class="form-control" placeholder="Enter Group Name" formControlName="group_name">
+                <div class="col-md-12" *ngIf="submitted && f.group_name.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_name.errors.required">Group name is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Scheme <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #scheme_id formControlName="scheme_id">
+              <option value="0">Select Scheme</option>
+              <option *ngFor="let data of schemeList" value="{{data.id}}">{{data.scheme_format}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.scheme_id.errors" class="invalid-feedback">
+              <label *ngIf="f.scheme_id.errors.required">Scheme is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Auction Date <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #auction_date type="text" class="form-control" placeholder="Enter Auction Date" formControlName="auction_date">
+                <div class="col-md-12" *ngIf="submitted && f.auction_date.errors" class="invalid-feedback">
+                  <label *ngIf="f.auction_date.errors.required">Auction date is required</label>
+                  <label *ngIf="f.auction_date.errors.pattern">Invalid pattern</label>
+                </div>
+                <div class="col-md-12" *ngIf="submitted && auctionDateAlert" class="invalid-feedback">
+                  <label>Date should be between 1 to 28</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6" [hidden]="tenantbased">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Auction Date 2</label>
+              <div class="col-sm-8">
+                <input #auction_date1 type="text" class="form-control" placeholder="Enter Auction Date 2" formControlName="auction_date1">
+                
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Temporary Group </label>
+              <div class="col-sm-8">
+                <input type="checkbox" (change)="checkValue($event)" formControlName="status">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Maximum Ticket Count</label>
+              <div class="col-sm-8">
+                <input #max_ticket_count type="text" class="form-control" placeholder="Enter Maximum Ticket Count" formControlName="max_ticket_count">
+                <div class="col-md-12" *ngIf="submitted && f.max_ticket_count.errors" class="invalid-feedback">
+                  <label *ngIf="f.max_ticket_count.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Auction From Time</label>
+              <div class="col-sm-8">
+                <input #auction_time type="time" class="form-control" placeholder="Enter Auction From Time" formControlName="auction_time">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Auction To Time</label>
+              <div class="col-sm-8">
+                <input #auction_time1 type="time" class="form-control" placeholder="Enter Auction To Time" formControlName="auction_time1">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Starting Date <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #starting_date type="text" class="form-control calendar" placeholder="Enter Starting Date" formControlName="starting_date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+                <div class="col-md-12" *ngIf="submitted && f.starting_date.errors" class="invalid-feedback">
+                  <label *ngIf="f.starting_date.errors.required">Starting date is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">First Due Date</label>
+              <div class="col-sm-8">
+                <input #first_due_date type="text" class="form-control calendar" placeholder="Enter First Due Date" formControlName="first_due_date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+        
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Commission Percentage(%)<span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #commission_percent type="text" class="form-control" placeholder="Enter Commission %" formControlName="commission_percent">
+                <div class="col-md-12" *ngIf="submitted && f.commission_percent.errors" class="invalid-feedback">
+                  <label *ngIf="f.commission_percent.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Number</label>
+              <div class="col-sm-8">
+                <input #fd_number type="text" class="form-control" placeholder="Enter FD Number" formControlName="fd_number">
+                <div class="col-md-12" *ngIf="submitted && f.fd_number.errors" class="invalid-feedback">
+                  <label *ngIf="f.fd_number.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Total FD</label>
+              <div class="col-sm-8">
+                <input #total_fd type="text" class="form-control" placeholder="Enter Total FD" formControlName="total_fd">
+                <div class="col-md-12" *ngIf="submitted && f.total_fd.errors" class="invalid-feedback">
+                  <label *ngIf="f.total_fd.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Company FD</label>
+              <div class="col-sm-8">
+                <input #company_fd type="text" class="form-control" placeholder="Enter Company FD" formControlName="company_fd">
+                <div class="col-md-12" *ngIf="submitted && f.company_fd.errors" class="invalid-feedback">
+                  <label *ngIf="f.company_fd.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+       
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Rate Of Interest</label>
+              <div class="col-sm-8">
+                <input #rate_of_interest type="text" class="form-control" placeholder="Rate Of Interest" formControlName="rate_of_interest">
+                <div class="col-md-12" *ngIf="submitted && f.rate_of_interest.errors" class="invalid-feedback">
+                  <label *ngIf="f.rate_of_interest.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Rate</label>
+              <div class="col-sm-8">
+                <input #fd_rate type="text" class="form-control" placeholder="Enter FD Rate" formControlName="fd_rate">
+                <div class="col-md-12" *ngIf="submitted && f.fd_rate.errors" class="invalid-feedback">
+                  <label *ngIf="f.fd_rate.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Date</label>
+              <div class="col-sm-8">
+                <input #fd_date type="text" class="form-control calendar" placeholder="Enter FD Date" formControlName="fd_date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Maturity Amount</label>
+              <div class="col-sm-8">
+                <input #maturity_amount type="text" class="form-control" placeholder="Enter Maturity Amount" formControlName="maturity_amount">
+                <div class="col-md-12" *ngIf="submitted && f.maturity_amount.errors" class="invalid-feedback">
+                  <label *ngIf="f.maturity_amount.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Bank</label>
+              <div class="col-sm-8">
+                  <select #fd_bank_id formControlName="fd_bank_id">
+                    <option value="0">Select Bank</option>
+                    <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+                  </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Branch</label>
+              <div class="col-sm-8">
+                <input #fd_branch type="text" class="form-control" placeholder="Enter FD Branch" formControlName="fd_branch">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">PSO Number</label>
+              <div class="col-sm-8">
+                <input #pso_number type="text" class="form-control" placeholder="Enter PSO Number" formControlName="pso_number">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">PSO Date</label>
+              <div class="col-sm-8">
+                <input #pso_date type="text" class="form-control calendar" placeholder="Enter PSO Date" formControlName="pso_date" (click)="d4.toggle()" ngbDatepicker #d4="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Blaw Number</label>
+              <div class="col-sm-8">
+                <input #blaw_number type="text" class="form-control" placeholder="Enter Blaw Number" formControlName="blaw_number">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Blaw Date</label>
+              <div class="col-sm-8">
+                <input #blaw_date type="text" class="form-control calendar" placeholder="Enter Blaw Date" formControlName="blaw_date" (click)="d5.toggle()" ngbDatepicker #d5="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Cheque No</label>
+              <div class="col-sm-8">
+                <input #cheque_no type="text" class="form-control" placeholder="Enter Cheque No" formControlName="cheque_no">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Company Chit</label>
+              <div class="col-sm-8">
+                <input #company_chit type="text" class="form-control" placeholder="Enter Company Chit" formControlName="company_chit">
+                <div class="col-md-12" *ngIf="submitted && f.company_chit.errors" class="invalid-feedback">
+                  <label *ngIf="f.company_chit.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Base Penalty</label>
+              <div class="col-sm-8">
+                <input #group_base_penalty type="text" class="form-control" placeholder="Enter Group Base Penalty" formControlName="group_base_penalty">
+                <div class="col-md-12" *ngIf="submitted && f.group_base_penalty.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_base_penalty.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Base Bonus</label>
+              <div class="col-sm-8">
+                <input #group_base_bonus type="text" class="form-control" placeholder="Enter Group Base Bonus" formControlName="group_base_bonus">
+                <div class="col-md-12" *ngIf="submitted && f.group_base_bonus.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_base_bonus.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Base Interest</label>
+              <div class="col-sm-8">
+                <input #group_base_interest type="text" class="form-control" placeholder="Enter Group Base Interest" formControlName="group_base_interest">
+                <div class="col-md-12" *ngIf="submitted && f.group_base_interest.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_base_interest.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Base Dividend Cancel Days</label>
+              <div class="col-sm-8">
+                <input #group_base_dividend_cancel_days type="text" class="form-control" placeholder="Enter Group Base Dividend Cancel Days" formControlName="group_base_dividend_cancel_days">
+                <div class="col-md-12" *ngIf="submitted && f.group_base_dividend_cancel_days.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_base_dividend_cancel_days.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Penalty Days</label>
+              <div class="col-sm-8">
+                <input #group_penalty_days type="text" class="form-control" placeholder="Enter Group Penalty Days" formControlName="group_penalty_days">
+                <div class="col-md-12" *ngIf="submitted && f.group_penalty_days.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_penalty_days.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Bonus Days</label>
+              <div class="col-sm-8">
+                <input #group_bonus_days type="text" class="form-control" placeholder="Enter Group Bonus Days" formControlName="group_bonus_days">
+                <div class="col-md-12" *ngIf="submitted && f.group_bonus_days.errors" class="invalid-feedback">
+                  <label *ngIf="f.group_bonus_days.errors.pattern">Invalid pattern</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Group Base Incentive Percentage</label>
+          <div class="col-sm-10">
+            <input #group_base_incentive_percentage type="text" class="form-control" placeholder="Enter Group Base Incentive Percentage" formControlName="group_base_incentive_percentage">
+            <div class="col-md-12" *ngIf="submitted && f.group_base_incentive_percentage.errors" class="invalid-feedback">
+              <label *ngIf="f.group_base_incentive_percentage.errors.pattern">Invalid pattern</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">FD Renewal Date</label>
+              <div class="col-sm-8">
+                <input #fd_renewal_date type="text" class="form-control calendar" placeholder="Enter FD Renewal Date" formControlName="fd_renewal_date" (click)="d6.toggle()" ngbDatepicker #d6="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Commit Date</label>
+              <div class="col-sm-8">
+                <input #commit_date type="text" class="form-control calendar" placeholder="Enter Commit Date" formControlName="commit_date" (click)="d7.toggle()" ngbDatepicker #d7="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group row">
+              <label class="col-sm-4 col-form-label">Group Id <span class="error">*</span></label>
+              <div class="col-sm-8" >
+                <input  #group_id type="text" class="form-control" placeholder="Enter Group Id" formControlName="group_id" tooltip="Text">
+                
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-group']" class="btn btn-danger mr-1">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>

@@ -1,0 +1,277 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Customer Enrollment Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{customerInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Group Name : </label>
+            <b class="px-1">{{groupInfo.group_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Ticket No : </label>
+            <b class="px-1">{{viewEnrollmentInfo.ticket_no}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Payment Type : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.payment_type==1">Daily</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.payment_type==2">Weekly</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.payment_type==3">Monthly</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Area : </label>
+            <b class="px-1">{{viewEnrollmentInfo.collection_area}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Pin : </label>
+            <b class="px-1">{{viewEnrollmentInfo.collection_pin}}</b>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Agent : </label>
+            <b class="px-1">{{collectionAgentInfo.first_name}} {{collectionAgentInfo.last_name}}</b>
+          </div>
+        </div>-->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Agent Type : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.agent_type==1">Customer</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.agent_type==2">Employee</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.agent_type==3">Business Agent</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.agent_type==4">Self Joining</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.agent_type==5">Others</b>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="viewEnrollmentInfo.agent_type==5">
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <b class="px-1">{{viewEnrollmentInfo.introducer_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="(viewEnrollmentInfo.agent_type==1) || (viewEnrollmentInfo.agent_type==2) || (viewEnrollmentInfo.agent_type==3)">
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <b class="px-1">{{viewEnrollmentInfo.introducer_full_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Date Introduced : </label>
+            <b class="px-1">{{viewEnrollmentInfo.date_introduced}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Type : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.customer_type==1">Normal Customer</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.customer_type==2">Cut Customer</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.customer_type==3">Full Customer</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Bonus % : </label>
+            <b class="px-1">{{viewEnrollmentInfo.bonus_percentage}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Penalty % : </label>
+            <b class="px-1">{{viewEnrollmentInfo.penalty_percentage}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Interest % : </label>
+            <b class="px-1">{{viewEnrollmentInfo.interest_percentage}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Cancel Dividend : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.dividend_cancel==1">Yes</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.dividend_cancel==0">No</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Ticket Type : </label>
+            <b class="px-1">{{tickettype}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Enrollment Type : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.enrolment_type==1">Active</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.enrolment_type==2">In Active</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.enrolment_type==3">On Hold</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.enrolment_type==4">Adjustments</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.enrolment_type==5">Cancel</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Chit Type : </label>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.chit_type==1">Dummy Chit</b>
+            <b class="px-1" *ngIf="viewEnrollmentInfo.chit_type==2">Regular Chit</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Remark : </label>
+            <b class="px-1">{{viewEnrollmentInfo.remarks}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+   
+        
+
+  <div class="card-header">
+    
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Customer Enrollment List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-customer-enrollment']" class="bg-success border-0 text-white px-3 py-2"> + Add Customer Enrollment</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+      <form class="bs-example form-horizontal" [formGroup]="viewEnrol" (ngSubmit)="onSubmit()">
+          <div class="form-group row" [hidden]="!isSuperAdmin">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+            <div class="col-sm-10 col-md-7 col-9">
+              <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+                <option value="">Select Company</option>
+                <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+                <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+            <div class="col-sm-10 col-md-7 col-9">
+              <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Group <span class="error">*</span></label>
+            <div class="col-sm-10 col-md-7 col-9">
+              <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id" >
+                <option value="">Select Group</option>
+                <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+                <label *ngIf="f.group_id.errors.required">Group is required</label>
+              </div>
+            </div>
+          </div>
+          <div class="form-group row ">
+            <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+              <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+              <button type="button" class="btn btn-danger mr-1" (click)="resetEnrollForm()">Reset</button>
+            </div>
+          </div>
+        </form>
+        <div id="dtable_wrapper" class="dataTables_wrapper no-footer">
+          <div class="dataTables_length" id="dtable_length">
+            <label>
+              Show 
+              <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select> 
+              entries
+            </label>
+          </div>
+          <div id="dtable_filter" class="dataTables_filter">
+            <label>
+              Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+              <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+            </label>
+          </div>
+          <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+            <thead>
+              <tr role="row">
+                <th class="sorting_asc"  rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+                <th class="sorting" rowspan="1" colspan="1" style="width: 0px;">Ticket No</th>
+                <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('name')" >Customer Name</th>
+                <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('name')" >Customer Code</th>
+                <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('mobile_no')" >Mobile No</th>
+                <th class="sorting" rowspan="1" colspan="1" style="width: 0px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr role="row" *ngFor="let row of pagedItems; let i = index">
+                <td class="sorting_1">{{row.sno}}</td>
+                
+                <td>{{row.ticket_no}}</td>
+                <td>{{row.name}}</td>
+                <td>{{row.customer_code}}</td>
+                <td>{{row.mobile_no}}</td>
+                <td>  
+                  <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+                  <a [routerLink]="['/admin-panel/update-customer-enrollment/'+row.id]" target="_blank"><i class="fas fa-edit text-primary mx-2"></i></a>
+                  <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-customer-enrollment/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+                  <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Customer Enrollment"><i class="fas fa-check-circle text-success"></i></a>
+                  <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Customer Enrollment"><i class="fas fa-ban text-danger"></i></a>-->
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="dataTables_info" role="status" aria-live="polite">
+            {{dtableInfo}}
+          </div>
+          <div class="dataTables_paginate paging_simple_numbers" id="dtable_paginate">
+            <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+            <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+            <span *ngFor="let page of pager.pages">
+              <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+              <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+            </span>
+            <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+            <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+          </div>
+        </div>
+  
+  </div>
+</div>

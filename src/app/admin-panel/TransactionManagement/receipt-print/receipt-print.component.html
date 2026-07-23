@@ -1,0 +1,1197 @@
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide">
+  <button class="btn btn-info px-3 py-1" (click)="print()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide1">
+  <button class="btn btn-info px-3 py-1" (click)="print1()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide2">
+  <button class="btn btn-info px-3 py-1" (click)="print2()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide3">
+  <button class="btn btn-info px-3 py-1" (click)="print3()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide4">
+  <button class="btn btn-info px-3 py-1" (click)="print4()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide5">
+  <button class="btn btn-info px-3 py-1" (click)="print5()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide6">
+  <button class="btn btn-info px-3 py-1" (click)="print6()">print</button>
+</div>
+
+<div class=" client_receipt" id="print-section" style="width:100%; display: inline-flex;" [hidden]="receiptHide">
+  <form class="bs-example form-horizontal"  [formGroup]="ReceiptReport" ></form>
+  <div class="tex_l" style="width:48%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">RECEIPT</h3>
+          
+        </div> 
+        
+      </div>
+    </div>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address style="margin-bottom: 5px;">
+          <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 13px;">Collection Executive: {{first_name}} {{last_name}}</p>
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Receipt No: {{receipt_no}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+            <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+          </tr>
+          <tr>
+              <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">PAYABLE</th>
+              <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DEDUCTIBLE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Due Amount
+            </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{amount}}/- 
+            </td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bonus</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{bonus}}/-</td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Penalty</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{penalty}}/-</td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+        </tr>
+        <tr>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Other Charges</td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{other_amount}}/-</td>
+        <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+      </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{total}}/-</td>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bonus}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{netamount}}/-</b></td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+          <thead>
+            <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{netamount}} </b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+              </tr>
+                <!--<tr>
+                  <td colspan="2">Collection Details</td>
+                </tr>-->
+          </thead>
+        </table>
+
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+          </div>
+      </div>
+          </div>
+
+    </div>
+
+  </div>
+  <div style="width:48%;float:left;padding-left: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">RECEIPT</h3>
+          
+        </div> 
+        
+      </div>
+    </div>
+      <div style="width:100%; display: inline-flex;">
+        <div style="width:65%;">
+          <address style="margin-bottom: 5px;">
+            <h4 style="font-size: 13px;font-family:Arial, sans-serif;font-style: normal;">Name: {{customer_name}}</h4>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 13px;">Group: {{group_name}} / Ticket No: {{ticket_no}} </p>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 13px;">Collection Executive: {{first_name}} {{last_name}}</p>
+          </address>
+        </div>
+        <div style="width:35%;">
+          <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Receipt No: {{receipt_no}}</h3>
+          <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</h3>
+        </div>
+      </div>
+
+      <div class="row col_rect" >
+        <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+        <table class="table mx-3" style="width:100%;border: 1px solid #ccc;border-collapse: collapse;margin-top:5px;">
+          <thead>
+            <tr>
+              <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+              <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">AMOUNT</th>
+            </tr>
+            <tr>
+                <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">PAYABLE</th>
+                <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DEDUCTIBLE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                Due Amount
+              </td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  ₹ {{amount}}/- 
+              </td>
+            <td></td>
+          </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bonus</td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{bonus}}/-</td>
+          </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Penalty</td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{penalty}}/-</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+          </tr>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Other Charges</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{other_amount}}/-</td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+        </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Total</b></td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{total}}/-</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{bonus}}/-</td>
+          </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Net Amount</b></td>
+              <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>₹ {{netamount}}/-</b></td>
+          </tr>
+          </tbody>
+        </table>
+
+        <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:10px;">
+          <thead>
+            <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{netamount}} </b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+              </tr>
+              <!--<tr>
+                  <td colspan="2">Collection Details</td>
+                </tr>-->
+          </thead>
+        </table>
+
+        <!--<div class="col-12 chit-name text-right">
+          <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+        </div>-->
+        
+        <div class="col-md-12">
+        <div class="signt_r" style="width:100%; display: inline-flex;">
+          <div class="cus-sign" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+          </div>
+          <div class="auth-sign text-right" style="width:49%;">
+              <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px; text-align: right;">Authorized Signature</p>
+            </div>
+        </div>
+      </div>
+
+      </div>
+
+    </div>
+</div>
+    <div class=" client_receipt" id="print-section1" style="width:100%; display: inline-flex;" [hidden]="receiptHide1">
+      <form class="bs-example form-horizontal"  [formGroup]="ReceiptReport" ></form>
+      <div style="width:100%; float:left; padding-right: 10px;">
+        
+        <div class="row">
+          <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+            
+              <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+                <img src="{{company_logo_original}}" style="max-width: 110px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+                
+              </div> 
+              <div class="r_logo " style="width:50%;"> 
+              <span style="font-family:Arial, sans-serif;font-size:15px;">
+                <b>{{chit_fund_name}}</b> <br/>
+                {{address_line_1}} , {{address_line_2}}<br/>
+                PH : {{mobile_no}} // 9360166060
+              </span><br/>
+              <span>REG NO : CINU67200TN2017PTC116389</span><br/>
+               <span> GST NO : 33AAACY8900EIZK</span>
+            </div>
+            <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+              <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">CHIT - RECEIPT</h3>
+              <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">FORM - XVI</h3>
+            </div> 
+            
+          </div>
+        </div>
+        <div style="width:100%; display: inline-flex;" >
+          <div class="r_addr" style="width:65%;">
+            <address style="margin-bottom: 5px;">
+              <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Chit Value : {{chit_value}}</p>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 14px;">AG No: {{ag_no}}</p>
+            </address>
+          </div>
+          <div class="r_rno" style="width:35%;">
+            <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Receipt No: {{receipt_no}}</h3>
+            <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</h3>
+            <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Inst No: {{inst_no}}</h3>
+          </div>
+        </div>
+  
+        <div class="row col_rect">
+          
+          <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+            <thead>
+              <tr>
+               <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+               <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+              </tr>
+              
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  Due Amount
+                </td>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                    ₹ {{amount}}/- 
+                </td>
+              
+            </tr>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Excess Amount</td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ 0</td>
+            
+          </tr>
+            <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Interest</td>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{penalty}}/-</td>
+              
+            </tr>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Others</td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ 0</td>
+            
+          </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{total}}/-</td>
+              
+            </tr>
+            
+            </tbody>
+          </table>
+  
+          <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+              <thead>
+                <tr>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Payment Mode: </b></td>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">{{payment_name}}</td>
+                  </tr>
+                  <tr>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Remark </b></td>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"></td>
+                  </tr>
+                   <!--<tr>
+                      <td colspan="2">Collection Details</td>
+                    </tr>-->
+              </thead>
+            </table>
+  
+            <!--<div class="col-12 chit-name text-right">
+                <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+              </div>-->
+  
+              <div class="col-md-12">    
+                <div class="signt_r" style="width:100%; display: inline-flex;"> 
+                  <div class="cus-sign" style="width:48%;">
+                   
+                  </div>
+                  <div class="auth-sign text-right" style="width:48%;">
+                      <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Cashier</p>
+                    </div>
+                </div>
+                    </div>
+  
+        </div>
+  
+      </div>
+    </div>
+    
+  
+    <div class=" client_receipt" id="print-section2" style="width:100%; display: inline-flex;" [hidden]="receiptHide2">
+      <form class="bs-example form-horizontal"  [formGroup]="ReceiptReport" ></form>
+      <div style="width:100%; float:left; padding-right: 10px;margin-top:30px">
+        <div class="row">
+          <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+            <div class="r_logo " style="width:50%;"> 
+             
+              
+            </div>
+            <div class="r_rept my-auto" style="width:40%; margin:auto;">
+              <img alt="logo" class="img-fluid" style="max-width: 200px;margin-top: -35px !important;margin-left: -30px !important;" src="{{company_rec}}">
+            </div> 
+            <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+              
+            </div> 
+          </div>
+        </div>
+
+        <div class="row">
+          
+        </div>
+
+        <div style="width:100%; display: inline-flex;" >
+          <div class="r_addr" style="width:75%;">
+            <address style="margin-bottom: 5px;">
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Name: {{customer_name}}</p>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Prized Status :  {{prized_status}}</p>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 13px;">Collection Executive: {{first_name}} {{last_name}}</p>
+            </address>
+          </div>
+          <div class="r_rno" style="width:25%;">
+            <address style="margin-bottom: 5px;">
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Installment No : {{inst_no}}</p>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Due Date: {{due_date}}</p>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Date: {{receipt_date}}</p>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Receipt No: {{receipt_no}}</p>
+            </address>
+            </div>
+        </div>
+  
+        <div class="row col_rect">
+          <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+            <thead>
+              <tr>
+               <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+               <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+              </tr>
+              
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  Due Amount
+                </td>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                    ₹ {{inst_amt}}/- 
+                </td>
+              
+            </tr>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                Paid Amount
+              </td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  ₹ {{amount}}/- 
+              </td>
+            
+          </tr>
+            <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Penalty</td>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{penalty}}/-</td>
+              
+            </tr>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Balance Amount</td>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{balance_amount}}/-</td>
+            
+          </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Received Total</b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{total}}/-</td>
+             
+            </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{netamount}}/-</b></td>
+            </tr>
+            </tbody>
+          </table>
+  
+          <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+              <thead>
+                <tr>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} Only </b></td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{netamount}}/-</b></td>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+                  </tr>
+                   <!--<tr>
+                      <td colspan="2">Collection Details</td>
+                    </tr>-->
+              </thead>
+            </table>
+  
+            <!--<div class="col-12 chit-name text-right">
+                <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+              </div>-->
+  
+              <div class="col-md-12" style="font-size: 15px;text-align:justify">    
+                <p><b>Terms of Services</b> </p>
+                
+           <ul style="margin-top:0px">
+                <li> Monthly subscription must be paid one day prior to the auction date (every month 20th) and delayed subscription payment will result in late fee.</li>  
+                <li> Rate of return on the dividend average from 13% to 18% making stable profit.</li>  
+                <li> Monthly Subscription dividend is entitled for deduction and the balance amount payable shall be informed every month, which is Mandatory.</li>  
+                <li> Prize money is disbursed to prized subscriber within 21 working days on his furnishing satisfactory security / Surety and this ensures that the prized subscriber continues to make prompt payment of monthly subscription in future so that the interest of other Non-Prized subscriber’s is not jeopardized. </li>
+                <li> If any subscriber fails to make the payments for the three consecutive months, that subscriber would be removed from the respective groups and previous payments would be repaid after deducting the chit commission of seven percent from the full value of the chit after the completion of the respective chit group.</li>
+                <li> Company will not be responsible for any remittance without printed official receipts.</li>
+                <li> All disputes subject to Coimbatore Jurisdiction only</li>
+              </ul>
+                 <p><b>This is computer generated receipt no signature required</b></p>
+                </div>
+                <div class="col-md-12" style="font-size: 15px;margin-left:500px;">    
+                  
+                 
+                  <p style="margin-left: 120px;">Management</p>
+                  </div>
+        
+  
+        </div>
+  
+      </div>
+    </div>
+    <div class=" client_receipt" id="print-section3" [hidden]="receiptHide3">
+      <div class=" client_receipt"  style="width:100%; display: inline-flex;" [hidden]="receiptHide3">
+        <form class="bs-example form-horizontal"  [formGroup]="OtherReceiptReport" ></form>
+        <div class="tex_l" style="width:100%;float:left; padding-right: 15px;">
+          
+        <div class="row">
+          <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+            
+              <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+                <br>
+                
+              </div> 
+              <div class="r_logo " style="width:50%;"> 
+              <span style="font-family:Arial, sans-serif;font-size:15px;">
+                <b></b> <br/>
+                <br/>
+                
+              </span>
+              <span></span>
+               <span></span>
+            </div>
+            <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+              <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+              <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+            </div> 
+            
+          </div>
+        </div>
+          <div style="width:100%; display: inline-flex;" >
+            <div class="r_addr" style="width:65%;">
+              <address>
+                <h4 style="font-size: 14px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+                <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+                
+                <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Chit Value : {{chit_value}}</p>
+                
+              </address>
+            </div>
+            <div class="r_rno" style="width:35%;">
+              <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Receipt No: {{receipt_no}}</h3>
+              <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Date: {{receipt_date}}</h3>
+              
+            </div>
+          </div>
+    
+          <div class="row col_rect">
+            <h4 class="col-12" style="font-size: 14px; padding: 5px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+            <table class="table mx-3" style="width:100%;border-collapse: collapse;">
+              <thead>
+                <tr>
+                 <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+                 <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+                </tr>
+                <tr>
+                    <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">PAYABLE</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                    Due Amount
+                  </td>
+                  <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                      ₹ {{amount}}/- 
+                  </td>
+              </tr>
+              <tr>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+                  <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{amount}}/-</b></td>
+              </tr>
+              </tbody>
+            </table>
+    
+            <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:20px;">
+                <thead>
+                  <tr>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+                  </tr>
+                  <tr>
+                      <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{amount}} </b></td>
+                      <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+                    </tr>
+                     <!--<tr>
+                        <td colspan="2">Collection Details</td>
+                      </tr>-->
+                </thead>
+              </table>
+    
+              <!--<div class="col-12 chit-name text-right">
+                  <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+                </div>-->
+    <br><br><br>
+               
+    
+          </div>
+    
+        </div>
+      </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+        <div class=" client_receipt" style="width:100%; display: inline-flex;" [hidden]="receiptHide3">
+          <form class="bs-example form-horizontal"  [formGroup]="OtherReceiptReport" ></form>
+          <div class="tex_l" style="width:100%;float:left; padding-right: 15px;">
+            
+          <div class="row">
+            <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+              
+                <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+                  
+                  
+                </div> 
+                <div class="r_logo " style="width:50%;"> 
+                <span style="font-family:Arial, sans-serif;font-size:15px;">
+                  <b></b> 
+                  
+                  
+                </span>
+                <span></span>
+                 <span></span>
+              </div>
+              <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+                <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+                <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+              </div> 
+              
+            </div>
+          </div>
+            <div style="width:100%; display: inline-flex;" >
+              <div class="r_addr" style="width:65%;">
+                <address>
+                  <h4 style="font-size: 14px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+                  <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+                  
+                  <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Chit Value : {{chit_value}}</p>
+                  
+                </address>
+              </div>
+              <div class="r_rno" style="width:35%;">
+                <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Receipt No: {{receipt_no}}</h3>
+                <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Date: {{receipt_date}}</h3>
+                
+              </div>
+            </div>
+      
+            <div class="row col_rect">
+              <h4 class="col-12" style="font-size: 14px; padding: 5px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+              <table class="table mx-3" style="width:100%;border-collapse: collapse;">
+                <thead>
+                  <tr>
+                   <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+                   <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+                  </tr>
+                  <tr>
+                      <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">PAYABLE</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                      Due Amount
+                    </td>
+                    <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                        ₹ {{amount}}/- 
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+                    <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{amount}}/-</b></td>
+                </tr>
+                </tbody>
+              </table>
+      
+              <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:20px;">
+                  <thead>
+                    <tr>
+                      <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+                      <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{amount}} </b></td>
+                        <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+                      </tr>
+                       <!--<tr>
+                          <td colspan="2">Collection Details</td>
+                        </tr>-->
+                  </thead>
+                </table>
+      
+                <!--<div class="col-12 chit-name text-right">
+                    <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+                  </div>-->
+      
+                  
+            </div>
+      
+          </div>
+        </div>
+      </div>
+  <div class=" client_receipt" id="print-section4" style="width:100%; display: inline-flex;" [hidden]="receiptHide4">
+  <form class="bs-example form-horizontal"  [formGroup]="ReceiptReport" ></form>
+  <div class="tex_l" style="width:48%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:80%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+          
+        </div> 
+        
+      </div>
+    </div> <br><br>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:50%;">
+        <address style="margin-bottom: 5px;">
+          <span style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Tck No: {{ticket_no}} </span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Inst No: {{inst_no}} </span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Chit Value: {{chit_value}} </span><br>
+        </address>
+      </div>
+      <div class="r_rno" style="width:50%;">
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Rcpt No: {{receipt_no}}</span><br>
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</span><br>
+
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Inst Amt: {{inst_amt}}</span><br>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <br>
+      <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;"><b>Payment Mode: {{payment_name}}</b></h4>
+      <br>
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+       
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              <b>Dividend Declared</b>
+            </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                 {{dividend}} 
+            </td>
+         
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Current Inst Amt</b></td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">{{paid_amt}}</td>
+          
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Arrears </b></td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">{{arrear}}</td>
+         
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>GST / Other Taxes</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">{{gst}}</td>
+          
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Adjustment</b></td>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">{{adjustment}}</td>
+        
+      </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b> {{netamount}}/-</b></td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+          <thead>
+            <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+            </tr>
+          </thead>
+        </table>
+
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Company Stamp</p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Foreman</p>
+          </div>
+      </div>
+          </div>
+
+    </div>
+
+  </div>
+  <div style="width:48%;float:left;padding-left: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:80%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;"></h3>
+          
+        </div> 
+        
+      </div>
+    </div>
+    <br><br>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address style="margin-bottom: 5px;">
+          <span style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Ticket No: {{ticket_no}} </span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Inst No: {{inst_no}} </span><br>
+          <span style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Chit Value: {{chit_value}} </span><br>
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Rcpt No: {{receipt_no}}</span><br>
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</span><br>
+
+        <span style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Inst Amt: {{inst_amt}}</span><br>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <br>
+      <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;">Payment Mode: {{payment_name}}</h4>
+      <br>
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+       
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              <b>Dividend Declared</b>
+            </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                 {{dividend}}
+            </td>
+         
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Current Inst Amt</b></td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">{{paid_amt}}</td>
+          
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"><b>Arrears</b> </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">{{arrear}}</td>
+         
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>GST / Other Taxes</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">{{gst}}</td>
+          
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Adjustment</b></td>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">{{adjustment}}</td>
+        
+      </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b> {{netamount}}/-</b></td>
+        </tr>
+        </tbody>
+      </table>
+
+      <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+          <thead>
+            <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>Amount In Words</b></td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+            </tr>
+          </thead>
+        </table>
+
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Company Stamp</p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Foreman</p>
+          </div>
+      </div>
+          </div>
+
+    </div>
+
+    </div>
+</div>
+
+
+<div class=" client_receipt" id="print-section5" style="width:100%; display: inline-flex;" [hidden]="receiptHide5">
+  
+  <form class="bs-example form-horizontal"  [formGroup]="ReceiptReport" ></form>
+  <div class="tex_l" style="width:100%; float:left; border-right: 2px dashed #0583a9;padding-right: 30px;margin-left:20px">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:40%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 100px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b style="font-family:Arial, sans-serif;font-size:18px;">{{chit_fund_name}}</b> <br/><br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}} / 04651-222699<br/>
+            REG : U65992TN2021PTC147536<br/>
+            GST : 33AAICD8616N1Z9
+          </span><br/>
+         
+        </div>
+        <div class="r_logo " style="width:10%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+           
+          </span><br/>
+         
+        </div>
+      </div>
+    </div><br><br>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:50%;">
+        <address style="margin-bottom: 5px;">
+          <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group {{group_name}} / Ticket No: {{ticket_no}} </p>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal;font-size: 13px;">Collection Executive: {{first_name}} {{last_name}}</p>
+        </address>
+      </div>
+      <div class="r_rno" style="width:50%;margin-left:100px">
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Receipt No: {{receipt_no}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date: {{receipt_date}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Inst No: {{inst_no}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+      <table class="table mx-3" style="width:95%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+            <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT</th>
+          </tr>
+          <tr>
+              <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;width:30%">PAYABLE</th>
+              <th style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;width:30%">DEDUCTIBLE</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Due Amount
+            </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{amount}}/- 
+            </td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+        </tr>
+        
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Penalty</td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{penalty}}/-</td>
+          <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;"></td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{total}}/-</td>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bonus}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{netamount}}/-</b></td>
+        </tr>
+        </tbody>
+      </table>
+ <br> <br>
+      <table class="table mx-3" style="width: 95%;border-collapse: collapse;margin-top:10px;">
+          <thead>
+            <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;width:40%"><b>Amount In Words</b></td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{netamount}} </b></td>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+              </tr>
+                <!--<tr>
+                  <td colspan="2">Collection Details</td>
+                </tr>-->
+          </thead>
+        </table>
+
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+<br><br>
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;"></p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+          </div>
+      </div>
+          </div>
+
+    </div>
+
+  </div>
+</div>
+
+<div class=" client_receipt" id="print-section6" style="width:150%; display: inline-flex;" [hidden]="receiptHide6">
+  <form class="bs-example form-horizontal"  [formGroup]="OtherReceiptReport" ></form>
+  <div class="tex_l" style="width:100%;float:left; padding-right: 15px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:40%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 150px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;margin-top:50px"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b style="font-family:Arial, sans-serif;font-size:18px;">{{chit_fund_name}}</b> <br/><br/>
+            No 1, Sivakumar Arcade,First floor,<br/>
+            Renga nagar, Vayalur Main road, <br/>
+Trichy - 620 102.<br/><br/>
+            PH : 97515-11221 / 98432-11221 <br/><br/>
+            Govt Reg : U64990TN2024PTC166525<br/><br/>
+            GSTIN : 33ABMCS4645K1ZX
+          </span><br/>
+         
+        </div>
+        <div class="r_logo " style="width:10%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+           
+          </span><br/>
+         
+        </div>
+      </div>
+    </div><br><br>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address>
+          <h4 style="font-size: 14px;font-family:Arial, sans-serif; font-style: normal;">Name: {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Group : {{group_name}} / Ticket No: {{ticket_no}} </p>
+          
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 14px;">Collection Executive: {{first_name}} {{last_name}}</p>
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Receipt No: {{receipt_no}}</h3>
+        <h3 style="font-size: 14px;font-family:Arial, sans-serif;font-weight:100;">Date: {{receipt_date}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <h4 class="col-12" style="font-size: 14px; padding: 5px 3px;text-align: center; font-family:Arial, sans-serif;">COLLECTION RECEIPT</h4>
+      
+
+      <table class="table mx-3" style="width:95%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          <tr>
+            <th rowspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;">DESCRIPTION</th>
+            <th colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;" >AMOUNT PAYABLE</th>
+          </tr>
+          
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Due Amount
+            </td>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{amount}}/- 
+            </td>
+        </tr>
+        
+        
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Total</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{amount}}/-</td>
+         </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Net Amount</b></td>
+            <td  style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>₹ {{amount}}/-</b></td>
+        </tr>
+        </tbody>
+      </table>
+
+      <br> <br>
+  <table class="table mx-3" style="width: 95%;border-collapse: collapse;margin-top:10px;">
+      <thead>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;width:40%"><b>Amount In Words</b></td>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} Only</b></td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;"><b>Amount Received: ₹ {{amount}} </b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode: {{payment_name}}</td>
+          </tr>
+            <!--<tr>
+              <td colspan="2">Collection Details</td>
+            </tr>-->
+      </thead>
+    </table>
+
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+          <br><br>
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;"></p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+          </div>
+      </div>
+          </div>
+
+    </div>
+
+  </div>
+</div>

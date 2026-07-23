@@ -1,0 +1,154 @@
+<div class="card">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-6 my-auto font-weight-bold">Update Regional Office</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/view-head-office']" class="bg-sky border-0 text-white px-3 py-2 mx-2 "> <i class="fas fa-eye px-2"></i>View HeadOffice</a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body add-maze">
+      <form class="bs-example form-horizontal" [formGroup]="UpdateHeadOffice" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #tenant_id formControlName="tenant_id">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 ">RO Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <input #head_name type="text" class="form-control px-2" placeholder="Enter Regional Office Name" formControlName="head_name">
+            <div class="col-md-12" *ngIf="submitted && f.head_name.errors" class="invalid-feedback">
+              <label *ngIf="f.head_name.errors.required">Regional Office name is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 ">RO Code <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <input #head_code type="text" class="form-control px-2" placeholder="Enter Regional Office Code" formControlName="head_code" readonly>
+            <div class="col-md-12" *ngIf="submitted && f.head_code.errors" class="invalid-feedback">
+              <label *ngIf="f.head_code.errors.required">Regional Office code is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4 ">Mobile Number</label>
+              <div class="col-sm-8">
+                <input #mobile_no type="text" class="form-control px-2" placeholder="Enter Mobile Number" formControlName="mobile_no" (input)="onKeyUpMobile($event)">
+                <div class="col-md-12" *ngIf="(submitted && f.mobile_no.errors) || (!isValidMobile)" class="invalid-feedback">
+                  <label *ngIf="(f.mobile_no.errors.pattern) || (!isValidMobile)">Invalid Mobile number</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4 ">Phone Number</label>
+              <div class="col-sm-8">
+                <input #phone_no type="text" class="form-control px-2" placeholder="Enter Phone Number"  formControlName="phone_no" (input)="onKeyUpPhone($event)">
+                <div class="col-md-12" *ngIf="(submitted && f.phone_no.errors) || (!isValidPhone)" class="invalid-feedback">
+                  <label *ngIf="(f.phone_no.errors.pattern) || (!isValidPhone)">Invalid Phone number</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 ">Email <span class="error">*</span></label>
+          <div class="col-sm-4">
+            <input #email_id type="text" class="form-control px-2" placeholder="Enter Email" formControlName="email_id" (input)="onKeyUpMail($event)">
+            <div class="col-md-12"*ngIf="(submitted && f.email_id.errors) || (!isValidMail)" class="invalid-feedback">
+              <label *ngIf="f.email_id.errors.required">Email id is required</label>
+              <label *ngIf="(f.email_id.errors.pattern) || (!isValidMail)">Invalid email id</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2">Address Line 1</label>
+          <div class="col-sm-4">
+            <input #address_line_1 type="text" class="form-control px-2" placeholder="Enter Addrees Line-1" formControlName="address_line_1">
+          </div>
+        
+          <label class="col-sm-2">Address Line 2</label>
+          <div class="col-sm-4">
+            <input #address_line_2 type="text" class="form-control px-2" placeholder="Enter Addrees Line-2" formControlName="address_line_2">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4 ">State</label>
+              <div class="col-sm-8">
+                <select #state_id formControlName="state_id" (change)="stateChg($event)">
+                  <option value="">Select State</option>
+                  <option *ngFor="let data of stateList" value="{{data.id}}">{{data.state_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4 ">District</label>
+              <div class="col-sm-8">
+                <select #district_id formControlName="district_id" (change)="districteChg($event)">
+                  <option value="">Select District</option>
+                  <option *ngFor="let data of districtList" value="{{data.id}}">{{data.district_name}}</option>  
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">City</label>
+              <div class="col-sm-8">
+                <select #city_id formControlName="city_id">
+                  <option value="">Select City</option>
+                  <option *ngFor="let data of cityList" value="{{data.id}}">{{data.city_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4 ">Pincode</label>
+              <div class="col-sm-8">
+                <input #pincode type="text" class="form-control px-2" placeholder="Enter Pincode" formControlName="pincode" (input)="onKeyUpPincode($event)">
+                <div class="col-md-12" *ngIf="(submitted && f.pincode.errors) || (!isValidPincode)" class="invalid-feedback">
+                  <label *ngIf="(f.pincode.errors.pattern) || (!isValidPincode)">Invalid Pincode</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 ">Landmark</label>
+          <div class="col-sm-10">
+            <input #landmark type="text" class="form-control px-2" placeholder="Enter Landmark" formControlName="landmark">
+          </div>  
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 ">Remarks</label>
+          <div class="col-sm-10">
+            <textarea #remarks class="form-control px-2" placeholder="Enter Remarks" rows="3" formControlName="remarks"></textarea>
+          </div>  
+        </div>
+        <div class="form-group d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-head-office']" class="btn btn-danger mr-1">Cancel</a>
+        </div> 
+      </form>
+    </div>
+  </div>

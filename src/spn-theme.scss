@@ -1,0 +1,155 @@
+// SRI SPN Chit Funds — brand palette from client logo
+:root {
+  --spn-green: #16a34a;
+  --spn-green-light: #22c55e;
+  --spn-green-dark: #15803d;
+  --spn-green-darker: #14532d;
+  --spn-gold: #eab308;
+  --spn-gold-dark: #ca8a04;
+  --spn-gold-light: #facc15;
+  --spn-magenta: #db2777;
+  --spn-magenta-light: #ec4899;
+  --spn-surface: #f0fdf4;
+  --spn-text-on-green: #ffffff;
+}
+
+// Primary actions & Bootstrap theme hooks
+.btn-primary,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: var(--spn-green) !important;
+  border-color: var(--spn-green-dark) !important;
+  color: var(--spn-text-on-green) !important;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--spn-green-dark) !important;
+  border-color: var(--spn-green-darker) !important;
+}
+
+.btn-primary:disabled {
+  background-color: var(--spn-green-light) !important;
+  border-color: var(--spn-green) !important;
+}
+
+.btn-outline-primary {
+  color: var(--spn-green-dark) !important;
+  border-color: var(--spn-green) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--spn-green) !important;
+  border-color: var(--spn-green-dark) !important;
+  color: var(--spn-text-on-green) !important;
+}
+
+.bg-primary {
+  background-color: var(--spn-green) !important;
+}
+
+.text-primary {
+  color: var(--spn-green-dark) !important;
+}
+
+.border-primary {
+  border-color: var(--spn-green) !important;
+}
+
+.badge-primary {
+  background-color: var(--spn-green) !important;
+}
+
+.page-item.active .page-link {
+  background-color: var(--spn-green) !important;
+  border-color: var(--spn-green-dark) !important;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: var(--spn-green-darker) !important;
+  border-color: var(--spn-green) var(--spn-green) #fff !important;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+  color: var(--spn-green-dark);
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item):hover {
+  color: var(--spn-magenta);
+}
+
+// Layout chrome
+.bg-sidenav-theme {
+  background: linear-gradient(180deg, var(--spn-green-dark) 0%, var(--spn-green-darker) 100%) !important;
+  color: var(--spn-text-on-green) !important;
+}
+
+.bg-sidenav-theme .sidenav-horizontal-next,
+.bg-sidenav-theme .sidenav-horizontal-prev,
+.bg-sidenav-theme .sidenav-link,
+.bg-sidenav-theme .sidenav-menu > a {
+  color: rgba(255, 255, 255, 0.92) !important;
+}
+
+.bg-sidenav-theme .sidenav-link:hover,
+.bg-sidenav-theme .sidenav-menu > a:hover,
+.bg-sidenav-theme .sidenav-item.active > .sidenav-link,
+.bg-sidenav-theme .sidenav-item.active > .sidenav-menu > a {
+  color: var(--spn-gold-light) !important;
+}
+
+.bg-sidenav-theme .sidenav-item.active > .sidenav-link {
+  background-color: rgba(234, 179, 8, 0.2) !important;
+}
+
+.bg-navbar-theme {
+  background: linear-gradient(90deg, var(--spn-green-darker) 0%, var(--spn-green-dark) 55%, var(--spn-green) 100%) !important;
+  color: var(--spn-text-on-green) !important;
+  box-shadow: 0 2px 8px rgba(20, 83, 45, 0.25);
+}
+
+.bg-navbar-theme .navbar-nav .nav-link,
+.bg-navbar-theme .app-brand-text {
+  color: var(--spn-text-on-green) !important;
+}
+
+.bg-footer-theme,
+.footer.bg-footer-theme,
+nav.footer {
+  background: var(--spn-green-darker) !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.bg-footer-theme .footer-text,
+.footer .footer-text {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+// Form focus & accents used app-wide
+.form-control:focus,
+.custom-select:focus {
+  border-color: var(--spn-gold) !important;
+  box-shadow: 0 0 0 0.2rem rgba(234, 179, 8, 0.25) !important;
+}
+
+.card-header {
+  background: linear-gradient(90deg, var(--spn-green-dark), var(--spn-green)) !important;
+  color: var(--spn-text-on-green) !important;
+  border-bottom: 2px solid var(--spn-gold) !important;
+}
+
+.card-header h4,
+.card-header h5 {
+  color: var(--spn-text-on-green) !important;
+}
+
+// AG Grid header tint
+.ag-theme-balham .ag-header {
+  background-color: var(--spn-green-dark) !important;
+  color: var(--spn-text-on-green) !important;
+}
+
+.ag-theme-balham .ag-header-cell,
+.ag-theme-balham .ag-header-group-cell {
+  color: var(--spn-text-on-green) !important;
+}

@@ -1,0 +1,139 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Commitment Payment Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{customerInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Payment Date : </label>
+            <b class="px-1">{{ViewCommitmentPaymentInfo.payment_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Total Amount : </label>
+            <b class="px-1">{{ViewCommitmentPaymentInfo.total_amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Payment For : </label>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==1">Bidding Amount</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==2">Advance Bidding Amount</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==3">Chit Return</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==4">Advance Return Amount</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==5">Chit Amount Transfer</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==6">Advance Amount Transfer</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==7">Commitment Payment</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Payment Type : </label>
+            <b class="px-1">{{paymentTypeInfo.payment_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Debit To : </label>
+						<b class="px-1">{{ViewCommitmentPaymentInfo.debit_to}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque No : </label>
+						<b class="px-1">{{ViewCommitmentPaymentInfo.cheque_no}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque Date : </label>
+						<b class="px-1">{{ViewCommitmentPaymentInfo.cheque_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Name : </label>
+						<b class="px-1">{{BankInfo.bank_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Branch Name : </label>
+						<b class="px-1">{{BankInfo.bank_branch_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction Date : </label>
+						<b class="px-1">{{ViewCommitmentPaymentInfo.transaction_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction No : </label>
+						<b class="px-1">{{ViewCommitmentPaymentInfo.transaction_no}}  </b>
+					</div>
+				</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Commitment Payment List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-commitment-payment']" class="bg-success border-0 text-white px-3 py-2"> + Add Commitment Payment</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Customer Name</th>
+            <th>Payment Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.customer_info.name}}</td>
+            <td>{{row.payment_date}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-commitment-payment/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-commitment-payment/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

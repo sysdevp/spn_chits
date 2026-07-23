@@ -1,0 +1,357 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Guarantor Details</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+		<div class="card-body">
+			<form class="bs-example form-horizontal">
+				<div class="row">
+					<div class="col-md-6">
+					<img class="imagesize" *ngIf="ViewGuarantorInfo.photo_for_view!=''" src={{ViewGuarantorInfo.photo_for_view}}  class="img-view"/>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Branch Name: </label>
+							<b class="px-1">{{BranchInfo.branch_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Gaurantor Name : </label>
+							<b class="px-1">{{guarantorInfo.name}}</b>
+						</div>
+                 	</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Customer Name : </label>
+							<b class="px-1">{{CustomerInfo.name}}</b>
+						</div>
+                 	</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Date Of Birth: </label>
+							<b class="px-1">{{ViewGuarantorInfo.dob}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Enrollment : </label>
+							<b class="px-1">{{ViewGuarantorInfo.enrol_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Gender: </label>
+							<b class="px-1" *ngIf="guarantorInfo.gender==1">Male</b>
+							<b class="px-1" *ngIf="guarantorInfo.gender==2">Female</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Mobile Number : </label>
+							<b class="px-1">{{guarantorInfo.mobile_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Phone Number : </label>
+							<b class="px-1">{{guarantorInfo.phone_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Email Id : </label>
+							<b class="px-1">{{guarantorInfo.email_id}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Adhar No : </label>
+							<b class="px-1">{{guarantorInfo.adhar_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Pan No : </label>
+							<b class="px-1">{{guarantorInfo.pan_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">License No : </label>
+							<b class="px-1">{{guarantorInfo.license_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Ration Card No : </label>
+							<b class="px-1">{{guarantorInfo.ration_card_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Date Of Joining: </label>
+							<b class="px-1">{{ViewGuarantorInfo.doj}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Father Name : </label>
+							<b class="px-1">{{guarantorInfo.father_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Spouse Name</label>
+							<b class="px-1">{{guarantorInfo.spouse_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Door No : </label>
+							<b class="px-1">{{guarantorInfo.door_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Building Name: </label>
+							<b class="px-1">{{guarantorInfo.buildling_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Address Line 1: </label>
+							<b class="px-1">{{guarantorInfo.address_line_1}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Address Line 2: </label>
+							<b class="px-1">{{guarantorInfo.address_line_2}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Landmark: </label>
+							<b class="px-1">{{guarantorInfo.landmark}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">State Name: </label>
+							<b class="px-1">{{StateInfo.state_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">District Name: </label>
+							<b class="px-1">{{DistrictInfo.district_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">City Name: </label>
+							<b class="px-1">{{CityInfo.city_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Pincode: </label>
+							<b class="px-1">{{guarantorInfo.pincode}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Door No: </label>
+							<b class="px-1">{{guarantorInfo.communication_door_no}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Building Name: </label>
+							<b class="px-1">{{guarantorInfo.communication_building_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Address Line 1: </label>
+							<b class="px-1">{{guarantorInfo.communication_address_line_1}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Address Line 2: </label>
+							<b class="px-1">{{guarantorInfo.communication_address_line_2}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Landmark: </label>
+							<b class="px-1">{{guarantorInfo.communication_land_mark}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication State Name: </label>
+							<b class="px-1">{{CommunicationStateInfo.state_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication District Name: </label>
+							<b class="px-1">{{CommunicationDistrictInfo.district_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication City Name: </label>
+							<b class="px-1">{{CommunicationCityInfo.city_name}}</b>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="form-group">
+							<label class="form-label">Communication Pincode: </label>
+							<b class="px-1">{{guarantorInfo.communication_pincode}}</b>
+						</div>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+<div class="card maz-vh">
+    <div class="card-header">
+      	<div class="row">
+        	<div class="col-6 my-auto font-weight-bold">Guarantor Detail</div>
+			<div class="col-6 text-right">
+				<a [routerLink]="['/admin-panel/add-guarantor']"  class="bg-success border-0 text-white px-3 py-2"> + Add Guarantor</a>
+			</div>
+      	</div>
+    </div>
+	<div class="card-body">
+		<div [hidden]="TableHidden">
+			<form class="bs-example form-horizontal" [formGroup]="viewGaurantor" (ngSubmit)="onSubmit()">
+				<div class="form-group row" [hidden]="!isSuperAdmin">
+					<label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+					<div class="col-sm-10 col-md-7 col-9">
+					<select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+						<option value="">Select Company</option>
+						<option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+					</select>
+					<div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+						<label *ngIf="f.tenant_id.errors.required">Company is required</label>
+					</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+					<div class="col-sm-10 col-md-7 col-9">
+					<select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
+						<option value="">Select Branch</option>
+						<option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+					</select>
+					<div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+						<label *ngIf="f.branch_id.errors.required">Branch is required</label>
+					</div>
+					</div>
+				</div>
+				<div class="form-group row ">
+					<div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+					<button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+					<button type="button" class="btn btn-danger mr-1" (click)="resetGaurantor()">Reset</button>
+					</div>
+				</div>
+			</form>
+			<div class="dataTables_wrapper no-footer">
+				<div class="dataTables_length">
+					<label>
+						Show 
+						<select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+							<option value="10">10</option>
+							<option value="25">25</option>
+							<option value="50">50</option>
+							<option value="100">100</option>
+						</select> 
+						entries
+					</label>
+				</div>
+				<div class="dataTables_filter">
+					<label>
+						Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+					<!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+					</label>
+				</div>
+				<table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+					<thead>
+						<tr role="row">
+							<th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+							<th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('branch_name')">Branch Name</th>
+							<th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('guarantor_name')">Gaurantor Name</th>
+							<th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Customer Name</th>
+							<th rowspan="1" colspan="1" style="width: 0px;">Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr role="row" *ngFor="let row of pagedItems; let i = index">
+							<td class="sorting_1">{{row.sno}}</td>
+							<td>{{row.branch_name}}</td>
+							<td>{{row.guarantor_name}}</td>
+							<td>{{row.customer_name}}</td>
+							<td>  
+								<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+								<a [routerLink]="['/admin-panel/update-guarantor/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+								<a [routerLink]="['/admin-panel/delete-guarantor/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="dataTables_info" role="status" aria-live="polite">
+					{{dtableInfo}}
+				</div>
+				<div class="dataTables_paginate paging_simple_numbers">
+					<a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+					<a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+					<span *ngFor="let page of pager.pages">
+					<a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+					<a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+					</span>
+					<a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+					<a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+				</div>
+			</div>
+			<!-- <table id="dtable"  class="row-border hover">
+				<thead>
+					<tr> 
+					<th>SNo</th>
+					<th>Branch Name</th>
+					<th>Gaurantor Name</th>
+					<th>Customer Name</th>
+					<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let row of dataList;">
+						<td>{{row.sno}}</td>
+						<td>{{row.branch_info.branch_name}}</td>
+						<td>{{row.guarantor_info.name}}</td>
+						<td>{{row.customer_info.name}}</td>
+						<td>  
+							<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+							<a [routerLink]="['/admin-panel/update-guarantor/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+							<a [routerLink]="['/admin-panel/delete-guarantor/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+						</td>
+					</tr>
+				</tbody>
+			</table> -->
+		</div>
+		<div *ngIf="TableHidden==true" class="table-loader" > 
+			<img style="width: 120px;
+			margin: 20% auto;
+			display: block;" src="assets/img/loading.gif"/>
+		</div>
+	</div>
+</div>

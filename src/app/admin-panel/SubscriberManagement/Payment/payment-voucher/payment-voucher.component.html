@@ -1,0 +1,420 @@
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide">
+  <button class="btn btn-info px-3 py-1" (click)="print()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide1">
+  <button class="btn btn-info px-3 py-1" (click)="print1()">print</button>
+</div>
+<div class="col-12 text-right mb-3 pr-5" [hidden]="receiptHide2">
+  <button class="btn btn-info px-3 py-1" (click)="print2()">print</button>
+</div>
+<div class=" client_receipt" id="print-section" style="width:100%; display: inline-flex;" [hidden]="receiptHide">
+  <form class="bs-example form-horizontal"  [formGroup]="PaymentVoucher" ></form>
+  <div class="tex_l" style="width:48%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">PAYMENT</h3>
+          
+        </div> 
+        
+      </div>
+    </div>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address style="margin-bottom: 5px;">
+          <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group / Ticket No: {{groupName}} / {{ticketNo}} </p>
+          
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date : {{cur_date}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Voucher No: PVOC-{{voucher_no}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Chit Value
+            </td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{chitValue}}/- 
+            </td>
+              </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+          <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{biddingAmount}}/-</td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{gst}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Bid Payment Adjust</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bidPaymentAdjustment}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Customer Released Amount</td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{customerReleasedAmount}}/-</td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Release Amount</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{totalReleaseAmount}}/-</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Pending Release Amount</td>
+        <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{pendingReleaseAmoun}}/-</td>
+    </tr>
+        </tbody>
+      </table>
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+          </div>
+      </div>
+          </div>
+
+     
+    
+
+    </div>
+
+  </div>
+  <div style="width:48%;float:left;padding-left: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:20%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 75px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:50%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b>{{chit_fund_name}}</b> <br/>
+            {{address_line_1}} , {{address_line_2}}<br/>
+            PH : {{mobile_no}}
+          </span><br/>
+         
+        </div>
+        <div class="r_rept my-auto" style="width:20%;margin-top: -10px !important;">
+          <h3 style="font-family:Arial, sans-serif;font-size:14px; text-align:left; padding-right:5px;">PAYMENT</h3>
+          
+        </div> 
+        
+      </div>
+    </div>
+      <div style="width:100%; display: inline-flex;">
+        <div style="width:65%;">
+          <address style="margin-bottom: 5px;">
+            <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{customer_name}}</h4>
+            <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group / Ticket No: {{groupName}} / {{ticketNo}} </p>
+            
+          </address>
+        </div>
+        <div style="width:35%;">
+          <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date : {{cur_date}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Voucher No: PVOC-{{voucher_no}}</h3>
+        </div>
+      </div>
+
+      <div class="row col_rect">
+      
+        <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+          <thead>
+            
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                Chit Value
+              </td>
+              <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  ₹ {{chitValue}}/- 
+              </td>
+                </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{biddingAmount}}/-</td>
+          </tr>
+          <tr>
+              <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+              <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{gst}}/-</td>
+          </tr>
+          <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Bid Payment Adjust</td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bidPaymentAdjustment}}/-</td>
+          </tr>
+          <tr>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Customer Released Amount</td>
+              <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{customerReleasedAmount}}/-</td>
+          </tr>
+          <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Release Amount</td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{totalReleaseAmount}}/-</td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Pending Release Amount</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{pendingReleaseAmoun}}/-</td>
+      </tr>
+          </tbody>
+        </table>
+          <!--<div class="col-12 chit-name text-right">
+              <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+            </div>-->
+
+            <div class="col-md-12">    
+        <div class="signt_r" style="width:100%; display: inline-flex;"> 
+          <div class="cus-sign" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+          </div>
+          <div class="auth-sign text-right" style="width:49%;">
+              <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+            </div>
+        </div>
+            </div>
+
+      
+      </div>
+
+    </div>
+</div>
+<div class=" client_receipt" id="print-section1" style="width:100%; display: inline-flex;" [hidden]="receiptHide1">
+  <form class="bs-example form-horizontal"  [formGroup]="PaymentVoucher" ></form>
+  <div class="tex_l" style="width:100%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+    
+    <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+      <div class="r_logo" style="width:48%;"> 
+        <img src="{{companyLogo}}" style="max-width: 37px;" class="img-fluid" alt="logo" />
+      </div>
+      <div class="r_rept my-auto text-right" style="width:48%;">
+        <h3 style="font-family:Arial, sans-serif;font-size:16px;text-align:right;">Payment Voucher</h3>
+      </div>
+    </div>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address style="margin-bottom: 5px;">
+          <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group / Ticket No: {{groupName}} / {{ticketNo}} </p>
+          
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date : {{cur_date}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Voucher No: PVOC-{{voucher_no}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Chit Value
+            </td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{chitValue}}/- 
+            </td>
+              </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+          <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{biddingAmount}}/-</td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{gst}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Bid Payment Adjust</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bidPaymentAdjustment}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Customer Released Amount</td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{customerReleasedAmount}}/-</td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Release Amount</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{totalReleaseAmount}}/-</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Pending Release Amount</td>
+        <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{pendingReleaseAmoun}}/-</td>
+    </tr>
+        </tbody>
+      </table>
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+
+          <div class="col-md-12">    
+      <div class="signt_r" style="width:100%; display: inline-flex;"> 
+        <div class="cus-sign" style="width:49%;">
+          <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+        </div>
+        <div class="auth-sign text-right" style="width:49%;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+          </div>
+      </div>
+          </div>
+
+      <div class="col-12 client_foot_addr" style="width:99%;text-align:right;">
+        <p style="font-family:Arial, sans-serif;font-size:13px;">
+          <b>{{chit_fund_name}}</b> <br/>
+          {{address_line_1}}<br/> {{address_line_2}}<br/>
+          {{mobile_no}}
+        </p>
+      </div>
+    
+
+    </div>
+
+  </div>
+</div>
+
+<div class=" client_receipt" id="print-section2" style="width:100%; display: inline-flex;" [hidden]="receiptHide2">
+  <form class="bs-example form-horizontal"  [formGroup]="PaymentVoucher" ></form>
+  <div class="tex_l" style="width:100%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+    
+    <div class="row">
+      <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+        
+          <div class="r_rept my-auto" style="width:40%;margin:auto;margin-top: -10px !important;">
+            <img src="{{company_logo_original}}" style="max-width: 100px;margin-top: 7px !important;" class="img-fluid" alt="logo" />
+            
+          </div> 
+          <div class="r_logo " style="width:60%;"> 
+          <span style="font-family:Arial, sans-serif;font-size:13px;">
+            <b style="font-family:Arial, sans-serif;font-size:18px;">{{chit_fund_name}}</b></span> <br/><br/>
+            <span style="font-family:Arial, sans-serif;font-size:12px;"> {{address_line_1}} <br/> {{address_line_2}}<br/>
+            PH : {{mobile_no}} / 04651-222699<br/>
+            REG : U65993TN2021PTC147536<br/>
+            GST : 33AAICD8616N1Z9
+          </span><br/>
+         
+        </div>
+        
+      </div>
+    </div><br><br>
+    <div style="width:100%; display: inline-flex;" >
+      <div class="r_addr" style="width:65%;">
+        <address style="margin-bottom: 5px;">
+          <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{customer_name}}</h4>
+          <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Group / Ticket No: {{groupName}} / {{ticketNo}} </p>
+          
+        </address>
+      </div>
+      <div class="r_rno" style="width:35%;">
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Date : {{cur_date}}</h3>
+        <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Voucher No: PVOC-{{voucher_no}}</h3>
+      </div>
+    </div>
+
+    <div class="row col_rect">
+      <h4 class="col-12" style="font-size: 13px; padding: 3px 3px;text-align: center; font-family:Arial, sans-serif;"><b>Payment Receipt</b></h4>
+      <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+        <thead>
+          
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+              Chit Value
+            </td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                ₹ {{chitValue}}/- 
+            </td>
+              </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+          <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{biddingAmount}}/-</td>
+        </tr>
+        <tr>
+            <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+            <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{gst}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Bid Payment Adjust</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{bidPaymentAdjustment}}/-</td>
+        </tr>
+        <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Customer Released Amount</td>
+            <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{customerReleasedAmount}}/-</td>
+        </tr>
+        <tr>
+          <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Release Amount</td>
+          <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{totalReleaseAmount}}/-</td>
+      </tr>
+      <tr>
+        <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Pending Release Amount</td>
+        <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{pendingReleaseAmoun}}/-</td>
+    </tr>
+        </tbody>
+      </table> <br>
+      <table class="table mx-3" style="width: 100%;border-collapse: collapse;margin-top:10px;">
+        <thead>
+          <tr>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;width:40%"><b>Amount In Words</b></td>
+            <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{amount_in_words}} </b></td>
+          </tr>
+          <tr>
+              
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Payment Mode</td>
+              <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:14px;"><b>{{payment_name}} </b></td>
+            </tr>
+              <!--<tr>
+                <td colspan="2">Collection Details</td>
+              </tr>-->
+        </thead>
+      </table><br><br>
+        <!--<div class="col-12 chit-name text-right">
+            <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+          </div>-->
+          <div class="col-md-12">    
+            <div class="signt_r" style="width:100%; display: inline-flex;"> 
+              <div class="cus-sign" style="width:49%;">
+                <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;"></p>
+              </div>
+              <div class="auth-sign text-right" style="width:49%;">
+                  <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;margin-right:30px">Authorized Signature</p>
+                </div>
+            </div>
+                </div>
+
+     
+    </div>
+
+  </div>
+</div>

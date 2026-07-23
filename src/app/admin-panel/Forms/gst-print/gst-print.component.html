@@ -1,0 +1,175 @@
+
+<!--<button [hidden]="hidethis" (click)="onpdf()">print</button>-->
+<div class="col-12 text-right mb-3 pr-5">
+  <button class="btn btn-info px-3 py-1" (click)="print()">print</button>
+  </div>
+  <!--<div class="container-fluid" id="print-section">-->
+    <div class="row">
+      <!--<button printSectionId="print-section" ngxPrint>print</button>
+      <button (click)="printPage()">print</button>-->
+    </div>
+    <div class=" client_receipt" id="print-section" style="width:100%; display: inline-flex;">
+      <form class="bs-example form-horizontal"  [formGroup]="PaymentVoucher" ></form>
+      <div class="tex_l" style="width:48%; float:left; border-right: 2px dashed #0583a9;padding-right: 10px;">
+        
+        <div class=" c_r_lgo" style="width:100%; display: inline-flex;">
+          <div class="r_logo" style="width:48%;"> 
+            <img src="assets/img/Mazenet.png" style="max-width: 37px;" class="img-fluid" alt="logo" />
+          </div>
+          <div class="r_rept my-auto text-right" style="width:48%;">
+            <h3 style="font-family:Arial, sans-serif;font-size:16px;text-align:right;">GST Voucher</h3>
+          </div>
+        </div>
+       <!--suhail <div style="width:100%; display: inline-flex;" >
+          <div class="r_addr" style="width:65%;">
+            <address style="margin-bottom: 5px;">
+              <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{viewreceiptInfo.customer_name}}</h4>
+              <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Branch : {{viewreceiptInfo.branch_name}}</p>
+              
+            </address>
+          </div>
+          <div class="r_rno" style="width:35%;">
+            <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Payment Date : {{viewreceiptInfo.payment_date}}</h3>
+             </div>
+        </div>
+  
+        <div class="row col_rect">
+          
+          <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+            <thead>
+              
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                  Chit Value
+                </td>
+                <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                    ₹ {{viewreceiptInfo.chit_value}}/- 
+                </td>
+                  </tr>
+            <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+              <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{viewreceiptInfo.bidding_amount}}/-</td>
+            </tr>
+            <tr>
+                <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+                <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{viewreceiptInfo.gst_amount}}/-</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Total Amount</td>
+              <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{viewreceiptInfo.total_release_amount}}/-</td>
+            </tr>
+            
+            </tbody>
+          </table>-->
+            <!--<div class="col-12 chit-name text-right">
+                <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+              </div>-->
+  
+             <!--suhail <div class="col-md-12">    
+          <div class="signt_r" style="width:100%; display: inline-flex;"> 
+            <div class="cus-sign" style="width:49%;">
+              <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+            </div>
+            <div class="auth-sign text-right" style="width:49%;">
+                <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+              </div>
+          </div>
+              </div>
+  
+          <div class="col-12 client_foot_addr" style="width:99%;text-align:right;">
+            <p style="font-family:Arial, sans-serif;font-size:13px;">
+              <b>MAZE CHITS PVT LTD</b> <br/>
+              12E, 1st Floor, Padhmalaya towers, 10th St, Gandhipuram, Coimbatore - 641012,<br/>
+              Toll-Free: 1800-212-33-4646 
+            </p>
+          </div>
+        
+  
+        </div>
+  
+      </div>
+      <div style="width:48%;float:left;padding-left: 10px;">
+        
+          <div class="c_r_lgo" style="width:100%; display: inline-flex;">
+            <div class="r_logo" style="width:48%;">
+              <img src="assets/img/Mazenet.png" class="img-fluid" alt="logo" style="max-width:37px;"/>
+            </div>
+            <div class="r_rept my-auto text-right" style="width:48%;">
+              <h3 style="font-family:Arial, sans-serif;font-size:16px; text-align:right">GST Voucher</h3>
+            </div>
+          </div>
+          <div style="width:100%; display: inline-flex;">
+            <div style="width:65%;">
+              <address style="margin-bottom: 5px;">
+                <h4 style="font-size: 13px;font-family:Arial, sans-serif; font-style: normal;">Name : {{viewreceiptInfo.customer_name}}</h4>
+                <p style="margin-bottom: 0;font-weight: 400;font-family:Arial, sans-serif;font-style: normal; font-size: 13px;">Branch: {{branch_name}} </p>
+                
+              </address>
+            </div>
+            <div style="width:35%;">
+              <h3 style="font-size: 13px;font-family:Arial, sans-serif;font-weight:100;margin-bottom: 5px;">Payment Date : {{viewreceiptInfo.payment_date}}</h3>
+            </div>
+          </div>
+    
+          <div class="row col_rect">
+          
+            <table class="table mx-3" style="width:100%;border-collapse: collapse;margin-top:5px;">
+              <thead>
+                
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                    Chit Value
+                  </td>
+                  <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">
+                      ₹ {{viewreceiptInfo.chit_value}}/- 
+                  </td>
+                    </tr>
+              <tr>
+                  <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">Bidding Amount</td>
+                <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{viewreceiptInfo.bidding_amount}}/-</td>
+              </tr>
+              <tr>
+                  <td style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">GST</td>
+                  <td colspan="2" style="font-size:13px;border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;">₹ {{viewreceiptInfo.gst_amount}}/-</td>
+              </tr>
+              <tr>
+                  <td style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">Toal Amount</td>
+                <td colspan="2" style="border: 1px solid #313131;border-collapse: collapse;font-family:Arial, sans-serif;font-size:13px;">₹ {{viewreceiptInfo.total_release_amount}}/-</td>
+              </tr>
+              
+              </tbody>
+            </table>-->
+              <!--<div class="col-12 chit-name text-right">
+                  <h4 class="font-weight-bold">For MazeChits Pvt Ltd</h4>
+                </div>-->
+    
+                <div class="col-md-12">    
+            <div class="signt_r" style="width:100%; display: inline-flex;"> 
+              <div class="cus-sign" style="width:49%;">
+                <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;">Customer Signature</p>
+              </div>
+              <div class="auth-sign text-right" style="width:49%;">
+                  <p style="font-family:Arial, sans-serif;font-size:13px;margin-bottom: 5px;text-align: right;">Authorized Signature</p>
+                </div>
+            </div>
+                </div>
+    
+            <div class="col-12 client_foot_addr" style="width:99%;text-align:right;">
+              <p style="font-family:Arial, sans-serif;font-size:13px;">
+                <b>MAZE CHITS PVT LTD</b> <br/>
+                12E, 1st Floor, Padhmalaya towers, 10th St, Gandhipuram, Coimbatore - 641012,<br/>
+                Toll-Free: 1800-212-33-4646 
+              </p>
+            </div>
+          
+    
+          </div>
+    
+        </div>
+  
+  
+  

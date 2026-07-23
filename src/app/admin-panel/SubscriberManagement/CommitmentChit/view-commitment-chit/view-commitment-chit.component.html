@@ -1,0 +1,159 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Commitment Chit Enroll Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{branchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{customerInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Chit Value : </label>
+            <b class="px-1">{{schemeInfo.chit_value}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Due Type: </label>
+            <b class="px-1">{{slabInfo.slab_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Date Of Introduced: </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.date_introduced}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Payment Type : </label>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.payment_type==1">Daily</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.payment_type==2">Weekly</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.payment_type==3">Monthly</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Due Date: </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.due_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Agent Type : </label>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.agent_type==1">Customer</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.agent_type==2">Employee</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.agent_type==3">Business Agent</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.agent_type==4">Self Joining</b>
+            <b class="px-1" *ngIf="ViewCommitmentChitInfo.agent_type==5">Others</b>
+          </div>
+        </div> 
+        <div class="col-md-6" *ngIf="ViewCommitmentChitInfo.agent_type==5">
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.introducer_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="(ViewCommitmentChitInfo.agent_type==1) || (ViewCommitmentChitInfo.agent_type==2) || (ViewCommitmentChitInfo.agent_type==3)">
+          <div class="form-group">
+            <label class="form-label">Introducer Name : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.introducer_full_name}}</b>
+          </div>
+        </div>
+        <!--<div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Agent : </label>
+            <b class="px-1">{{collectionAgentInfo.first_name}}{{collectionAgentInfo.last_name}}</b>
+          </div>
+        </div>-->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Area : </label>
+            <b class="px-1">{{collectionAreaInfo.collection_area}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Pin : </label>
+            <b class="px-1">{{ViewCommitmentChitInfo.collection_pin}}</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+  
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">SPN Approved Customers</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-commitment-chit']" class="bg-success border-0 text-white px-3 py-2"> + Add Commitment Chit</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+   <form [formGroup]="ViewCommitmentChit" (ngSubmit)="onSubmit()" class="mb-3">
+  <div class="row">
+    <div class="col-md-5">
+      <label>Branch</label>
+      <select class="form-control" formControlName="branch_id">
+        <option value="">-- Select Branch --</option>
+        <option *ngFor="let branch of branchList" [value]="branch.id">{{ branch.branch_name }}</option>
+      </select>
+    </div>
+    <div class="col-md-3 my-auto">
+      <button type="submit" class="btn btn-primary mt-4">{{ SubmitbuttonName }}</button>
+    </div>
+  </div>
+</form>
+
+<div class="card-body" *ngIf="!TableHidden && filteredDataList.length > 0">
+  <table id="dtable" class="table table-bordered">
+    <thead>
+      <tr>
+        <th>SNo</th>
+        <th>Branch Name</th>
+        <th>Customer Name</th>
+        <th>Slab Name</th>
+        <th>Mobile No</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of filteredDataList;">
+        <td>{{ row.sno }}</td>
+        <td>{{ row.branch_info?.branch_name }}</td>
+        <td>{{ row.customer_info?.name }}</td>
+        <td>{{ row.slab_info?.slab_name }}</td>
+        <td>{{ row.customer_info?.mobile_no }}</td>
+        <td>
+          <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)">
+            <i class="fas fa-eye text-success"></i>
+          </a>
+          <a [routerLink]="['/admin-panel/update-commitment-chit/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-commitment-chit/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Loader -->
+<div *ngIf="TableHidden" class="table-loader">
+  <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+</div>
+</div>

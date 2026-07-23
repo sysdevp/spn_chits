@@ -1,0 +1,166 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">SPN Eligibility Approval</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-commitment-chit']" class="bg-info border-0 text-white px-3 py-2">
+          <i class="fas fa-eye pr-2"></i> SPN Approved Customers
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form [formGroup]="filterForm" (ngSubmit)="onSubmit()">
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Branch <span class="error">*</span></label>
+        <div class="col-sm-4">
+          <select #branch_id formControlName="branch_id">
+            <option value="">Select Branch</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <div class="col-sm-4">
+          <button type="submit" class="btn btn-primary">{{ SubmitbuttonName }}</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-responsive mt-3" [hidden]="TableHidden">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th>Customer</th>
+            <th>Mobile</th>
+            <th>Chit / Slab</th>
+            <th>1st Inst. Due</th>
+            <th>Paid</th>
+            <th>%</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList">
+            <td>{{ row.sno }}</td>
+            <td>{{ row.customer_info && row.customer_info.name }} {{ row.customer_info && row.customer_info.last_name }}</td>
+            <td>{{ row.customer_info && row.customer_info.mobile_no }}</td>
+            <td>{{ row.scheme_info && row.scheme_info.chit_value }} / {{ row.slab_info && row.slab_info.slab_name }}</td>
+            <td>{{ row.first_installment_due }}</td>
+            <td>{{ row.paid_amount_total }}</td>
+            <td>{{ row.payment_percent }}%</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-success" (click)="openApproveModal(row, approveModal)">
+                Approve SPN
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="TableHidden && submitted" class="text-muted text-center mt-4">No customers pending SPN approval.</p>
+  </div>
+</div>
+
+<ng-template #approveModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h5 class="modal-title">Approve SPN Commitment Chit</h5>
+    <button type="button" class="close" (click)="d('cancel')">&times;</button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="approveForm">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Date Of Joining <span class="error">*</span></label>
+            <input type="text" class="form-control" formControlName="date_introduced" placeholder="Enter Date Of Joining"
+              ngbDatepicker #d1="ngbDatepicker" (click)="d1.toggle()" onkeydown="return false;" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Due Date <span class="error">*</span></label>
+            <input type="text" class="form-control" formControlName="due_date" placeholder="Enter Due Date"
+              ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" onkeydown="return false;" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Payment Type <span class="error">*</span></label>
+            <select formControlName="payment_type" class="form-control">
+              <option value="">Select Payment Type</option>
+              <option value="1">Daily</option>
+              <option value="2">Weekly</option>
+              <option value="3">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Refered Type <span class="error">*</span></label>
+            <select formControlName="agent_type" class="form-control" (change)="agentTypeChg($event)">
+              <option value="">Select Refered Type</option>
+              <option value="1">Customer</option>
+              <option value="2">Employee</option>
+              <option value="3">Business Agent</option>
+              <option value="4">Others</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="introListShow">
+          <div class="form-group">
+            <label>Refered By <span class="error">*</span></label>
+            <select formControlName="introducer_id" class="form-control">
+              <option value="">Select</option>
+              <option *ngFor="let i of introducerList" [value]="i.id">{{ i.full_name || i.name || (i.first_name + ' ' + i.last_name) }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6" *ngIf="introNameShow">
+          <div class="form-group">
+            <label>Refered Detail <span class="error">*</span></label>
+            <input type="text" class="form-control" formControlName="introducer_name" placeholder="Enter Refered Detail" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Collection Area</label>
+            <select formControlName="collection_area_id" class="form-control" (change)="collectionAreaChg($event)">
+              <option value="">Select Collection Area</option>
+              <option *ngFor="let a of collectionAreaList" [value]="a.id">{{ a.collection_area_name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Pincode <span class="error">*</span></label>
+            <input type="text" class="form-control" formControlName="collection_pin" placeholder="Enter Area Pincode" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>AR Number</label>
+            <input type="text" class="form-control" formControlName="ar_no" placeholder="Enter AR No" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Commission Amount <span class="error">*</span></label>
+            <input type="text" class="form-control" formControlName="commission_amount" placeholder="Enter Commission Amount" />
+          </div>
+        </div>
+        <div class="col-md-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="confirmApproval" formControlName="confirm_approval" />
+            <label class="form-check-label" for="confirmApproval">
+              I confirm SPN approval and to generate remaining installment dues
+            </label>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="d('cancel')">Cancel</button>
+    <button type="button" class="btn btn-primary" (click)="submitApproval()">Submit Approval</button>
+  </div>
+</ng-template>

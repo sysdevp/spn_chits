@@ -1,0 +1,216 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">
+        Update Employee Attendance
+      </div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-employee-attendance']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Employee Attendance</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="UpdateEmployeeAttendance"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-10">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+            disabled
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Branch <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <select #branch_id formControlName="branch_id" disabled>
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{ data.id }}">
+                  {{ data.branch_name }}
+                </option>
+              </select>
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.branch_id.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.branch_id.errors.required"
+                  >Branch is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label"
+              >Attendance Date <span class="error">*</span></label
+            >
+            <div class="col-sm-8">
+              <input
+                #att_date
+                type="text"
+                class="form-control calendar"
+                placeholder="Enter Date"
+                formControlName="att_date"
+                (click)="d1.toggle()"
+                ngbDatepicker
+                #d1="ngbDatepicker"
+                onkeydown="return false;"
+                disabled
+              />
+              <div
+                class="col-md-12"
+                *ngIf="submitted && f.att_date.errors"
+                class="invalid-feedback"
+              >
+                <label *ngIf="f.att_date.errors.required"
+                  >Attendance Date is required</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="row border emp_hrm">
+        <h5 class="col-md-10 py-2">Attendance Status</h5>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Employee</th>
+              <th scope="col">Status</th>
+              <th scope="col">Leave Type</th>
+              <th scope="col">Forenoon</th>
+              <th scope="col">Afternoon</th>
+            </tr>
+          </thead>
+          <tbody formArrayName="Employees">
+            <tr
+              *ngFor="let emp of Employees['controls']; let i = index"
+              formGroupName="{{ i }}"
+            >
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="emp_name"
+                  readonly
+                />
+              </td>
+              <td>
+                <select
+                  formControlName="attendance_type"
+                  (change)="leaveChg(i)"
+                >
+                  <option value="1">Present</option>
+                  <option value="0">Absent</option>
+                </select>
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && emp.controls.attendance_type.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="emp.hasError('required', 'attendance_type')"
+                    >Attendance type is required</label
+                  >
+                </div>
+              </td>
+              <td>
+                <select
+                  formControlName="leave_type"
+                  *ngIf="emp.controls.attendance_type.value != 1"
+                  (change)="leaveChg(i)"
+                >
+                  <option value="">Select Leave Type</option>
+                  <option value="1">Paid</option>
+                  <option value="2">Unpaid</option>
+                </select>
+                <div
+                  class="col-md-12"
+                  *ngIf="submitted && emp.controls.leave_type.errors"
+                  class="invalid-feedback"
+                >
+                  <label *ngIf="emp.hasError('required', 'leave_type')"
+                    >Leave type is required</label
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="checkbox"
+                  formControlName="forenoon_session"
+                  *ngIf="emp.controls.attendance_type.value != 1"
+                  (change)="sessionChg(i)"
+                />
+              </td>
+
+              <td>
+                <input
+                  type="checkbox"
+                  formControlName="afternoon_session"
+                  *ngIf="emp.controls.attendance_type.value != 1"
+                  (change)="sessionChg(i)"
+                />
+                <div
+                  class="col-md-12"
+                  *ngIf="emp.controls.viewSessionAlert.value == 1"
+                  class="invalid-feedback"
+                >
+                  <label>Session is required</label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row">&nbsp;</div>
+      <div class="form-group row d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-employee-attendance']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,70 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Print Passbook Index</div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <div class="row" >
+      <div id="print-section" class="contentToConvert" style="overflow: auto; color:black; font-size:13px;"> 
+        <table border-collapse="collapse"  border= "0px solid transparent" style="background:transparent; width: 100%; height:280px; margin:0 auto; padding: 300 15 0 15px;">
+          <tr>
+            <td class="tbl-td-header">Customer Name</td>
+            <td><b>{{customerName}}</b></td>
+            <td class="tbl-td-header">Branch Name</td>
+            <td>{{branchName}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Date of Issue</td>
+            <td>{{dateOfIssue}}</td>
+            <td class="tbl-td-header">Group Name / Ticket No</td>
+            <td>{{groupName}} / {{ticketNo}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">P.S.O No</td>
+            <td>{{psoNo}}</td>
+            <td class="tbl-td-header">No Of Months</td>
+            <td>{{NoMonths}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">By law No</td>
+            <td>{{byLawNo}}</td>
+            <td class="tbl-td-header">Chit Value</td>
+            <td>{{chitValue}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Commencement Date</td>
+            <td>{{CommencementDate}}</td>
+            <td class="tbl-td-header">Termination Date</td>
+            <td>{{TerminationDate}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Introducer Name</td>
+            <td>{{introducerName}}</td>
+            <td class="tbl-td-header">Monthly Installment</td>
+            <td>{{monthlyInstallment}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Auction Time</td>
+            <td>{{auctionTime}}</td>
+            <td class="tbl-td-header">Auction Date</td>
+            <td>{{auctionDate}}</td>
+          </tr>
+          <tr>
+            <td class="tbl-td-header">Contact No</td>
+            <td>{{contactNo}}</td>
+            <td class="tbl-td-header">Address</td>
+            <td>{{address}}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="form-group row d-flex justify-content-center">
+      <button type="button" class="btn btn-primary mr-1" (click)="generatePdf()">Print</button>
+      <a [routerLink]="['/admin-panel/passbook-before-entry']" class="btn btn-danger mr-1">Cancel</a>
+    </div>
+  </div>
+</div>
+
+  

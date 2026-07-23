@@ -1,0 +1,42 @@
+<div class="card maz-vh">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-6 my-auto font-weight-bold">Employee Login List</div>
+        <div class="col-6 text-right">
+          <a [routerLink]="['/admin-panel/add-employee-login']"  class="bg-success border-0 text-white px-3 py-2"> + Add Employee Login </a>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div [hidden]="TableHidden">
+        <table id="dtable" class="row-border hover">
+          <thead>
+            <tr> 
+              <th>SNo</th>
+              <th>Employee Name</th>
+              <th>Email Id</th>
+              <th>Role Name</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}}</td>
+              <td>{{row.email}}</td>
+              <td>{{row.role_info.role_name}}</td>
+              <td>  
+                <a [routerLink]="['/admin-panel/update-employee-login/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+                <a [routerLink]="['/admin-panel/delete-employee-login/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+                <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Branch"><i class="fas fa-check-circle text-success"></i></a>
+                <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Branch"><i class="fas fa-ban text-danger"></i></a>-->
+             </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div *ngIf="TableHidden==true" class="table-loader" > 
+        <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+      </div>
+    </div>
+  </div>

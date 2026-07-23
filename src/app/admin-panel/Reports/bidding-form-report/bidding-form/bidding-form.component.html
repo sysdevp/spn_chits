@@ -1,0 +1,337 @@
+
+<style type="css/stylesheet">
+  .bid_ad {
+      padding-left: 0;
+  }
+  .bid_ad li button {
+      padding: 2px 5px;
+      font-size: 12px;
+      margin: 2px 2px;
+  }
+  .bid_ad li {
+      display: inline-block;
+  }
+  .panel {
+    padding: 15px 15px;
+    max-width: 650px;
+    margin: 20px auto;
+    background: #f3f3f3;
+    border-radius: 8px;
+    box-shadow: 2px 3px 6px rgb(0 0 0 / 22%);
+}
+  </style>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Admin Bidding</div>
+      <div class="col-6 text-right" [hidden]="back">
+        <button type="button" class="btn btn-success" (click)="resetallReport()">Back</button>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <form class="bs-example form-horizontal" [formGroup]="AdminBid" [hidden]="hiddentop"  (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin" >
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #branch_id class="form-control form-control w-100 border-dark" (change)="branchChg($event)" formControlName="branch_id">
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+              <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Group <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
+              <option value="">Select Group</option>
+              <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
+              <label *ngIf="f.group_id.errors.required">Group is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row ">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetBank()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentoptwo">
+        <div class="dataTables_length">
+          <label>
+            Show 
+            <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select> 
+            entries
+          </label>
+        </div>
+        <div class="dataTables_filter">
+          <label>
+            Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
+           </label>
+        </div>
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Group </th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('auction_no')">Auction No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('chit_value')">Chit Value</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Auction Details</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('status')">Status</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Action</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Log</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let row of pagedItems; let i = index">
+              <td class="sorting_1">{{i+1}}</td>
+              <td>{{row.group_name}}</td>
+              <td>{{row.installment_no}}</td>
+              <td>{{row.chit_value}}</td>
+              <td *ngIf="row.status==1">  
+                <button type="button" class="btn btn-success" (click)="viewauctionReport($event, row.id)">View</button>
+              </td>
+              <td *ngIf="row.status!=1"></td>
+              <td *ngIf="row.status==1">Complete</td>
+              <td *ngIf="row.status==2">Progress</td>
+              <td *ngIf="row.status==3">Yet to start</td>
+              <td *ngIf="row.status==4">stop</td>
+              <td>
+                <ul class="bid_ad">
+                  <li><button type="button" *ngIf="row.status==3" class="btn btn-success" (click)="enabledstatus($event, row.id)">Enable</button></li>
+                  <li><button type="button" *ngIf="row.status==2" class="btn btn-secondary" (click)="disabledstatus($event, row.id)">Disable</button></li>
+                  <li><button type="button" *ngIf="row.status==4" class="btn btn-primary" (click)="reactivestatus($event, row.id)">Reactive</button></li>
+                </ul>  
+              </td>
+              <td *ngIf="row.status==2">  
+                <button type="button" class="btn btn-success" (click)="logbiddingReport($event, row.id, row.group_id, row.installment_no)">Log View</button>
+              </td>
+              <td *ngIf="row.status==1">  
+                <button type="button" class="btn btn-success" (click)="logviewReport($event, row.group_id, row.installment_no)">View</button>
+              </td>
+              <td *ngIf="row.status==3">  
+                
+              </td>
+              <td *ngIf="row.status==4">  
+                <button type="button" class="btn btn-success" (click)="logbiddingcompletedReport($event, row.id, row.group_id, row.installment_no)">Log View</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dataTables_info" role="status" aria-live="polite">
+          {{dtableInfo}}
+        </div>
+        <div class="dataTables_paginate paging_simple_numbers">
+          <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
+          <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
+          <span *ngFor="let page of pager.pages">
+            <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
+            <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
+          </span>
+          <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
+          <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
+        </div>
+      </div>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentopthree">
+        
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('date')">Date</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ticket_no')">Ticket No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('contact_no')">Contact No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bidding_value')">Bidding Value</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('auction_no')">Auction No</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let last of lastauctionList; let i = index">
+              <td class="sorting_1">{{i+1}}</td>
+              <td>{{last.auction_date}}</td>
+              <td>{{last.ticket_no}}</td>
+              <td>{{last.customer_name}}</td>
+              <td>{{last.mobile_no}}</td>
+              <td>{{last.bidding_amount}}</td>
+              <td>{{last.installment_no}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentopfour">
+        
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('date')">Date</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('auction_no')">Auction No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('auction_no')">View</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bidding_value')">Current High Value</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bidding_value')">User Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bidding_value')">Ticket No</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let last of lastauctionList; let i = index">
+              <td class="sorting_1">{{i+1}}</td>
+              <td></td>
+              <td>
+                <button type="button" class="btn btn-success" (click)="viewallauctionReport()">View</button>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentopfive">
+        <form class="bs-example form-horizontal" [formGroup]="ChequeGroup" (ngSubmit)="onChequeSubmit()">
+          <div class="panel" *ngFor="let row of msgList;">
+              <label class="col-6 px-0">
+                  <p style="font-size: 20px; text-align: right;"><b>Highest Bid Value</b></p>
+              </label>
+              <label class="col-3 px-0">
+                <button  #myButton id="refresh" type="button"  class="px-2 btn btn-success mx-2" (click)="triggerClick()"><i class="fa fa-refresh" >Refresh</i></button>
+            </label>
+            <label class="col-3 px-0">
+              <button *ngIf="row.status==2"  #mystop id="stop" type="button"  class="px-2 btn btn-danger mx-2" (click)="stopClick($event, row.id)"><i class="fa">Stop</i></button>
+          </label>
+            <label class="col-12 px-0">
+              <input  type="text" disabled class="form-control border-dark" style="text-align: center; font-size: 20px; font-weight: bold;" value="{{max__bid_amount}}" />
+            </label>
+          <div class="input-group mb-3" [hidden]="hiddentopseven">
+              <input #message type="text" formControlName="message" class="form-control border-dark" placeholder="Message" 
+              aria-label="Recipient's username" aria-describedby="basic-addon2">
+              <!--<input #tenant_id_message type="text" formControlName="tenant_id_message" value="{{tenant_id_msg}}" class="form-control" placeholder="Message" 
+              aria-label="Recipient's username" aria-describedby="basic-addon2">
+              <input #branch_id_message type="text" formControlName="branch_id_message" value="{{branch_id_msg}}" class="form-control" placeholder="Message" 
+              aria-label="Recipient's username" aria-describedby="basic-addon2">
+              <input #group_id_message type="text" formControlName="group_id_message" value="{{group_id_msg}}" class="form-control" placeholder="Message" 
+              aria-label="Recipient's username" aria-describedby="basic-addon2">
+              <input #installmentno_message type="text" formControlName="installmentno_message" value="{{installmentNo}}" class="form-control" placeholder="Message" 
+              aria-label="Recipient's username" aria-describedby="basic-addon2">-->
+              <div class="col-md-12" *ngIf="Submitted && cf.message.errors" class="invalid-feedback">
+                <label *ngIf="cf.message.errors.required">Message is required</label>
+              </div>
+              <div class="input-group-append">
+                <button id="sub" class="input-group-text btn btn-primary"  [disabled]="disableChequeBtn">{{SubmitChequeButtonName}}</button>
+              </div>
+            </div>
+          </div>
+          </form>
+            <table id="dtable" class="table">
+              <thead>
+                  <tr>
+                      <th>Sno</th>
+                      <th>Customer Code</th>
+                      <th>Customer Name</th>
+                      <th>In Time</th>
+                      <th>Server Time</th>
+                      <th>value</th>
+                      <th>Action</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr *ngFor="let last of logall; let i = index">
+                    <td class="sorting_1">{{i+1}}</td>
+                      <td>{{last.customer_code}}</td>
+                      <td>{{last.name}}</td>
+                      <td>{{last.created_at}}</td>
+                      <td>{{last.created_at}}</td>
+                      <td>{{last.amount}}</td>
+                      <td>  
+                        <button type="button" class="btn btn-danger" (click)="delete($event, last.id)">Delete</button>
+                      </td>
+                  </tr>  
+          </tbody>
+          </table>
+      </div>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentopsix">
+        
+        <table class="row-border hover dataTable no-footer" id="dtable" role="grid" aria-describedby="dtable_info">
+          <thead>
+            <tr role="row">
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('date')">Date</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Customer Name</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('ticket_no')">Ticket No</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('bidding_amount')">Bidding Amount</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" >Action</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('in_time')">In Time</th>
+              <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('server_time')">Server Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr role="row" *ngFor="let last of lastauctionList; let i = index">
+              <td class="sorting_1">{{i+1}}</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+                <a [routerLink]=""><i class="fas fa-trash-alt text-danger"></i></a>
+              </td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="dataTables_wrapper no-footer" [hidden]="hiddentopeight">
+        <form class="bs-example form-horizontal" [formGroup]="ChequeGroup" (ngSubmit)="onChequeSubmit()">
+          
+          </form>
+            <table id="dtable" class="table">
+              <thead>
+                  <tr>
+                      <th>Sno</th>
+                      <th>Customer Code</th>
+                      <th>Customer Name</th>
+                      <th>In Time</th>
+                      <th>Server Time</th>
+                      <th>value</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr *ngFor="let last of logall; let i = index">
+                    <td class="sorting_1">{{i+1}}</td>
+                      <td>{{last.customer_code}}</td>
+                      <td>{{last.name}}</td>
+                      <td>{{last.created_at}}</td>
+                      <td>{{last.created_at}}</td>
+                      <td>{{last.amount}}</td>
+                  </tr>  
+          </tbody>
+          </table>
+      </div>
+    </div>
+  </div>
+</div>

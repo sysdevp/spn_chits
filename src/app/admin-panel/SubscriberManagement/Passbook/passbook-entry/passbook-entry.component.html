@@ -1,0 +1,86 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Passbook Entry</div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form class="bs-example form-horizontal" [formGroup]="PassbookEntry">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div class="col-md-12" *ngIf="(f.tenant_id.errors && (!disableBtn))" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Branch Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="(f.branch_id.errors && (!disableBtn))" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Group Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #group_id formControlName="group_id" (change)="groupChg($event)">
+                <option value="">Select Group</option>
+                <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="(f.group_id.errors && (!disableBtn))" class="invalid-feedback">
+                <label *ngIf="f.group_id.errors.required">Group is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Customer <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #customer_id formControlName="customer_id" (change)="customerChg($event)">
+                <option value="">Select Customer</option>
+                <option *ngFor="let data of customerList" value="{{data.customer_id}}">{{data.customer_info.name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="(f.customer_id.errors && (!disableBtn))" class="invalid-feedback">
+                <label *ngIf="f.customer_id.errors.required">Customer is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Enrollment <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #enrollment_id formControlName="enrollment_id" (change)="enrollmentChg()">
+                <option value="">Select Enrollment</option>
+                <option *ngFor="let data of enrollmentList" value="{{data.id}}">{{data.enrol_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="(f.enrollment_id.errors && (!disableBtn))" class="invalid-feedback">
+                <label *ngIf="f.enrollment_id.errors.required">Customer is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row d-flex justify-content-center">
+        <button type="button" class="btn btn-primary mr-1" [disabled]="disableBtn" (click)="printIndexClk()">Print Index</button>
+        <button type="button" class="btn btn-primary mr-1" [disabled]="disableBtn" (click)="printTransactionClk()">Print Transaction</button>
+        <button type="button" class="btn btn-primary mr-1" [disabled]="disableBtn" (click)="printTransactionIndexClk()">Print Transaction Index</button>
+      </div>
+    </form>
+  </div>
+</div>

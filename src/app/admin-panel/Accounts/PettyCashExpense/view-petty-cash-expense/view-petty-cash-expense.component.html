@@ -1,0 +1,232 @@
+<ng-template #uploadModal1 let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+	  <h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeReturnClk">Cheque Returned</h5>
+	  <h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeClearClk">Cheque Cleared</h5>
+	  <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+	  <div class="card-body">
+		<form class="bs-example form-horizontal" [formGroup]="ChequeGroup" (ngSubmit)="onChequeSubmit()">
+		  <div class="row">
+			<div class="col-6">
+			  <div class="form-group row">
+				<label class="col-sm-4">Remarks <span class="error">*</span></label>
+				<div class="col-sm-8">
+				  <textarea #remarks class="form-control form-control w-100 border-dark" formControlName="remarks"></textarea>
+				  <div class="col-md-12" *ngIf="chequeSubmitted && cf.remarks.errors" class="invalid-feedback">
+					<label *ngIf="cf.remarks.errors.required">Remark is required</label>
+				  </div>
+				</div>
+			  </div>
+			</div>
+			<div class="col-6">
+			  <div class="form-group row">
+				<label class="col-sm-4" *ngIf="isChequeClearClk">Cheque Cleared On <span class="error">*</span></label>
+				<label class="col-sm-4" *ngIf="isChequeReturnClk">Cheque Returned On <span class="error">*</span></label>
+				<div class="col-sm-8">
+				  <input #cheque_clear_return_date type="text" formControlName="cheque_clear_return_date" class="form-control calendar" placeholder="Enter Date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+				  <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_clear_return_date.errors" class="invalid-feedback">
+					<label *ngIf="cf.cheque_clear_return_date.errors.required">Date is required</label>
+				  </div>
+				</div>
+			  </div>
+			</div>
+			<div class="col-6" *ngIf="isChequeReturnClk">
+			  <div class="form-group row">
+				<label class="col-sm-4">Cheque Return Amount <span class="error">*</span></label>
+				<div class="col-sm-8">
+				  <input #cheque_return_amount type="text" formControlName="cheque_return_amount" class="form-control" placeholder="Enter Return Amount">
+				  <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_return_amount.errors" class="invalid-feedback">
+					<label *ngIf="cf.cheque_return_amount.errors.required">Cheque return amount is required</label>
+				  </div>
+				</div>
+			  </div>
+			</div>
+			<div class="col-6" *ngIf="isChequeClearClk">
+			  <div class="form-group row">
+				<label class="col-sm-4">Debit To <span class="error">*</span></label>
+				<div class="col-sm-8">
+				  <select #cheque_debit_to class="form-control form-control w-100 border-dark" formControlName="cheque_debit_to">
+					<option value="">Select Bank</option>
+					<option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+				  </select>
+				  <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_debit_to.errors" class="invalid-feedback">
+					<label *ngIf="cf.cheque_debit_to.errors.required">Bank is required</label>
+				  </div>
+				</div>
+			  </div>
+			</div>
+		  </div>
+		  <div class="form-group row">
+			<div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+			  <button type="submit" class="btn btn-primary mr-1" [disabled]="disableChequeBtn">{{SubmitChequeButtonName}}</button>
+			  <button type="button" class="btn btn-danger mr-1" (click)="c('Close click')">Cancel</button>
+			</div>
+		  </div>
+		</form>
+	  </div>
+	</div>
+	<div class="modal-footer"></div>
+  </ng-template>
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+	<div class="modal-header without-text">
+		<h5 class="float-left px-2 py-2 text-white mb-0">Petty Cash Expense</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+	</div>
+	<div class="modal-body">
+		<div class="card-body">
+			<div class="row">
+				<div class="col-md-6"> 
+					<div class="form-group">
+						<label class="form-label">Branch Name: </label>
+            			<b class="px-1">{{branchInfo.branch_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Employee Name : </label>
+						<b class="px-1">{{employeeInfo.first_name}} {{employeeInfo.last_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Available Cash : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.avaliable_cash}}</b>
+					</div>
+        		</div>
+        		<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Expense Date : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.expenses_date}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Expense Amount : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.expenses_amount}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Expense Type : </label>
+						<b class="px-1">{{expensestypeInfo.expenses_type}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Payment Type : </label>
+						<b class="px-1">{{paymentTypeInfo.payment_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Debit To : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.debit_to}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque No : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.cheque_no}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque Date : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.cheque_date}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Name : </label>
+						<b class="px-1">{{BankInfo.bank_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Branch Name : </label>
+						<b class="px-1">{{BankInfo.bank_branch_name}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction Date : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.transaction_date}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction No : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.transaction_no}}</b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Remarks : </label>
+						<b class="px-1">{{viewPettyCashExpenseInfo.remarks}}</b>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal-footer"></div>
+</ng-template>
+<div class="card maz-vh">
+	<div class="card-header">
+		<div class="row">
+			<div class="col-6 my-auto font-weight-bold">Petty Cash Expense List</div>
+			<div class="col-6 text-right">
+				<a [routerLink]="['/admin-panel/add-petty-cash-expense']"  class="bg-success border-0 text-white px-3 py-2"> + Add Petty Cash Expense </a>
+			</div>
+		</div>
+	</div>
+	<div class="card-body">
+		<div [hidden]="TableHidden">
+			<table id="dtable"  class="row-border hover">
+				<thead>
+					<tr> 
+						<th>Sno</th>
+						<th>Branch Name</th>
+						<th>Employee Name</th>
+						<th>Expense Date</th>
+						<th>Expense Amount</th>
+						<th>Expense Type</th>
+						<th>Payment Type</th>
+						<th>Cheque Clearence</th>
+						<th>Status</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr *ngFor="let row of dataList;">
+						<td>{{row.sno}}</td>
+						<td>{{row.branch_info.branch_name}}</td>
+						<td>{{row.employee_info.first_name}}</td>
+						<td>{{row.expenses_date}}</td>
+						<td>{{row.expenses_amount}}</td>
+						<td>{{row.expenses_type_info.expenses_type}}</td>
+						<td>{{row.payment_type_info.payment_name}}</td>
+						<td *ngIf="row.status==2">
+							<a style="margin-left:5%;cursor:pointer;" (click)="open1(uploadModal1, { windowClass: 'modal-lg animate' }, row.id);checkReturnClk()"><span class="badge badge-success">Is Cheque Returned</span></a><br/>
+							<a style="margin-left:5%;cursor:pointer;" (click)="open1(uploadModal1, { windowClass: 'modal-lg animate' }, row.id);checkClearClk()"><span class="badge badge-info">Is Cheque Cleared</span></a>
+						</td>
+						<td *ngIf="row.status!=2">-</td>
+						<td *ngIf="row.status==0">Inactive</td>
+						<td *ngIf="row.status==1">Active</td>
+						<td *ngIf="row.status==2">Pending</td>
+						<td *ngIf="row.status==3">Returned</td>
+						<td *ngIf="row.status==4">Cleared</td>
+						<td>  
+							<a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+							<a [routerLink]="['/admin-panel/update-petty-cash-expense/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+							<a [routerLink]="['/admin-panel/delete-petty-cash-expense/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<div *ngIf="TableHidden==true" class="table-loader" > 
+			<img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+		</div>
+	</div>
+</div>

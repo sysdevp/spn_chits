@@ -1,0 +1,462 @@
+<style>
+  .ag-cell {
+    line-height: 50px !important;
+  }
+</style>
+<!--<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeReturnClk">Cheque Returned</h5>
+    <h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeClearClk">Cheque Cleared</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal" [formGroup]="ChequeGroup" (ngSubmit)="onChequeSubmit()">
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Remarks</label>
+              <div class="col-sm-8">
+                <textarea #remarks class="form-control form-control w-100 border-dark" formControlName="remarks"></textarea>
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.remarks.errors" class="invalid-feedback">
+                  <label *ngIf="cf.remarks.errors.required">Remark is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4" *ngIf="isChequeClearClk">Cheque Cleared On <span class="error">*</span></label>
+              <label class="col-sm-4" *ngIf="isChequeReturnClk">Cheque Returned On <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #cheque_clear_return_date type="text" formControlName="cheque_clear_return_date" class="form-control calendar" placeholder="Enter Date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_clear_return_date.errors" class="invalid-feedback">
+                  <label *ngIf="cf.cheque_clear_return_date.errors.required">Date is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6" *ngIf="isChequeReturnClk">
+            <div class="form-group row">
+              <label class="col-sm-4">Cheque Return Amount <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #cheque_return_amount type="text" formControlName="cheque_return_amount" class="form-control" placeholder="Enter Return Amount">
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_return_amount.errors" class="invalid-feedback">
+                  <label *ngIf="cf.cheque_return_amount.errors.required">Cheque return amount is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6" *ngIf="isChequeClearClk">
+            <div class="form-group row">
+              <label class="col-sm-4">Debit To <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #cheque_debit_to class="form-control form-control w-100 border-dark" formControlName="cheque_debit_to">
+                  <option value="">Select Bank</option>
+                  <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableChequeBtn">{{SubmitChequeButtonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="c('Close click')">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>-->
+
+<ngx-smart-modal class="ngx-msg-modal cheque" #myModal identifier="myModal">
+  <div class="modal-header without-text custm-modal">
+		<h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeReturnClk">Cheque Return Detail</h5>
+    <h5 class="float-left px-2 py-2 text-white mb-0" *ngIf="isChequeClearClk">Cheque Clearance Detail</h5>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="myModal.close()">X</button>
+	</div>
+	<div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal" [formGroup]="ChequeGroup" (ngSubmit)="onChequeSubmit()">
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Remarks <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <textarea #remarks class="form-control form-control w-100 border-dark" formControlName="remarks"></textarea>
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.remarks.errors" class="invalid-feedback">
+                  <label *ngIf="cf.remarks.errors.required">Remark is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4" *ngIf="isChequeClearClk">Cheque Cleared On <span class="error">*</span></label>
+              <label class="col-sm-4" *ngIf="isChequeReturnClk">Cheque Returned On <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #cheque_clear_return_date type="text" formControlName="cheque_clear_return_date" class="form-control calendar" placeholder="Enter Date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false">
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_clear_return_date.errors" class="invalid-feedback">
+                  <label *ngIf="cf.cheque_clear_return_date.errors.required">Date is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6" *ngIf="isChequeReturnClk">
+            <div class="form-group row">
+              <label class="col-sm-4">Cheque Return Amount <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input #cheque_return_amount type="text" formControlName="cheque_return_amount" class="form-control" placeholder="Enter Return Amount">
+                <div class="col-md-12" *ngIf="chequeSubmitted && cf.cheque_return_amount.errors" class="invalid-feedback">
+                  <label *ngIf="cf.cheque_return_amount.errors.required">Cheque return amount is required</label>
+                  <label *ngIf="cf.cheque_return_amount.errors.pattern">Invalid format</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6" *ngIf="isChequeClearClk">
+            <div class="form-group row">
+              <label class="col-sm-4">Debit To </label>
+              <div class="col-sm-8">
+                <select #cheque_debit_to class="form-control form-control w-100 border-dark" formControlName="cheque_debit_to">
+                  <option value="">Select Bank</option>
+                  <option *ngFor="let data of bankList" value="{{data.id}}">{{data.bank_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableChequeBtn">{{SubmitChequeButtonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="myModal.close()">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+	<div class="modal-footer"></div>
+</ngx-smart-modal>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Advance Receipt Report</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-advanced-receipt']" class="bg-success border-0 text-white px-3 py-2"> + Add  Advance Receipt</a>
+      </div>
+    </div>
+    <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
+        <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
+      </div>
+      <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+        <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
+      </div>
+  </div>
+  <div class="card-body">
+    <div >
+      <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="AddAdvancedReceiptReport" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10">
+            <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+              <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Branch <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+                  <option value="">Select Branch</option>
+                  <option value="0">All Branch</option>
+                  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+                </select>
+                <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+         <!--  <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Group</label>
+              <div class="col-sm-8">
+                <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
+                  <option value="">Select Group</option>
+                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>  -->
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Customer</label>
+              <div class="col-sm-8">
+                <select #customer_id class="form-control form-control w-100 border-dark" formControlName="customer_id">
+                  <option value="">Select Customer</option>
+                  <option *ngFor="let data of customerList" value="{{data.id}}">{{data.name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Employee</label>
+              <div class="col-sm-8">
+                <select #employee_id class="form-control form-control w-100 border-dark" formControlName="employee_id">
+                  <option value="">Select Employee</option>
+                  <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Payment Type</label>
+              <div class="col-sm-8">
+                <select #payment_type_id class="form-control form-control w-100 border-dark" formControlName="payment_type_id">
+                  <!--<option value="">Select Payment Type</option>
+                  <option *ngFor="let data of paymentList" value="{{data.id}}">{{data.payment_name}}</option>-->
+                  <option value="">Select Payment Type</option>
+                  <option value="1">Cash</option>
+                  <option value="2">Cheque</option>
+                  <option value="3">D.D</option>
+                  <option value="4">RTGS/NEFT</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Start Date</label>
+              <div class="col-sm-8">
+                <input #start_date type="text" formControlName="start_date" class="form-control calendar" placeholder="Enter Date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">End Date</label>
+              <div class="col-sm-8">
+                <input #end_date type="text" formControlName="end_date" class="form-control calendar" placeholder="Enter Date" (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false">
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+          </div>
+        </div>
+      </form>
+      <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+        <table class="table table-responsive">
+          <thead>
+          <tr>
+            <th>S No</th>
+            <th>Branch Name</th>
+            <th>Collected Branch</th>
+            <th>Receipt Date</th>
+            <th>Customer Name</th>
+            <th>Collection Employee</th>
+            <th>Enrollment</th>
+            <th>Receipt Amount</th>
+            <th>Payment Type</th>
+            <th>Cheque No</th>
+            <th>Cheque Date</th>
+            <th>Cheque Return</th>
+            <th>Cheque Clear/ Return Date</th>
+            <th>Bank Name</th>
+            <th>Bank Branch Name</th>
+            <th>Transaction No</th>
+            <th>Transaction Date</th>
+            <th>Cheque Clearance</th>
+            <th>Cheque Debit To</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+          <tbody>
+            <tr>
+              <td colspan="12" style="color: #d9534f;
+              border: transparent;
+              font-size: 20px;">
+                No Records Found
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+	  <div class="row recp_rep" [hidden]="hideReport">
+        <div class="test-header col-5">
+          Show:
+          <select (change)="onPageSizeChanged()" id="page-size">
+            <option value="10" selected="">10</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+          entries
+        </div>
+        <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
+          <button (click)="onBtnExport()" >Excel</button>
+          <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
+        </div>
+        <div class="col-3 r_rep">
+          <span >Search</span> 
+          <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
+        </div> 
+        <ag-grid-angular 
+                    [suppressColumnVirtualisation]="true"
+#agGrid
+          style="width: 100%; height: auto; margin-top: 15px;" 
+          class="ag-theme-balham chq"
+          [rowData]="rowData" 
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [pagination]="true"
+          [paginationPageSize]="paginationPageSize"
+          [paginationNumberFormatter]="paginationNumberFormatter"
+          [rowHeight]="50"
+          [headerHeight]="50"
+          [suppressExcelExport] = "true" 
+          (gridReady)="onGridReady($event)"
+          [gridOptions]="gridOptions"
+        >     
+        </ag-grid-angular>
+
+        <h4 class="text-center col-12">Grand Total </h4>
+        <table class="table text-center mx-3 table-bordered">
+          <tr>
+            <th class="bg-secondary text-white">Total Amount</th>
+          </tr>
+          <tr>
+            <td>{{totalAmt}}</td>
+          </tr>
+        </table>
+      </div>
+      <!--<div class="row" style="overflow-x:scroll ">
+        <table id="dtable" class="row-border hover" [hidden]="TableHidden">
+          <thead>
+            <tr> 
+              <th>Sno</th>
+              <th>Branch Name</th>
+              <th>Collected Branch</th>
+              <th>Receipt Date</th>
+              <th>Customer Name</th>
+              <th>Collection Employee Name </th>
+              <th>Enrollment </th>
+              <th>Receipt Amount</th>
+              <th>Payment Type</th>
+              <th>Cheque No</th>
+              <th>Cheque Date </th>
+              <th>Cheque Return</th>
+              <th>Cheque Clear/ Return Date</th>
+              <th>Bank Name  </th>
+              <th>Bank Branch Name</th>
+              <th>Transaction No </th>
+              <th>Transaction Date </th>
+              <th>Cheque Clearance</th>
+              <th>Cheque Debit To  </th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of dataList;">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_info.branch_name}}</td>
+              <td *ngIf="row.other_branch==0">-</td>
+              <td *ngIf="row.other_branch!=0">{{row.branch_info.branch_name}}</td>
+              <td>{{row.receipt_date}}</td>
+              <td>{{row.customer_info.name}}</td>
+              <td>{{row.employee_info.first_name}} {{row.employee_info.last_name}} </td>
+              <td>{{row.group_info.group_name}}</td>
+              <td>{{row.receipt_amount}}</td>
+              <td *ngIf="row.payment_type_id==1">Cash</td>
+              <td *ngIf="row.payment_type_id==2">Cheque</td>
+              <td *ngIf="row.payment_type_id==3">D.D</td>
+              <td *ngIf="row.payment_type_id==4">RTGS/NEFT</td>
+              <td *ngIf="row.payment_type_id==5">Card</td>
+              <td *ngIf="row.payment_type_id==6">Bid Payment Adjustment</td>
+              <td *ngIf="row.payment_type_id==7">Advance Adjustment</td>
+              <td>{{row.cheque_no}}</td>
+              <td>{{row.cheque_date}}</td>
+              <td>{{row.cheque_return_amount}}</td>
+              <td>{{row.cheque_clear_return_date}}</td>
+              <td>{{row.bank_id}} </td>
+              <td>{{row.branch_name}} </td>
+              <td>{{row.transaction_no}} </td>
+              <td>{{row.transaction_date}} </td>
+              <td *ngIf="row.status==2">
+                <a style="margin-left:5%;cursor:pointer;" (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id);checkReturnClk()"><span class="badge badge-success">Is Cheque Returned</span></a><br/>
+                <a style="margin-left:5%;cursor:pointer;" (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id);checkClearClk()"><span class="badge badge-info">Is Cheque Cleared</span></a>
+              </td>
+              <td *ngIf="row.status!=2">-</td>
+              <td>{{row.cheque_bank_info}}</td>
+              <td *ngIf="row.status==0">Inactive</td>
+              <td *ngIf="row.status==1">Active</td>
+              <td *ngIf="row.status==2">Pending</td>
+              <td *ngIf="row.status==3">Returned</td>
+              <td *ngIf="row.status==4">Cleared</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>-->
+      <div>
+      <div  [hidden]="pdfrectab" id="contentToConvert">
+      <h4 style="text-align: center;">Advanced Receipt Report</h4><br>
+      <table class="text-center mx-3 table-bordered">
+        <tr>
+          <th class="bg-secondary text-white">Sno</th>
+          <th class="bg-secondary text-white">Branch Name</th>
+          
+          <th class="bg-secondary text-white">Receipt Date</th>
+          <th class="bg-secondary text-white">Customer Name</th>
+          <th class="bg-secondary text-white">Collection Employee Name</th>
+          <th class="bg-secondary text-white">Enrollment</th>
+          <th class="bg-secondary text-white">Receipt Amount</th>
+          <th class="bg-secondary text-white">Payment Type</th>
+          <th class="bg-secondary text-white">Cheque No</th>
+          <th class="bg-secondary text-white">Cheque Date</th>
+          
+          <th class="bg-secondary text-white">Cheque Clear/ Return Date</th>
+          <th class="bg-secondary text-white">Bank Name</th>
+          <th class="bg-secondary text-white">Bank Branch Name</th>
+          <th class="bg-secondary text-white">Transaction No</th>
+          <th class="bg-secondary text-white">Transaction Date</th>
+          
+        </tr>
+        <tr *ngFor="let row of dataList;">
+          <td>{{row.sno}}</td>
+          <td>{{row.branch_name}}</td>
+          
+          <td>{{row.receipt_date}}</td>
+          <td>{{row.customer_name}}</td>
+          <td>{{row.collection_employee_name}}</td>
+          <td>{{row.group_name}}</td>
+          <td>{{row.receipt_amount}}</td>
+          <td>{{row.payment_type_name}}</td>
+          <td>{{row.cheque_no}}</td>
+          <td>{{row.cheque_date}}</td>
+          
+          <td>{{row.cheque_clear_return_date}}</td>
+          <td>{{row.bank_name}}</td>
+          <td>{{row.bank_branch_name}}</td>
+          <td>{{row.transaction_no}}</td>
+          <td>{{row.transaction_date}}</td>
+         
+        </tr>
+      </table>
+    </div>
+    </div>
+    </div>
+  </div>
+</div>

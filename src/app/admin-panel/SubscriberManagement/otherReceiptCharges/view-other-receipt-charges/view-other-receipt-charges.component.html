@@ -1,0 +1,148 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Other Receipt Charges Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <b class="px-1">{{viewBranchInfo.branch_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Customer Name : </label>
+            <b class="px-1">{{viewCustomerInfo.name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Employee Name : </label>
+            <b class="px-1">{{viewEmployeeInfo.first_name}}{{viewEmployeeInfo.last_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Enrollment Id : </label>
+            <b class="px-1">GROUP NAME :{{viewEnrollmentInfo}} || TICKET NO :{{viewEnrollInfo}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Date : </label>
+            <b class="px-1">{{viewOtherReceiptChargesInfo.received_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Amount : </label>
+            <b class="px-1">{{viewOtherReceiptChargesInfo.amount}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Charge Type Name : </label>
+            <b class="px-1">{{viewOtherChargeTypeInfo.charge_name}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Payment Type : </label>
+						<b class="px-1">{{paymentTypeInfo.payment_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Debit To : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.debit_to}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque No : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.cheque_no}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Cheque Date : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.cheque_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Name : </label>
+						<b class="px-1">{{bankInfo.bank_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Bank Branch Name : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.bank_branch_name}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction Date : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.transaction_date}}  </b>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="form-group">
+						<label class="form-label">Transaction No : </label>
+						<b class="px-1">{{viewOtherReceiptChargesInfo.transaction_no}}  </b>
+					</div>
+				</div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Other Receipt Charges Details</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-other-receipt-charges']" class="bg-success border-0 text-white px-3 py-2"> + Add Other Receipt Charges</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Customer Name</th>
+            <th>Employee Name</th>
+            <th>Payment Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.customer_info.name}}</td>
+            <td>{{row.employee_info.first_name}}{{row.employee_info.last_name}}</td>
+            <td>{{row.payment_type_info.payment_name}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-other-receipt-charges/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-other-receipt-charges/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <a [routerLink]="['/admin-panel/other-receipt-print/'+row.id]"><i class="fas fa-print  ml-1"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

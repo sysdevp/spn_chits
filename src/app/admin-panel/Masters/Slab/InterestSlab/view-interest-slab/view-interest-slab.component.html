@@ -1,0 +1,158 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Interest Slab Detail</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <form class="bs-example form-horizontal">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Branch Name: </label>
+              <b class="px-1">{{BranchInfo.branch_name}}</b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Chit Value : </label>
+              <b class="px-1">{{SchemeInfo.chit_value}} </b>
+            </div>
+          </div>	
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 1 Percentage : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level_1_percentage}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 1 From : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level1_from}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 1 To : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level1_to}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 2 Percentage : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level_2_percentage}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 2 From : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level2_from}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 2 To : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level2_to}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 3 Percentage : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level_3_percentage}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 3 From : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level3_from}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 3 To : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level3_to}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 4 Percentage : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level_4_percentage}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 4 From : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level4_from}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 4 To : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level4_to}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 5 Percentage : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level_5_percentage}} </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 5 From : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level5_from}}  </b>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Level 5 To : </label>
+              <b class="px-1">{{ViewInterestSlabInfo.level5_to}}  </b>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Interest Slab List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-interest-slab']"  class="bg-success border-0 text-white px-3 py-2"> + Add Interest Slab</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Id</th>
+            <th>Chit Value</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.scheme_info.chit_value}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-interest-slab/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-interest-slab/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Interest Slab"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Interest Slab"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader" > 
+      <img style="width: 120px; margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

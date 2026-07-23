@@ -1,0 +1,56 @@
+<div class="card maz-vh">
+    <div class="card-header">
+		<div class="row">
+			<div class="col-6 my-auto font-weight-bold">Customer Label List</div>
+			<div class="col-6 text-right">
+					</div>
+		</div>
+    </div>
+	<div class="card-body">
+			<div [hidden]="TableHidden">
+			<form class="bs-example form-horizontal" [formGroup]="viewCustomer" (ngSubmit)="onSubmit()">
+					<div class="form-group row" [hidden]="!isSuperAdmin">
+					  <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+					  <div class="col-sm-10 col-md-7 col-9">
+						<select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+						  <option value="">Select Company</option>
+						  <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+						</select>
+						<div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+						  <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+						</div>
+					  </div>
+					</div>
+					<div class="form-group row">
+					  <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+					  <div class="col-sm-10 col-md-7 col-9">
+						<select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
+						  <option value="">Select Branch</option>
+						  <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+						</select>
+						<div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+						  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+						</div>
+					  </div>
+					</div>
+					<div class="form-group row ">
+					  <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+						<button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+						<button type="button" class="btn btn-danger mr-1" (click)="resetCustomer()">Reset</button>
+					  </div>
+					</div>
+				  </form>
+				  <div class="col-md-6 col-12" *ngFor="let row of dataList;">
+					
+					<h4 style="text-align: center;">{{row.name}}</h4>
+					<h4 style="text-align: center;">{{row.mobile_no}}</h4>
+					<h4 style="text-align: center;">{{row.address_line_1}},{{row.address_line_2}}</h4>
+					<h4 style="text-align: center;">{{row.cityname}},{{row.districtname}},{{row.pincode}}</h4><br>
+				  </div>
+      
+			
+			<div *ngIf="TableHidden==true" class="table-loader" > 
+			  <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+			</div>
+		  </div>
+		</div>

@@ -1,0 +1,89 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Daily Collection Statement</div>
+      <div class="col-4 text-right" [hidden]="backTOGet" ><i class="fas fa-arrow-left p-2 bg-success text-white" (click)="backToView()"></i></div>
+      <div class="col-1 text-right" [hidden]="backTOGet" ><a (click)="onpdf()"><i class="fas p-2 bg-success text-white" >PDF</i></a></div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div>
+      <form class="bs-example form-horizontal" [formGroup]="DayClosingReport" (ngSubmit)="onSubmit()">
+         <div class="form-group row" [hidden]="details">
+            <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+            <div class="col-sm-10">
+              <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
+                <option value="">Select Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+          </div> 
+        </div>
+       
+        <div class="form-group row" [hidden]="details">
+          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+          </div>
+        </div>
+
+<table class="table" border="1" [hidden]="report" id="mygrid">
+    <thead>
+      <tr>1</tr>
+      <tr>2</tr>
+      <tr>
+        <td colspan="10" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Company Name : Fountain Chits Private Limited</b></td>
+       </tr>
+       <tr>
+        <td colspan="10" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Daily Collection Statement</b></td>
+       </tr>
+       <tr>
+        <td colspan="10" class="text-center" style="color:rgba(17, 57, 233, 0.986)"><b>Date : 26-03-2022 </b></td>
+       </tr>
+    </thead>
+    <tbody>
+      
+      <tr>
+        <th>SNO</th>
+        <th>Group</th>
+        <th>Receipt No</th>
+        <th>Customer Name</th>
+        <th>Ticket</th>
+        <th>Chq Details</th>
+        <th>Inst No</th>
+        <th>Cash</th>
+        <th>Bank</th>
+        <th>Neft</th>
+       
+      </tr>
+   
+      <tr *ngFor="let row of dataList;">
+        <td></td>
+        <td> <b>{{row.group_name}}</b></td>
+        <td><b>{{row.receipt_no}}</b></td>
+        <td><b>{{row.customer_name}}</b></td>
+        <td><b>{{row.ticket_no}}</b></td>
+        <td><b>{{row.cheque_no}}</b></td>
+        <td><b>{{row.installment_no}}</b></td>
+        <td><b>{{row.cash}}</b></td>
+        <td><b>{{row.bank}}</b></td>
+        <td><b>{{row.neft}}</b></td>
+      
+      </tr>
+      <tr>
+        <td colspan="7"><b>Total: </b></td>
+        
+        <td><b>1000000</b></td>
+        <td><b>0</b></td>
+        <td><b>0</b></td>
+        
+      </tr>
+    </tbody>
+    
+  </table>
+      </form>
+    </div>
+  </div>
+</div>

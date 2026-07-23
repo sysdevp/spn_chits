@@ -1,0 +1,601 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Update Penalty Slab</div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/view-penalty-slab']"
+          class="bg-info border-0 text-white px-3 py-2"
+        >
+          <i class="fas fa-eye pr-2"></i> View Penalty Slab</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="UpdateSlabPenalty"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-6">
+          <select
+            #tenant_id
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+            disabled
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label"
+          >Branch Name <span class="error">*</span></label
+        >
+        <div class="col-sm-6">
+          <select #branch_id formControlName="branch_id" disabled>
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{ data.id }}">
+              {{ data.branch_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.branch_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.branch_id.errors.required"
+              >Branch is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label"
+          >Scheme Name <span class="error">*</span></label
+        >
+        <div class="col-sm-6">
+          <select
+            #scheme_id
+            formControlName="scheme_id"
+            (change)="schemeChg($event)"
+            disabled
+          >
+            <option value="">Select Scheme</option>
+            <option *ngFor="let data of schemeList" value="{{ data.id }}">
+              {{ data.scheme_format }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.scheme_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.scheme_id.errors.required"
+              >Scheme name is required</label
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- 
+      <div class="row">
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 1 Percentage</label>
+            <div class="col-sm-8">
+              <input #level_1_percentage type="text" class="form-control" placeholder="Enter Level 1 Percentage" formControlName="level_1_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.level_1_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.level_1_percentage.errors.pattern">Invalid pattern</label>
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 1 From</label>
+            <div class="col-sm-8">
+              <input #level1_from type="text" class="form-control" placeholder="Enter Level 1 From" formControlName="level1_from">
+              <div class="col-md-12" *ngIf="submitted && f.level1_from.errors" class="invalid-feedback">
+                <label *ngIf="f.level1_from.errors.pattern">Invalid pattern</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 1 To</label>
+            <div class="col-sm-8">
+              <input #level1_to type="text" class="form-control" placeholder="Enter Level 1 To" formControlName="level1_to">
+              <div class="col-md-12" *ngIf="submitted && f.level1_to.errors" class="invalid-feedback">
+                <label *ngIf="f.level1_to.errors.pattern">Invalid pattern</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 2 Percentage</label>
+            <div class="col-sm-8">
+              <input #level_2_percentage type="text" class="form-control" placeholder="Enter Level 2 Percentage" formControlName="level_2_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.level_2_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.level_2_percentage.errors.pattern">Invalid pattern</label>
+              </div>   
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 2 From</label>
+            <div class="col-sm-8">
+              <input #level2_from type="text" class="form-control" placeholder="Enter Level 2 From" formControlName="level2_from">
+              <div class="col-md-12" *ngIf="submitted && f.level2_from.errors" class="invalid-feedback">
+                <label *ngIf="f.level2_from.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 2 To</label>
+            <div class="col-sm-8">
+              <input #level2_to type="text" class="form-control" placeholder="Enter Level 2 To" formControlName="level2_to">
+              <div class="col-md-12" *ngIf="submitted && f.level2_to.errors" class="invalid-feedback">
+                <label *ngIf="f.level2_to.errors.pattern">Invalid pattern</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 3 Percentage</label>
+            <div class="col-sm-8">
+              <input #level_3_percentage type="text" class="form-control" placeholder="Enter Level 3 Percentage" formControlName="level_3_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.level_3_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.level_3_percentage.errors.pattern">Invalid pattern</label>
+              </div>   
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 3 From</label>
+            <div class="col-sm-8">
+              <input #level3_from type="text" class="form-control" placeholder="Enter Level 3 From" formControlName="level3_from">
+              <div class="col-md-12" *ngIf="submitted && f.level3_from.errors" class="invalid-feedback">
+                <label *ngIf="f.level3_from.errors.pattern">Invalid pattern</label>
+              </div>   
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 3 To</label>
+            <div class="col-sm-8">
+              <input #level3_to type="text" class="form-control" placeholder="Enter Level 3 To" formControlName="level3_to">
+              <div class="col-md-12" *ngIf="submitted && f.level3_to.errors" class="invalid-feedback">
+                <label *ngIf="f.level3_to.errors.pattern">Invalid pattern</label>
+              </div>    
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 4 Percentage</label>
+            <div class="col-sm-8">
+              <input #level_4_percentage type="text" class="form-control" placeholder="Enter Level 4 Percentage" formControlName="level_4_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.level_4_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.level_4_percentage.errors.pattern">Invalid pattern</label>
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 4 From</label>
+            <div class="col-sm-8">
+              <input #level4_from type="text" class="form-control" placeholder="Enter Level 4 From" formControlName="level4_from">
+              <div class="col-md-12" *ngIf="submitted && f.level4_from.errors" class="invalid-feedback">
+                <label *ngIf="f.level4_from.errors.pattern">Invalid pattern</label>
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 4 To</label>
+            <div class="col-sm-8">
+              <input #level4_to type="text" class="form-control" placeholder="Enter Level 4 To" formControlName="level4_to">
+              <div class="col-md-12" *ngIf="submitted && f.level4_to.errors" class="invalid-feedback">
+                <label *ngIf="f.level4_to.errors.pattern">Invalid pattern</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 5 Percentage</label>
+            <div class="col-sm-8">
+              <input #level_5_percentage type="text" class="form-control" placeholder="Enter Level 5 Percentage" formControlName="level_5_percentage">
+              <div class="col-md-12" *ngIf="submitted && f.level_5_percentage.errors" class="invalid-feedback">
+                <label *ngIf="f.level_5_percentage.errors.pattern">Invalid pattern</label>
+              </div> 
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 5 From</label>
+            <div class="col-sm-8">
+              <input #level5_from type="text" class="form-control" placeholder="Enter Level 5 From" formControlName="level5_from">
+              <div class="col-md-12" *ngIf="submitted && f.level5_from.errors" class="invalid-feedback">
+                <label *ngIf="f.level5_from.errors.pattern">Invalid pattern</label>
+              </div>  
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Level 5 To</label>
+            <div class="col-sm-8">
+              <input #level5_to type="text" class="form-control" placeholder="Enter Level 5 To"  formControlName="level5_to">
+              <div class="col-md-12" *ngIf="submitted && f.level5_to.errors" class="invalid-feedback">
+                <label *ngIf="f.level5_to.errors.pattern">Invalid pattern</label>
+              </div>    
+            </div>
+          </div>
+        </div>
+
+
+      </div> -->
+
+      <h6 class="mb-3 border-bottom pb-2">Penalty Slabs</h6>
+
+      <div class="table-responsive">
+        <table class="table table-bordered">
+          <thead class="thead-light">
+            <tr>
+              <th>Level</th>
+              <th>Penalty %</th>
+              <th>Penalty Days From</th>
+              <th>Penalty Days To</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- LEVEL 1 -->
+            <tr>
+              <td>Level 1</td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level_1_percentage"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level_1_percentage.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level_1_percentage.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level_1_percentage.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level1_from"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level1_from.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level1_from.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level1_from.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level1_to"
+                  [ngClass]="{ 'is-invalid': submitted && f.level1_to.errors }"
+                />
+                <div
+                  *ngIf="submitted && f.level1_to.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level1_to.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+            </tr>
+
+            <!-- LEVEL 2 -->
+            <tr>
+              <td>Level 2</td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level_2_percentage"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level_2_percentage.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level_2_percentage.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level_2_percentage.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level2_from"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level2_from.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level2_from.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level2_from.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level2_to"
+                  [ngClass]="{ 'is-invalid': submitted && f.level2_to.errors }"
+                />
+                <div
+                  *ngIf="submitted && f.level2_to.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level2_to.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+            </tr>
+
+            <!-- LEVEL 3 -->
+            <tr>
+              <td>Level 3</td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level_3_percentage"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level_3_percentage.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level_3_percentage.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level_3_percentage.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level3_from"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level3_from.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level3_from.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level3_from.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level3_to"
+                  [ngClass]="{ 'is-invalid': submitted && f.level3_to.errors }"
+                />
+                <div
+                  *ngIf="submitted && f.level3_to.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level3_to.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+            </tr>
+
+            <!-- LEVEL 4 -->
+            <tr>
+              <td>Level 4</td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level_4_percentage"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level_4_percentage.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level_4_percentage.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level_4_percentage.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level4_from"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level4_from.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level4_from.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level4_from.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level4_to"
+                  [ngClass]="{ 'is-invalid': submitted && f.level4_to.errors }"
+                />
+                <div
+                  *ngIf="submitted && f.level4_to.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level4_to.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+            </tr>
+
+            <!-- LEVEL 5 -->
+            <tr>
+              <td>Level 5</td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level_5_percentage"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level_5_percentage.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level_5_percentage.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level_5_percentage.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level5_from"
+                  [ngClass]="{
+                    'is-invalid': submitted && f.level5_from.errors
+                  }"
+                />
+                <div
+                  *ngIf="submitted && f.level5_from.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level5_from.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+
+              <td>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="level5_to"
+                  [ngClass]="{ 'is-invalid': submitted && f.level5_to.errors }"
+                />
+                <div
+                  *ngIf="submitted && f.level5_to.errors"
+                  class="invalid-feedback d-block"
+                >
+                  <small *ngIf="f.level5_to.errors.pattern"
+                    >Invalid pattern</small
+                  >
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-group row d-flex justify-content-center">
+        <button
+          type="submit"
+          class="btn btn-primary mr-1"
+          [disabled]="disableBtn"
+        >
+          {{ SubmitbuttonName }}
+        </button>
+        <a
+          [routerLink]="['/admin-panel/view-penalty-slab']"
+          class="btn btn-danger mr-1"
+          >Cancel</a
+        >
+      </div>
+    </form>
+  </div>
+</div>

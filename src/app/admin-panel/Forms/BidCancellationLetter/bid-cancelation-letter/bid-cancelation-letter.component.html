@@ -1,0 +1,93 @@
+<!Doctype html>
+<html>
+<head>
+<title>Vajrankura</title>
+</head>
+<style>
+    .page_1 {
+        text-align: center;
+    }
+    .address {
+        display: flex;
+    }
+    .left-side {
+        width: 50%;
+        text-align: left;
+    }
+    .right-side {
+        text-align: right;
+        width: 50%;
+    }
+    .dear, .ref, .para {
+        text-align: left;
+    } 
+    .page_1 table th, .page_1 table td {
+        border-bottom: 1px solid #828282;
+        padding: 4px 0;
+    }
+    .page_1 table th {
+        border-top: 1px solid #828282;
+    }
+
+    .page_1 table {
+        width: 100%;
+    }   
+    .thanks {
+        text-align: left;
+    }
+    .faith {
+        width: 50%;
+        float: right;
+    }
+</style>
+<body>
+    <form class="bs-example form-horizontal"  [formGroup]="Bidcancelationletter" ></form>
+  <div class="col-12 text-right mb-3 pr-5">
+    <button class="btn btn-info px-3 py-1" (click)="print()">print</button>
+    </div>
+    <div class="container page_1"  id="print-section">
+        <h1 style="text-align: center;">VAJRANKURA CHIT FUNDS PVT LTD</h1>   
+        <p style="text-align: center;">34-52, SKML Silk House, Main Road, BOBBILI-535 558, Vizianagaram Dist, Andhra Pradesh Ph: 08944 253879</p> 
+        <h3 style="text-align: center;">BID CANCELLATION LETTER</h3>
+        
+        <div class="address " style="width:100%;display: inline-flex;">
+            <div class="left-side" style="width:50%;">
+                <address>
+                    To <br/>
+                        Sri / Smt  <br/>
+                        <!--<h4>{{biddingDetails.customer_name}}</h4>
+                        {{biddingDetails.customer_info.address_line_1}}<br/>
+                        {{biddingDetails.customer_info.address_line_2}} <br/>
+                        {{biddingDetails.customer_info.pincode}} -->
+                </address>
+            </div>
+            <div class="right-side " style="width:50%; text-align: right;">
+                <p>Letter No : <span>RNR84/19</span></p>
+                <!--<p>Letter Date : <span>{{biddingDetails.current_date}}</span></p>-->
+            </div>
+           
+        
+    </div>
+        <p class="dear">Respected Sir/Madam.</p>
+        <p class="ref"><b>Sub: Non drawing of prized Amount and Bid Cancellation Request Regarding</b></p>
+         <!--<p class="ref"><b>Ref Chit No.{{biddingDetails.group_name}}-{{biddingDetails.installment_no}} Chit Value Rs. {{biddingDetails.chit_value}}</b></p>
+        <p class="para">
+            with reference to the above, you are once of the Chit Subscriber in Chit Group {{biddingDetails.group_name}}, You have participated in auction held on {{biddingDetails.auction_date}} and agrred to forego an amount of Rs.{{biddingDetails.bidding_amount}} out of Rs {{biddingDetails.chit_value}}.
+        </p>-->
+        <p class="para">
+            As per Chit Fund Act the Prized Subscriber has to furnish sufficient surities to the  satisfaction of the Foremen to draw the Prized Amount and Pay the monthly installments regularly, But till today you have not furnished sufficient, and failed to draw the Prized amount and pay the monthly
+            installments gegularly, which means you are not intersted to draw the Prized Amount, causing loss to company and other subscribers in the same chit group. As per Chit Fund rules if for any reason,
+            the Prized Subscriber fails to draw the Prized Amount, the bid will be cancelled and the Bid Loss and damages fo breach of the agreement will be recovered from him. 
+        </p>
+        <p class="para">
+            Hence we would like to bring your notice, that you are requested to furnish sufficenint surities, and draw the Prized Amount with in 7 days of receipt of this failling which your bid will cancelled as per Chit Fund Act, chit agrreement and company rules, The bid loss and damages for breach of the agreement will be recovered from you.
+        </p>
+
+        
+
+        <p class="thanks" style="text-align: center;">Thanking You.</p>
+        <p class="thanks" style="text-align: right;">For VAJRANKURA CHIT FUNDS PVT LTD</p>
+        <p class="thanks" style="text-align: right;">Foreman</p>
+    </div>
+</body>
+</html>

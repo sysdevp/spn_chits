@@ -1,0 +1,810 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Employee Details</h5>
+    <button
+      type="button"
+      class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3"
+      id="myDiv"
+      (click)="c('Close click')"
+    >
+      X
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Personal Details</strong>
+          </div>
+        </div>
+        <!-- 
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Salutation : </label>
+            <b class="px-1" *ngIf="viewEmployeeInfo.saluation == 'mister'"
+              >Mr</b
+            >
+            <b class="px-1" *ngIf="viewEmployeeInfo.saluation == 'misses'"
+              >Mrs</b
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.saluation == 'miss'">Ms</span>
+            <b class="px-1" *ngIf="viewEmployeeInfo.saluation == 'doctor'"
+              >Dr</b
+            >
+          </div>
+        </div> -->
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label"
+              >
+              First Name :
+              <span>
+                <span class="px-1" *ngIf="viewEmployeeInfo.saluation == 'mister'"
+                  >Mr</span
+                >
+                <span class="px-1" *ngIf="viewEmployeeInfo.saluation == 'misses'"
+                  >Mrs</span
+                >
+                <span class="px-1" *ngIf="viewEmployeeInfo.saluation == 'miss'"
+                  >Ms</span
+                >
+                <span class="px-1" *ngIf="viewEmployeeInfo.saluation == 'doctor'"
+                  >Dr</span
+                > </span>
+            </label>
+            <span class="px-1">{{ viewEmployeeInfo.first_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Last Name : </label>
+            <span class="px-1">{{ viewEmployeeInfo.last_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Gender : </label>
+            <span class="px-1" *ngIf="viewEmployeeInfo.gender == 1">Male</span>
+            <span class="px-1" *ngIf="viewEmployeeInfo.gender == 2">Female</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Date Of Birth : </label>
+            <span class="px-1">{{ viewEmployeeInfo.dob }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Blood Group : </label>
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'a_positive'"
+              >A+</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'o_positive'"
+              >O+</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'b_positive'"
+              >B+</span
+            >
+            <span
+              class="px-1"
+              *ngIf="viewEmployeeInfo.blood_group == 'ab_positive'"
+              >AB+</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'a_negative'"
+              >A-</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'o_negative'"
+              >O-</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.blood_group == 'b_negative'"
+              >B-</span
+            >
+            <span
+              class="px-1"
+              *ngIf="viewEmployeeInfo.blood_group == 'ab_negative'"
+              >AB-</span
+            >
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <img
+            *ngIf="viewEmployeeInfo.photo_for_view != ''"
+            src="{{ viewEmployeeInfo.photo_for_view }}"
+            class="img-view"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Father Name : </label>
+            <span class="px-1">{{ viewEmployeeInfo.father_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Spouse Name : </label>
+            <span class="px-1">{{ viewEmployeeInfo.spouse_name }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>Professional Details</strong>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Branch Name : </label>
+            <span class="px-1">{{ branchInfo.branch_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Employee Type : </label>
+            <span class="px-1" *ngIf="viewEmployeeInfo.employee_type == 1"
+              >Employee</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.employee_type == 2"
+              >Business Agent</span
+            >
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Designation : </label>
+            <span class="px-1">{{ designationInfo.designation_name }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Role : </label>
+            <span class="px-1">{{ roleInfo.role_name }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Joining Date : </label>
+            <span class="px-1">{{ viewEmployeeInfo.joining_date }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Experience : </label>
+            <span class="px-1">{{ viewEmployeeInfo.experience }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Qualification : </label>
+            <span class="px-1">{{ viewEmployeeInfo.qualification }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Salary : </label>
+            <span class="px-1">{{ viewEmployeeInfo.salary }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">PF : </label>
+            <span class="px-1">{{ viewEmployeeInfo.pf }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">ESI : </label>
+            <span class="px-1">{{ viewEmployeeInfo.esi }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Target : </label>
+            <span class="px-1">{{ viewEmployeeInfo.target }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Incentive % : </label>
+            <span class="px-1">{{ viewEmployeeInfo.incentive }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Commission % : </label>
+            <span class="px-1">{{ viewEmployeeInfo.commission }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Previous Company Details : </label>
+            <span class="px-1">{{ viewEmployeeInfo.previous_company_details }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Last Month Salary : </label>
+            <span class="px-1">{{ viewEmployeeInfo.last_month_salary }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Verification On Call By : </label>
+            <span class="px-1">{{ viewEmployeeInfo.verification_on_call_by }}</span>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Agent : </label>
+            <span class="px-1" *ngIf="viewEmployeeInfo.collection_agent == 1"
+              >Yes</span
+            >
+            <span class="px-1" *ngIf="viewEmployeeInfo.collection_agent == 0"
+              >No</span
+            >
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collection Area : </label>
+            <span class="px-1">{{ collectionAreaInfo.collection_area }}</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <div class="card-header">
+              <strong>Bank Account Details</strong>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Holder Name : </label>
+              <span class="px-1">{{ viewEmployeeInfo.holder_name }}</span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Account Number : </label>
+              <span class="px-1">{{ viewEmployeeInfo.account_no }}</span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Bank Name : </label>
+              <span class="px-1">{{ bankInfo.bank_name }}</span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">IFSC Code : </label>
+              <span class="px-1">{{ viewEmployeeInfo.ifsc_code }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-12 mb-3">
+            <div class="card-header">
+              <strong>Contact Details</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Phone No : </label>
+              <span class="px-1">{{ viewEmployeeInfo.phone_no }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Mobile No : </label>
+              <span class="px-1">{{ viewEmployeeInfo.mobile_no }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Email : </label>
+              <span class="px-1">{{ viewEmployeeInfo.email }}</span>
+            </div>
+          </div>
+
+          <div class="col-md-12 mb-3">
+            <div class="card-header">
+              <strong>Permanent Address</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Door Number : </label>
+              <span class="px-1">{{ viewEmployeeInfo.door_no }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Building Name : </label>
+              <span class="px-1">{{ viewEmployeeInfo.building_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Address Line - 1 : </label>
+              <span class="px-1">{{ viewEmployeeInfo.address_line_1 }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Address Line - 2 : </label>
+              <span class="px-1">{{ viewEmployeeInfo.address_line_2 }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Land Mark : </label>
+              <span class="px-1">{{ viewEmployeeInfo.landmark }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">State : </label>
+              <span class="px-1">{{ stateInfo.state_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">District : </label>
+              <span class="px-1">{{ districtInfo.district_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">City : </label>
+              <span class="px-1">{{ cityInfo.city_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Pincode : </label>
+              <span class="px-1">{{ viewEmployeeInfo.pincode }}</span>
+            </div>
+          </div>
+
+          <div class="col-md-12 mb-3">
+            <div class="card-header">
+              <strong>Communication Address</strong>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Door Number : </label>
+              <span class="px-1">{{ viewEmployeeInfo.communication_door_no }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Building Name : </label>
+              <span class="px-1">{{
+                viewEmployeeInfo.communication_building_name
+              }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Address Line - 1 : </label>
+              <span class="px-1">{{
+                viewEmployeeInfo.communication_address_line_1
+              }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Address Line - 2 : </label>
+              <span class="px-1">{{
+                viewEmployeeInfo.communication_address_line_2
+              }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Landmark : </label>
+              <span class="px-1">{{ viewEmployeeInfo.communication_land_mark }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">State : </label>
+              <span class="px-1">{{ communicationStateInfo.state_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">District : </label>
+              <span class="px-1">{{ communicationDistrictInfo.district_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">City : </label>
+              <span class="px-1">{{ communicationCityInfo.city_name }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="form-label">Pincode : </label>
+              <span class="px-1">{{ viewEmployeeInfo.communication_pincode }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-12 mb-3">
+          <div class="card-header">
+            <strong>KYC Details</strong>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Aadhar Number : </label>
+            <span class="px-1">{{ viewEmployeeInfo.adhar_card }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Driving License Number : </label>
+            <span class="px-1">{{ viewEmployeeInfo.driving_license }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Pancard Number : </label>
+            <span class="px-1">{{ viewEmployeeInfo.pan_no }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Rationcard Number : </label>
+            <span class="px-1">{{ viewEmployeeInfo.ration_card_no }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer"></div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Employee List</div>
+      <div class="col-6 text-right">
+        <a
+          [routerLink]="['/admin-panel/add-employee']"
+          class="bg-success border-0 text-white px-3 py-2"
+        >
+          + Add Employee</a
+        >
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <form
+      class="bs-example form-horizontal"
+      [formGroup]="viewEmployee"
+      (ngSubmit)="onSubmit()"
+    >
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label"
+          >Company Name <span class="error">*</span></label
+        >
+        <div class="col-sm-10 col-md-7 col-9">
+          <select
+            #tenant_id
+            class="form-control form-control w-100 border-dark"
+            formControlName="tenant_id"
+            (change)="companyChg($event)"
+          >
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">
+              {{ data.chit_fund_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.tenant_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.tenant_id.errors.required"
+              >Company is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label"
+          >Select Branch <span class="error">*</span></label
+        >
+        <div class="col-sm-10 col-md-7 col-9">
+          <select
+            #branch_id
+            class="form-control form-control w-100 border-dark"
+            formControlName="branch_id"
+          >
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{ data.id }}">
+              {{ data.branch_name }}
+            </option>
+          </select>
+          <div
+            class="col-md-12"
+            *ngIf="submitted && f.branch_id.errors"
+            class="invalid-feedback"
+          >
+            <label *ngIf="f.branch_id.errors.required"
+              >Branch is required</label
+            >
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+          <button
+            type="submit"
+            class="btn btn-primary mr-1"
+            [disabled]="disableBtn"
+          >
+            {{ SubmitbuttonName }}
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger mr-1"
+            (click)="resetEmployee()"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </form>
+    <div class="dataTables_wrapper no-footer">
+      <div class="dataTables_length">
+        <label>
+          Show
+          <select
+            name="dtable_length"
+            aria-controls="dtable"
+            class=""
+            (change)="pageSizeChg($event)"
+          >
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+          entries
+        </label>
+      </div>
+      <div class="dataTables_filter">
+        <label>
+          Search:<input
+            type="search"
+            class=""
+            placeholder=""
+            aria-controls="dtable"
+            (keyup)="filterChg($event.target.value)"
+          />
+          <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
+        </label>
+      </div>
+      <table
+        class="row-border hover dataTable no-footer"
+        role="grid"
+        aria-describedby="dtable_info"
+      >
+        <thead>
+          <tr role="row">
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('sno')"
+            >
+              Sno
+            </th>
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('branch_name')"
+            >
+              Branch Name
+            </th>
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('full_name')"
+            >
+              Employee Name
+            </th>
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('employee_type')"
+            >
+              Employee Type
+            </th>
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('emp_code')"
+            >
+              Emp Code
+            </th>
+            <th
+              class="sorting"
+              rowspan="1"
+              colspan="1"
+              style="width: 0px"
+              (click)="sortBy('mobile_no')"
+            >
+              Mobile No
+            </th>
+            <th rowspan="1" colspan="1" style="width: 0px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr role="row" *ngFor="let row of pagedItems; let i = index">
+            <td class="sorting_1">{{ row.sno }}</td>
+            <td>{{ row.branch_name }}</td>
+            <td>{{ row.full_name }}</td>
+            <td *ngIf="row.employee_type == 1">Employee</td>
+            <td *ngIf="row.employee_type == 2">Business Agent</td>
+            <td>{{ row.emp_code }}</td>
+            <td>{{ row.mobile_no }}</td>
+            <td>
+              <a
+                (click)="
+                  open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)
+                "
+                ><i class="fas fa-eye text-success"></i
+              ></a>
+              <a [routerLink]="['/admin-panel/update-employee/' + row.id]"
+                ><i class="fas fa-edit text-primary mx-2"></i
+              ></a>
+              <a
+                *ngIf="row.is_delete == 0"
+                [routerLink]="['/admin-panel/delete-employee/' + row.id]"
+                ><i class="fas fa-trash-alt text-danger"></i
+              ></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Employee"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Employee"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="dataTables_info" role="status" aria-live="polite">
+        {{ dtableInfo }}
+      </div>
+      <div class="dataTables_paginate paging_simple_numbers">
+        <a
+          *ngIf="pager.currentPage == 1"
+          class="paginate_button previous disabled"
+          aria-controls="dtable"
+          tabindex="0"
+          id="dtable_previous"
+          >Previous</a
+        >
+        <a
+          *ngIf="pager.currentPage != 1"
+          class="paginate_button previous"
+          aria-controls="dtable"
+          tabindex="0"
+          id="dtable_previous"
+          (click)="setPage(pager.currentPage - 1)"
+          >Previous</a
+        >
+        <span *ngFor="let page of pager.pages">
+          <a
+            *ngIf="pager.currentPage == page"
+            class="paginate_button current"
+            aria-controls="dtable"
+            tabindex="0"
+            >{{ page }}</a
+          >
+          <a
+            *ngIf="pager.currentPage != page"
+            class="paginate_button"
+            aria-controls="dtable"
+            tabindex="0"
+            (click)="setPage(page)"
+            >{{ page }}</a
+          >
+        </span>
+        <a
+          *ngIf="pager.currentPage == pager.totalPages"
+          class="paginate_button next disabled"
+          aria-controls="dtable"
+          tabindex="0"
+          id="dtable_next"
+          >Next</a
+        >
+        <a
+          *ngIf="pager.currentPage != pager.totalPages"
+          class="paginate_button next"
+          aria-controls="dtable"
+          tabindex="0"
+          id="dtable_next"
+          (click)="setPage(pager.currentPage + 1)"
+          >Next</a
+        >
+      </div>
+    </div>
+    <!-- <div [hidden]="TableHidden">
+      <table id="dtable"  class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>Branch Name</th>
+            <th>Employee Name</th>
+            <th>Mobile No</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_info.branch_name}}</td>
+            <td>{{row.first_name}}{{row.last_name}}</td>
+            <td> {{row.mobile_no}}</td>
+            <td>  
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
+              <a [routerLink]="['/admin-panel/update-employee/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a [routerLink]="['/admin-panel/delete-employee/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Employee"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Employee"><i class="fas fa-ban text-danger"></i></a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div> -->
+    <div *ngIf="TableHidden == true" class="table-loader">
+      <img
+        style="width: 120px; margin: 20% auto; display: block"
+        src="assets/img/loading.gif"
+      />
+    </div>
+  </div>
+</div>

@@ -1,0 +1,49 @@
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add City</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-city']" class="bg-success border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View City</a>
+      </div>
+      </div>
+    </div>
+    <div class="card-body add-maze ">
+      <form class="bs-example form-horizontal" [formGroup]="AddCity" (ngSubmit)="onSubmit()">
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">District <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <select #district_id class="form-control form-control w-100 border-dark" formControlName="district_id">
+              <option value="">Select District</option>
+              <option *ngFor="let data of districtList" value="{{data.id}}">{{data.district_name}}</option>
+            </select>
+            <div class="col-md-12" *ngIf="submitted && f.district_id.errors" class="invalid-feedback">
+              <label *ngIf="f.district_id.errors.required">District is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">City <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9">
+            <input #city_name type="text" class="form-control" placeholder="Enter City" formControlName="city_name" >
+            <div class="col-md-12" *ngIf="submitted && f.city_name.errors" class="invalid-feedback">
+              <label *ngIf="f.city_name.errors.required">City name is required</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-md-2 col-3 col-form-label">Pincode <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7 col-9 w">
+            <input #pincode type="text" class="form-control" placeholder="Enter Pincode" formControlName="pincode">
+            <div class="col-md-12" *ngIf="submitted && f.pincode.errors" class="invalid-feedback">
+              <label *ngIf="f.pincode.errors.required">Pincode is required</label>
+              <label *ngIf="f.pincode.errors.pattern">Invalid format</label>
+            </div>  
+          </div>
+        </div>
+        <div class="form-group d-flex justify-content-center">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <a [routerLink]="['/admin-panel/view-city']" class="btn btn-danger mr-1">Cancel</a>
+        </div> 
+    </form>
+  </div>
+</div>

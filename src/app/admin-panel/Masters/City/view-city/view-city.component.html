@@ -1,0 +1,42 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">City List</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-city']"  class="bg-success border-0 text-white px-3 py-2"> + Add City </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table id="dtable" class="row-border hover">
+        <thead>
+          <tr> 
+            <th>SNo</th>
+            <th>District</th>
+            <th>City </th>
+            <th>Pincode</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.district_info.district_name}}</td>
+            <td>{{row.city_name}}</td>
+            <td>{{row.pincode}}</td>
+            <td>  
+              <a [routerLink]="['/admin-panel/update-city/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
+              <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-city/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
+              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate City"><i class="fas fa-check-circle text-success"></i></a>
+              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate City"><i class="fas fa-ban text-danger"></i></a>-->
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader"> 
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

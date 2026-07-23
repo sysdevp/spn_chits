@@ -1,0 +1,341 @@
+<ng-template #uploadModal let-c="close" let-d="dismiss">
+  <div class="modal-header without-text d-flex p-2">
+    <h4 class="mb-0 my-auto text-white px-3">Upload File</h4>
+    <button type="button" class="btn btn-default mx-2 text-white border-white px-3 py-2 rounded-circle" id="myDiv" style="color:#000;" (click)="c('Close click');uploader.clearQueue()">X</button>
+  </div>
+  <div class="ng2-file-upload-drop-zone text-center py-2 px-3" style="border-bottom: 1px solid #8897aa;margin: 10px;"
+    ng2FileDrop
+    [ngClass]="{'ng2-file-upload-file-over': hasBaseDropZoneOver}"
+    (fileOver)="fileOver($event)"
+    [uploader]="uploader">
+    <div class="row">
+      <div class="col-md-12 col-12 d-flex justify-content-center">
+        <label class="btn btn-secondary mr-2">Select file
+          <input type="file" class="sr-only" ng2FileSelect [uploader]="uploader" accept="image/*">
+        </label>
+        <div class="mr-3 text-center service_up">
+          <button type="button" class="progress-resume-link btn btn-primary" (click)="uploadTenantFile(uploader.queue);c('Close click');uploader.clearQueue()"
+          [disabled]="!uploader.getNotUploadedItems().length" ngbTooltip="Upload all">
+          <i class="icon ion-md-cloud-upload px-2"></i> Upload File</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="media mt-4" [class.d-none]="!uploader?.queue?.length">
+    <div class="row" style="width: 100%;"> 
+      <div class="col-md-12">
+        <div class="media-body align-self-center" style="margin-top: 13px;"> 
+          <div class="progress-container progress">
+            <div class="progress-bar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-12">
+        <ul class="list-group mt-4" [class.d-none]="!uploader?.queue?.length" >
+          <!-- Files -->
+          <li class="list-group-item" *ngFor="let item of uploader.queue; let i = index;"> 
+            <div class="media">
+              <div class="media-body">
+                <div class="file_n_scrl">
+                  <span *ngIf="item.isSuccess"><i class="ion ion-md-checkmark text-success text-big mr-2"></i></span> 
+                  <span *ngIf="item.isError"><i class="ion ion-md-alert text-danger text-big mr-2"></i></span>
+                  <strong>File {{ item?.file?.name }}</strong>
+                  <span>- <em class="text-muted">{{ item.progress + '%' }}</em></span>
+                  <small class="text-muted" nowrap>
+                  {{ item?.file?.size/1024/1024 | number:'.2' }} MB
+                  </small>
+                </div>
+              </div>
+              <div class="align-self-center ml-3">
+                <button type="button" class="btn btn-sm icon-btn btn-outline-danger" (click)="item.remove()"><i class="ion ion-md-trash"></i></button>
+              </div>
+            </div> 
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div> 
+</ng-template>
+
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Add Tenant</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/view-tenant']" class="bg-success border-0 text-white px-3 py-2"><i class="fas fa-eye pr-2"></i>View Tenants</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body add-maze" [hidden]="!isSuperAdmin">
+    <form class="bs-example form-horizontal" [formGroup]="AddTenant" (ngSubmit)="onSubmit()">
+      <div class="form-group row">
+        <label class="col-sm-2 col-form-label">Chit Fund Name <span class="error">*</span></label>
+        <div class="col-sm-10">
+          <input #chit_fund_name type="text" class="form-control" placeholder="Enter Chit Fund Name" formControlName="chit_fund_name">
+          <div class="col-md-12" *ngIf="submitted && f.chit_fund_name.errors" class="invalid-feedback">
+            <label *ngIf="f.chit_fund_name.errors.required">Chit fund name is required</label>
+            <label *ngIf="f.chit_fund_name.errors.pattern">Invalid pattern</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Upload Company Logo</label>
+            <div class="col-sm-8 custom-file">
+              <input  type="hidden" class="form-control" formControlName="company_logo">
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' },'company_logo')" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
+                <b>Choose Company Logo</b>
+              </a>
+            </div>
+          </div>
+          <span style="color:blue"> {{companyLogo}}</span>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Upload Receipt Logo</label>
+            <div class="col-sm-8 custom-file">
+              <input  type="hidden" class="form-control" formControlName="receipts_logo">
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' },'receipts_logo')" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
+                <b>Choose Receipt Logo</b>
+              </a>
+            </div>
+          </div>
+          <span style="color:blue">{{receiptsLogo}}</span>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Upload Favicon</label>
+            <div class="col-sm-8 custom-file">
+              <input  type="hidden" class="form-control" formControlName="favicon">
+              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' },'favicon')" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
+                <b>Choose Favicon</b>
+              </a>
+            </div>
+          </div>
+          <span style="color:blue">{{faviconLogo}}</span>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Header Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #header_name type="text" class="form-control" placeholder="Enter Header Name" formControlName="header_name">
+              <div class="col-md-12" *ngIf="submitted && f.header_name.errors" class="invalid-feedback">
+                <label *ngIf="f.header_name.errors.required">Header name is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Starting Date <span class="error">*</span> </label>
+            <div class="col-sm-8">
+              <input #start_date type="text" class="form-control col-sm-12" placeholder="Starting Date" formControlName="start_date"  (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false" >
+              <div class="col-md-12" *ngIf="submitted && f.start_date.errors" class="invalid-feedback">
+                <label *ngIf="f.start_date.errors.required">Starting date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Next Renewal Date <span class="error">*</span> </label>
+            <div class="col-sm-8">
+              <input #renewal_date type="text" class="form-control col-sm-12" placeholder="Next Renewal Date" formControlName="renewal_date"  (click)="d2.toggle()" ngbDatepicker #d2="ngbDatepicker" onkeydown="return false" >
+              <div class="col-md-12" *ngIf="submitted && f.renewal_date.errors" class="invalid-feedback">
+                <label *ngIf="f.renewal_date.errors.required">Next Renewal date is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Version <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #version type="text" class="form-control" placeholder="Enter Version" formControlName="version">
+              <div class="col-md-12" *ngIf="submitted && f.version.errors" class="invalid-feedback">
+                <label *ngIf="f.version.errors.required">Version is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Admin Email <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #admin_email type="text" class="form-control" placeholder="Enter Admin Email" formControlName="admin_email">
+              <div class="col-md-12" *ngIf="submitted && f.admin_email.errors" class="invalid-feedback">
+                <label *ngIf="f.admin_email.errors.required">Admin email is required</label>
+                <label *ngIf="f.admin_email.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Password <span class="error">*</span></label>
+            <div class="col-sm-6">
+              <input #admin_password type="text" *ngIf="showPassword" class="form-control" placeholder="Enter Password" formControlName="admin_password">
+              <input #admin_password type="password" *ngIf="!showPassword" class="form-control" placeholder="Enter Password" formControlName="admin_password">
+              <div class="col-md-12" *ngIf="submitted && f.admin_password.errors" class="invalid-feedback">
+                <label *ngIf="f.admin_password.errors.required">Admin password is required</label>
+                <label *ngIf="f.admin_password.errors.minlength">Password must be at least 8 characters</label>
+              </div>
+            </div>
+            <div class="col-md-2" *ngIf="showPassword" (click)="showHidePassword('password',false);"><i class="fas fa-eye eye_show"></i></div>
+            <div class="col-md-2" *ngIf="!showPassword" (click)="showHidePassword('password',true);"><i class="fas fa-eye-slash eye_hide"></i></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Confirm Password <span class="error">*</span></label>
+            <div class="col-sm-6">
+              <input #confirm_password type="text" *ngIf="showConfirmPassword" class="form-control px-2" placeholder="Enter Confirm Password" formControlName="confirm_password" (blur)="onPwdChange($event)">
+              <input #confirm_password type="password" *ngIf="!showConfirmPassword" class="form-control px-2" placeholder="Enter Confirm Password" formControlName="confirm_password" (blur)="onPwdChange($event)">
+              <div class="col-md-12" *ngIf="submitted && f.confirm_password.errors" class="invalid-feedback">
+                <label *ngIf="f.confirm_password.errors.required">Confirm Password is required</label>
+              </div> 
+              <div class="col-md-12" *ngIf="ConfirmPasswordAlertMsg" class="invalid-feedback">
+                <label>Confirm Password should  equal to  New Password</label>
+              </div>
+            </div>
+            <div class="col-md-2" *ngIf="showConfirmPassword" (click)="showHidePassword('confirmPassword',false);"><i class="fas fa-eye eye_show"></i></div>
+            <div class="col-md-2" *ngIf="!showConfirmPassword" (click)="showHidePassword('confirmPassword',true);"><i class="fas fa-eye-slash eye_hide"></i></div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">GST No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #gst_no type="text" class="form-control" placeholder="Enter GST No" formControlName="gst_no">
+              <div class="col-md-12" *ngIf="submitted && f.gst_no.errors" class="invalid-feedback">
+                <label *ngIf="f.gst_no.errors.required">Gst no is required</label>
+                <label *ngIf="f.gst_no.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Authorized Person Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #authorized_person_name type="text" class="form-control" placeholder="Enter Authorized Person Name" formControlName="authorized_person_name">
+              <div class="col-md-12" *ngIf="submitted && f.authorized_person_name.errors" class="invalid-feedback">
+                <label *ngIf="f.authorized_person_name.errors.required">Authorized person name is required</label>
+                <label *ngIf="f.authorized_person_name.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Phone No</label>
+            <div class="col-sm-8">
+              <input #phone_no type="text" class="form-control" placeholder="Enter Phone No" formControlName="phone_no">
+              <div class="col-md-12" *ngIf="submitted && f.phone_no.errors" class="invalid-feedback">
+                <label *ngIf="f.phone_no.errors.required">Phone no is required</label>
+                <label *ngIf="f.phone_no.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Mobile No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #mobile_no type="text" class="form-control" placeholder="Enter Mobile No" formControlName="mobile_no">
+              <div class="col-md-12" *ngIf="submitted && f.mobile_no.errors" class="invalid-feedback">
+                <label *ngIf="f.mobile_no.errors.required">Mobile no is required</label>
+                <label *ngIf="f.mobile_no.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Use Seperate Database</label>
+            <div class="col-sm-8">
+              <input type="checkbox" formControlName="is_new_database" (change)="chkChg($event)">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6" [hidden]="hideDatabase">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Database Name <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #company_db_name type="text" class="form-control" placeholder="Enter Database Name" formControlName="company_db_name">
+              <div class="col-md-12" *ngIf="submitted && f.company_db_name.errors" class="invalid-feedback">
+                <label *ngIf="f.company_db_name.errors.required">Database name is required</label>
+                <label *ngIf="f.company_db_name.errors.pattern">Invalid pattern</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No Of Branch <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #no_branches type="text" class="form-control" placeholder="Enter No Of Branch" formControlName="no_branches">
+              <div class="col-md-12" *ngIf="submitted && f.no_branches.errors" class="invalid-feedback">
+                <label *ngIf="f.no_branches.errors.required">No Of Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No Of Group <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #no_groups type="text" class="form-control" placeholder="Enter No Of Group" formControlName="no_groups">
+              <div class="col-md-12" *ngIf="submitted && f.no_groups.errors" class="invalid-feedback">
+                <label *ngIf="f.no_groups.errors.required">No Of Group is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No Of User <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #no_users type="text" class="form-control" placeholder="Enter No Of User" formControlName="no_users">
+              <div class="col-md-12" *ngIf="submitted && f.no_users.errors" class="invalid-feedback">
+                <label *ngIf="f.no_users.errors.required">No Of User is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">No Of Customer <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #no_customers type="text" class="form-control" placeholder="Enter No Of Customer" formControlName="no_customers">
+              <div class="col-md-12" *ngIf="submitted && f.no_customers.errors" class="invalid-feedback">
+                <label *ngIf="f.no_customers.errors.required">No Of Customer is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">SMS </label>
+            <div class="col-sm-8">
+              <input type="checkbox" value="1" formControlName="sms">
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group row">
+            <label class="col-sm-4 col-form-label">Online Bidding </label>
+            <div class="col-sm-8">
+              <input type="checkbox" value="1" formControlName="online_bidding">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group d-flex justify-content-center">
+        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+        <a [routerLink]="['/admin-panel/view-tenant']" class="btn btn-danger mr-1">Cancel</a>
+      </div> 
+    </form>
+  </div>
+</div>
