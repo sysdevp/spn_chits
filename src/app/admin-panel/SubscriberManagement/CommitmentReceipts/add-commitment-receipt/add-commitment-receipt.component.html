@@ -89,7 +89,7 @@
                   <div class="col-sm-8">
                     <select #enrollment_id formControlName="enrollment_id" (change)="enrollementChg($event)">
                       <option value="">Select Due Type </option>
-                      <option *ngFor="let data of enrollementList" value="{{data.id}}">{{data.slab_info.slab_name}}</option>
+                      <option *ngFor="let data of enrollementList" value="{{data.id}}">{{ data | slabAr }}</option>
                     </select>
                     <div class="col-md-12" *ngIf="submitted && f.enrollment_id.errors" class="invalid-feedback">
                       <label *ngIf="f.enrollment_id.errors.required">Slab Name is required</label>
@@ -221,7 +221,7 @@
               <td *ngIf="enrolChg">{{i+1}}</td>
               <td *ngIf="enrolChg">{{pendingDetail[i].installment_no}}</td>
               <td *ngIf="enrolChg">{{pendingDetail[i].due_date}}</td>
-              <td *ngIf="enrolChg">{{enrolList.slab_name}}</td>
+              <td *ngIf="enrolChg">{{ enrolList | slabAr }}</td>
               <td *ngIf="enrolChg">{{enrolList.scheme_info.chit_value}}</td>
               <td *ngIf="enrolChg">{{pendingDetail[i].inst_amt_wise}}</td>
               <td *ngIf="enrolChg">{{pendingDetail[i].amount_paid}}</td>

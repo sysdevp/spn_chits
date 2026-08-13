@@ -2009,6 +2009,7 @@ private function formatDate($dateArray)
 					$cd->scheme_info = isset($cd->scheme_det) ? ($cd->scheme_det) : [];
 					$slab_types = SlabDue::where('id',$cd->slab_id)->get();   
 					$slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+					$slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $cd->ar_no ?? null);
 					$cd->slab_name = $slab_name;
 					//total_installment_amount
 					$total_installment_amount = CommitmentAuction::where('enrollment_id','=',$enrollment_id)->sum('due_amount');
@@ -4326,6 +4327,7 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 			        {			        	
 						$slab_types = SlabDue::where('id',$cd->slab_id)->get();   
 			            $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+			            $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $cd->ar_no ?? null);
 			            $cd->group_name = "Commitment"."-".$slab_name;
 			            $chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
 
@@ -4952,8 +4954,9 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 	    		{
 	    			$slab_types = SlabDue::where('id',$chit->slab_id)->get();   
 		            $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+		            $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $chit->ar_no ?? null);
 		            $response_data['group_name'] = "Commitment"."-".$slab_name;
-		            $response_data['ticket_no'] = "-";
+		            $response_data['ticket_no'] = !empty($chit->ar_no) ? $chit->ar_no : "-";
 	    		}    			
     		}
 			$response['status'] = 'Success';
@@ -5503,7 +5506,8 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
                 $receipt->customer_info = isset($receipt->customer_det) ? ($receipt->customer_det) : []; 
                 $receipt->group_info = isset($receipt->group_det) ? ($receipt->group_det) : [];
                 $receipt->enrollment_info = isset($receipt->enrollment_det) ? ($receipt->enrollment_det) : [];
-				$slab_name = isset($receipt->enrollment_det) ? ($receipt->enrollment_det->slab_due_det->slab_name) : [];		
+				$slab_name = isset($receipt->enrollment_det) ? ($receipt->enrollment_det->slab_due_det->slab_name) : [];
+				$slab_name = \App\Models\ChitDetail::formatSlabWithArNo(is_string($slab_name) ? $slab_name : '', $receipt->enrollment_det->ar_no ?? null);		
                 $receipt->receipt_date = ($receipt->receipt_date!=0) ? date('d-m-Y',strtotime($receipt->receipt_date)) : '0000-00-00';
 				$receipt->employee_info = isset($receipt->employee_det) ? ($receipt->employee_det) : [];
 				$receipt->payment_type_info = isset($receipt->payment_type_det) ? ($receipt->payment_type_det) : [] ;				
@@ -5625,7 +5629,8 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 				//$receipt->employee_name = isset($receipt->first_name) ? ($receipt->first_name) : '-';
 				//$receipt->customer_name = isset($receipt->name) ? ($receipt->name) : '';
 				$receipt->branch_name = isset($receipt->branch_det->branch_name) ? ($receipt->branch_det->branch_name) : [];
-				$receipt->slabName = isset($receipt->enrollment_det->slab_due_det->slab_name) ? ($receipt->enrollment_det->slab_due_det->slab_name) : '-';
+				$receipt->slabName = \App\Models\ChitDetail::formatSlabWithArNo(isset($receipt->enrollment_det->slab_due_det->slab_name) ? ($receipt->enrollment_det->slab_due_det->slab_name) : '', $receipt->enrollment_det->ar_no ?? null) ?: '-';
+				$receipt->ar_no = $receipt->enrollment_det->ar_no ?? null;
 				$receipt->employee_name = isset($receipt->employee_det->first_name) ? ($receipt->employee_det->first_name) : '-';
 				$receipt->customer_name = $receipt->customer_det->name . ' / ' . $receipt->customer_det->customer_code;
 				$receipt->enrollment_branch_name = isset($receipt->enroll_branch) ? ($receipt->enroll_branch) : [];	
@@ -6186,6 +6191,7 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 				$slabDet = SlabDue::with('scheme_det')->find($enrol->slab_id);
 			}
 			$slab_name = isset($slabDet) ? ($slabDet->slab_name ?? '') : '';
+			$slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
 			$group_name = 'Commitment'.($slab_name !== '' ? ('-'.$slab_name) : '');
 			$scheme = null;
 			if(isset($slabDet) && isset($slabDet->scheme_det)) {
@@ -6812,6 +6818,7 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 
 						$slab_types = SlabDue::where('id',$cd->slab_id)->get();   
 			            $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+			            $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $cd->ar_no ?? null);
 			            $cd->group_name = "Commitment"."-".$slab_name;
 			            $chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
 
@@ -7927,6 +7934,7 @@ $receipt->bonus_amount= 0;
 			        {			        	
 						$slab_types = SlabDue::where('id',$cd->slab_id)->get();   
 			            $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+			            $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $cd->ar_no ?? null);
 			            $cd->group_name = "Commitment"."-".$slab_name;
 			            $chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
 
@@ -8133,7 +8141,7 @@ $receipt->bonus_amount= 0;
                 $receipt->branch_info = isset($receipt->branch_det) ? ($receipt->branch_det) : [];
                 $receipt->customer_info = isset($receipt->customer_det) ? ($receipt->customer_det) : []; 
                 $receipt->group_info = isset($receipt->group_det) ? ($receipt->group_det) : [];
-				$receipt->slab_name = isset($receipt->enrollment_det->slab_due_det) ? ($receipt->enrollment_det->slab_due_det->slab_name) : [];
+				$receipt->slab_name = isset($receipt->enrollment_det->slab_due_det) ? \App\Models\ChitDetail::formatSlabWithArNo($receipt->enrollment_det->slab_due_det->slab_name, $receipt->enrollment_det->ar_no ?? null) : '';
                 $receipt->enrollment_info = isset($receipt->enrollment_det) ? ($receipt->enrollment_det) : [];	
                 $receipt->employee_info = isset($receipt->employee_det) ? ($receipt->employee_det) : [];
 				$receipt->payment_type_info = isset($receipt->payment_type_det) ? ($receipt->payment_type_det) : [] ;				
@@ -9106,60 +9114,75 @@ $receipt->bonus_amount= 0;
             $cond1 =[];
             $end_date='';
             $start_date = '';        	
-        	if(isset($request->employee_id)){
+        	if(!empty($request->employee_id)){
         		$cond['employee_id'] = $request->employee_id; 
         	}
-        	if(isset($request->start_date)) { 
+            if(!empty($request->tenant_id)){
+                $cond['tenant_id'] = $request->tenant_id;
+            }
+        	if(isset($request->start_date) && is_array($request->start_date) && !empty($request->start_date['year'])) { 
         		$s_date = ($request->start_date['year']).'-'.sprintf('%02d',($request->start_date['month'])).'-'.sprintf('%02d',($request->start_date['day']));
         		$start_date = date('Y-m-d',strtotime($s_date)); 
         	}			
-        	if(isset($request->end_date)) {
+        	if(isset($request->end_date) && is_array($request->end_date) && !empty($request->end_date['year'])) {
         		$s_date = ($request->end_date['year']).'-'.sprintf('%02d',($request->end_date['month'])).'-'.sprintf('%02d',($request->end_date['day'])); 
         		$end_date = date('Y-m-d',strtotime($s_date)); 
         	}
-            if(($start_date=='') && ($end_date=='')) {
-                if($request->branch_id > 0){
-                    $cond1['branch_id'] = $request->branch_id; 
-                    $cash_settlements = CashSettlement::where($cond)->where($cond1)->get();
-                }
-                if($request->branch_id == 0){
-                    $cash_settlements = CashSettlement::where($cond)->get();
-                }
+
+            $query = CashSettlement::query()->where($cond);
+            if(isset($request->branch_id) && (int)$request->branch_id > 0){
+                $query->where('branch_id', (int)$request->branch_id);
             }
-            else if(($start_date=='') && ($end_date!='')) {
-                if($request->branch_id > 0){
-                    $cond1['branch_id'] = $request->branch_id; 
-                    $cash_settlements = CashSettlement::where($cond)->where($cond1)->where('settlement_date', '<=', date('Y-m-d',strtotime($end_date)))->get();
-                }
-                if($request->branch_id == 0){
-                    $cash_settlements = CashSettlement::where($cond)->where('settlement_date', '<=', date('Y-m-d',strtotime($end_date)))->get();
-                }
-            }
-            else {
+            if(($start_date=='') && ($end_date!='')) {
+                $query->where('settlement_date', '<=', date('Y-m-d',strtotime($end_date)));
+            } else if(($start_date!='') || ($end_date!='')) {
                 if(($start_date!='') && ($end_date=='')) {
                     $end_date = date('Y-m-d');
-                }  
-                if($request->branch_id > 0){
-                    $cond1['branch_id'] = $request->branch_id; 
-                    $cash_settlements = CashSettlement::where($cond)->where($cond1)->whereBetween('settlement_date',[$start_date,$end_date])->get();
                 }
-                if($request->branch_id == 0){
-                    $cash_settlements = CashSettlement::where($cond)->whereBetween('settlement_date',[$start_date,$end_date])->get();
-                }
-            } 
+                $query->whereBetween('settlement_date',[$start_date,$end_date]);
+            }
+
+            // approval_status: ''/all = all, 0 = non-approved, 1 = approved
+            if (\Schema::hasColumn('cash_settlements', 'is_approved')
+                && isset($request->approval_status)
+                && $request->approval_status !== ''
+                && $request->approval_status !== null
+                && strtolower((string)$request->approval_status) !== 'all'
+            ) {
+                $query->where('is_approved', (int) $request->approval_status);
+            }
+
+            $cash_settlements = $query->orderBy('settlement_date', 'desc')->orderBy('id', 'desc')->get();
     		
 			
                 $tot_settlement_amount = 0;   
-				$i = 1;      
+				$i = 1;
+                $hasApprovalCol = \Schema::hasColumn('cash_settlements', 'is_approved');
                 foreach($cash_settlements as $cash_settlement) 
                 { 
                     $cash_settlement->sno = $i;
                     $cash_settlement->tenant_info = isset($cash_settlement->tenant_det) ? ($cash_settlement->tenant_det) : [];
 					$branch_name = Branch::where('id','=',$cash_settlement->branch_id)->pluck('branch_name');
-                    $cash_settlement->branch_name = $branch_name[0];
+                    $cash_settlement->branch_name = isset($branch_name[0]) ? $branch_name[0] : '';
                     $emp_name = Employee::where('id','=',$cash_settlement->employee_id)->pluck('first_name');
-                    $cash_settlement->employee_name = $emp_name[0];
-                    $tot_settlement_amount += $cash_settlement->received_amount;
+                    $cash_settlement->employee_name = isset($emp_name[0]) ? $emp_name[0] : '';
+                    $coll_name = '';
+                    if (!empty($cash_settlement->collection_employee)) {
+                        $coll = Employee::where('id', '=', $cash_settlement->collection_employee)->first();
+                        if ($coll) {
+                            $coll_name = trim(($coll->first_name ?? '') . ' ' . ($coll->last_name ?? ''));
+                        }
+                    }
+                    $cash_settlement->collection_employee_name = $coll_name;
+                    $cash_settlement->denomination = $this->formatCashSettlementDenomination($cash_settlement);
+                    $isApproved = $hasApprovalCol ? (int) ($cash_settlement->is_approved ?? 0) : 0;
+                    $cash_settlement->is_approved = $isApproved;
+                    $cash_settlement->approval_status_name = $isApproved === 1 ? 'Approved' : 'Non-Approved';
+                    $cash_settlement->approval_remarks = $cash_settlement->approval_remarks ?? '';
+                    if (!empty($cash_settlement->settlement_date) && $cash_settlement->settlement_date != '0000-00-00') {
+                        $cash_settlement->settlement_date = date('d-m-Y', strtotime($cash_settlement->settlement_date));
+                    }
+                    $tot_settlement_amount += (float) $cash_settlement->received_amount;
                     $i++;
                 }
                 $response['grand_pending_amt'] = $tot_settlement_amount;
@@ -9172,8 +9195,37 @@ $receipt->bonus_amount= 0;
         catch(\Exception $e) {
             $response['status'] = 'Error';
             $response['msg'] = \Lang::get('api.global_error');
+            $response['error'] = $e->getMessage();
             return response()->json($response, 401);
         }
+    }
+
+    /**
+     * Build a readable denomination string from note counts.
+     */
+    private function formatCashSettlementDenomination($cash_settlement)
+    {
+        $denoms = [
+            2000 => 'amt_2000',
+            1000 => 'amt_1000',
+            500 => 'amt_500',
+            200 => 'amt_200',
+            100 => 'amt_100',
+            50 => 'amt_50',
+            20 => 'amt_20',
+            10 => 'amt_10',
+            5 => 'amt_5',
+            2 => 'amt_2',
+            1 => 'amt_1',
+        ];
+        $parts = [];
+        foreach ($denoms as $face => $col) {
+            $cnt = (int) ($cash_settlement->$col ?? 0);
+            if ($cnt > 0) {
+                $parts[] = $cnt . ' x Rs.' . $face . ' = ' . ($cnt * $face);
+            }
+        }
+        return !empty($parts) ? implode(', ', $parts) : '-';
     }
 	
 	public function getDailyCollection(Request $request)

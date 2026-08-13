@@ -9,6 +9,7 @@ import {ReportRedirectModalComponent} from '../../../../modal/report-redirect-mo
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import  jspdf from 'jspdf';  
 import html2canvas from 'html2canvas';
+import { getGridReportBaseUrl, gridDeleteAction, gridPrintAction } from '../../../utils/grid-action.util';
 
 @Component({
   
@@ -332,31 +333,15 @@ export class AdvancedReceiptReportComponent implements OnInit {
           },
           {headerName: 'Cheque Debit To', field: 'cheque_debit_to',resizable: true },
           {headerName: 'Status', field: 'status_name',resizable: true },
-          {headerName: 'Actions', 
-              cellRenderer: function(params) {  
-                let currentUrl = location.href; 
-                let splited = currentUrl.split("#");
-                let redirectable = '';
-                if(splited.length > 0) {
-                  redirectable = splited[0];
-                }
-                //return '<a href=location.origin+"/admin-panel/delete-enrol-refund-amount/' + params.data.id + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
-                return '<a href="'+redirectable+'#/admin-panel/delete-advanced-receipt/' + params.data.receipt_no + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
+          {headerName: 'Actions', width: 100, resizable: true,
+              cellRenderer: function(params) {
+                return gridDeleteAction(getGridReportBaseUrl() + '#/admin-panel/delete-advanced-receipt/' + params.data.receipt_no);
               }
-              //field: 'action_html' 
             },
-            {headerName: 'Print', 
-              cellRenderer: function(params) {  
-                let currentUrl = location.href; 
-                let splited = currentUrl.split("#");
-                let redirectable = '';
-                if(splited.length > 0) {
-                  redirectable = splited[0];
-                }
-                //return '<a href=location.origin+"/admin-panel/delete-enrol-refund-amount/' + params.data.id + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
-                return '<a class="rpt-grid-btn rpt-grid-btn--print" href="'+redirectable+'#/admin-panel/advance-receipt-print/' + params.data.receipt_no + '"><i class="fas fa-print"></i> Print</a>';
+            {headerName: 'Print', width: 90, resizable: true,
+              cellRenderer: function(params) {
+                return gridPrintAction(getGridReportBaseUrl() + '#/admin-panel/advance-receipt-print/' + params.data.receipt_no);
               }
-              //field: 'action_html' 
             },
         ]; 
         this.defaultColDef = { 

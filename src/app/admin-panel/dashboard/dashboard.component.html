@@ -1,161 +1,246 @@
 <div class="container-fluid py-3">
   <div class="dashboard-header mb-4">
     <div>
-      <h2 class="dashboard-title mb-1">Admin Dashboard</h2>
-      <p class="dashboard-subtitle mb-0">Snapshot view of collections, auctions, and branch performance.</p>
+      <h2 class="dashboard-title mb-1">{{ activeTitle }}</h2>
+      <p class="dashboard-subtitle mb-0">{{ activeSubtitle }}</p>
     </div>
     <div class="dashboard-header-actions align-items-end">
-      <div class="text-muted small mr-3 mb-2">As of {{ bundle?.as_of ? (bundle.as_of | date : 'dd MMM yyyy') : '–' }}</div>
-      <form [formGroup]="filterForm" class="form-inline mb-2" *ngIf="filterForm.get('tenant_id')?.value">
-        <select
-          *ngIf="isSuperAdmin"
-          class="form-control form-control-sm mr-2 mb-2 mb-md-0"
-          formControlName="tenant_id"
-          (change)="companyChg($event)"
-        >
-          <option value="">Company</option>
-          <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name || c.name }}</option>
+      <app-customer-history-search
+        [branchId]="filterForm && filterForm.get('branch_id') ? filterForm.get('branch_id').value : ''">
+      </app-customer-history-search>
+      <div *ngIf="allowedDashboards.length > 1" class="form-group mb-0">
+        <label class="small text-muted d-block mb-1">Dashboard</label>
+        <select class="form-control form-control-sm dashboard-switcher" [value]="activeKey" (change)="onDashboardSwitch($event)">
+          <option *ngFor="let d of allowedDashboards" [value]="d.key">{{ d.title }}</option>
         </select>
-        <select
-          *ngIf="branchList?.length"
-          class="form-control form-control-sm mr-2 mb-2 mb-md-0"
-          formControlName="branch_id"
-          (change)="branchChg()"
-        >
-          <option value="" *ngIf="showAllBranchesOption">All branches</option>
-          <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
-        </select>
-        <button type="button" class="btn btn-sm btn-primary mb-2" (click)="loadDashboard()" [disabled]="loading">Refresh</button>
+      </div>
+      <form [formGroup]="filterForm" class="form-inline" *ngIf="filterForm">
+        <div class="form-group mb-0" *ngIf="isSuperAdmin">
+          <label class="small text-muted d-block mb-1">Company</label>
+          <select class="form-control form-control-sm" formControlName="tenant_id" (change)="companyChg($event)">
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.company_name || c.tenant_name || c.name }}</option>
+          </select>
+        </div>
+        <div class="form-group mb-0">
+          <label class="small text-muted d-block mb-1">Branch</label>
+          <select class="form-control form-control-sm" formControlName="branch_id" (change)="branchChg()">
+            <option *ngIf="showAllBranchesOption" value="">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-sm btn-success btn-export" (click)="exportDashboard()" [disabled]="!bundle">
+          Export
+        </button>
+        <a routerLink="/admin-panel/customer-ledger" class="btn btn-sm btn-outline-success">
+          Customer Ledger
+        </a>
       </form>
-      <button type="button" class="btn btn-success btn-sm btn-export mb-2" (click)="exportDashboard()" [disabled]="!bundle">Export Report</button>
     </div>
   </div>
 
-  <div *ngIf="loading" class="text-center py-5 text-muted">Loading dashboard…</div>
+  <div *ngIf="loading" class="text-center text-muted py-5">Loading dashboard…</div>
 
   <ng-container *ngIf="!loading && bundle">
-    <div class="dashboard-top-kpis mb-4">
-      <div class="card metric-card card-tile-followups text-white h-100" (click)="openModal(detailModal, 'followups')">
-        <div class="card-body">
-          <div class="metric-label">Today's follow-ups</div>
-          <div class="metric-value">{{ num(bundle.summary?.today_followup_count) }}</div>
-          <div class="metric-note">Leads due / logged today</div>
-        </div>
-      </div>
-      <div class="card metric-card card-tile-collections text-white h-100" (click)="openModal(detailModal, 'collections')">
-        <div class="card-body">
-          <div class="metric-label">Today's collections</div>
-          <div class="metric-value">₹ {{ num(bundle.summary?.today_collection_total) | number : '1.0-0' }}</div>
-          <div class="metric-note">Receipts + advances + before enrollment</div>
-        </div>
-      </div>
-      <div class="card metric-card card-tile-payments text-white h-100" (click)="openModal(detailModal, 'payments')">
-        <div class="card-body">
-          <div class="metric-label">Today's payments</div>
-          <div class="metric-value">₹ {{ num(bundle.summary?.today_payment_total) | number : '1.0-0' }}</div>
-          <div class="metric-note">Chit / installment payments today</div>
-        </div>
-      </div>
-      <div class="card metric-card card-tile-pending text-white h-100">
-        <div class="card-body">
-          <div class="metric-label">Bid pending release</div>
-          <div class="metric-value">₹ {{ num(bundle.summary?.total_bid_pending) | number : '1.0-0' }}</div>
-          <div class="metric-note">Outstanding prized money / release pipeline</div>
-        </div>
-      </div>
-    </div>
+    <!-- Role-based views -->
+    <app-md-dashboard
+      *ngIf="activeKey === 'md'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-md-dashboard>
 
-    <div class="dashboard-stat-cards mb-4">
-      <div class="card stat-card stat-tile-month h-100" (click)="onStatTileClick('month')" role="button" tabindex="0" (keydown.enter)="onStatTileClick('month')" (keydown.space)="$event.preventDefault(); onStatTileClick('month')">
-        <div class="card-body text-white">
-          <div class="metric-label">This month · collections</div>
-          <div class="metric-value">₹ {{ num(bundle.summary?.current_month_collection) | number : '1.0-0' }}</div>
-          <div class="metric-note">Receipts and collections for the month</div>
-        </div>
-      </div>
-      <div class="card stat-card stat-tile-running h-100" (click)="onStatTileClick('running')" role="button" tabindex="0" (keydown.enter)="onStatTileClick('running')" (keydown.space)="$event.preventDefault(); onStatTileClick('running')">
-        <div class="card-body text-white">
-          <div class="metric-label">Running groups</div>
-          <div class="metric-value">{{ num(bundle.summary?.running_groups) }}</div>
-          <div class="metric-note">Active chit groups in scope</div>
-        </div>
-      </div>
-      <div class="card stat-card stat-tile-vacant h-100" (click)="onStatTileClick('vacant')" role="button" tabindex="0" (keydown.enter)="onStatTileClick('vacant')" (keydown.space)="$event.preventDefault(); onStatTileClick('vacant')">
-        <div class="card-body text-white">
-          <div class="metric-label">Vacant groups</div>
-          <div class="metric-value">{{ num(bundle.summary?.vacant_groups) }}</div>
-          <div class="metric-note">Groups still open for subscribers</div>
-        </div>
-      </div>
-      <div class="card stat-card stat-tile-subscribers h-100" (click)="onStatTileClick('subscribers')" role="button" tabindex="0" (keydown.enter)="onStatTileClick('subscribers')" (keydown.space)="$event.preventDefault(); onStatTileClick('subscribers')">
-        <div class="card-body text-white">
-          <div class="metric-label">Subscribers</div>
-          <div class="metric-value">{{ num(bundle.summary?.customers) }}</div>
-          <div class="metric-note">Customers in the selected scope</div>
-        </div>
-      </div>
-    </div>
+    <app-admin-dashboard-view
+      *ngIf="activeKey === 'admin'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-admin-dashboard-view>
 
-    <div class="row mb-4">
-      <div class="col-xl-7 mb-3">
-        <div class="card panel-card h-100">
-          <div class="card-header d-flex justify-content-between align-items-start">
-            <div>
-              <div class="card-title">Collection trend</div>
-              <div class="card-subtitle">Today's receipts by payment mode</div>
-            </div>
-            <div class="small text-muted">Branch: {{ selectedBranchName() }}</div>
-          </div>
+    <app-branch-manager-dashboard
+      *ngIf="activeKey === 'branch_manager'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-branch-manager-dashboard>
+
+    <app-sales-manager-dashboard
+      *ngIf="activeKey === 'sales_manager'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-sales-manager-dashboard>
+
+    <app-collection-manager-dashboard
+      *ngIf="activeKey === 'collection_manager'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-collection-manager-dashboard>
+
+    <app-branch-sales-dashboard
+      *ngIf="activeKey === 'branch_sales'"
+      [bundle]="bundle"
+      [barLabels]="barLabels"
+      [barData]="barData"
+      [barScope]="barScope"
+      [pieLabels]="pieLabels"
+      [pieData]="pieData"
+      [pieSafeStyle]="pieSafeStyle"
+      (openDetail)="onRoleOpenDetail($event)">
+    </app-branch-sales-dashboard>
+
+    <!-- Classic fallback when no role design assigned -->
+    <ng-container *ngIf="activeKey === 'classic'">
+      <div class="dashboard-top-kpis mb-4">
+        <div class="card metric-card card-tile-followups" style="cursor:pointer" (click)="openModal(detailModal, 'followups')">
           <div class="card-body">
-            <div *ngIf="barChartHasData(); else emptyTrend" class="chart-list">
-              <div *ngFor="let lb of barLabels; let i = index" class="chart-row">
-                <div class="chart-label">{{ lb }}</div>
-                <div class="chart-bar-wrapper">
-                  <div class="chart-bar" [style.width.%]="barPct(i)"></div>
-                </div>
-                <div class="chart-value">₹ {{ num(barData[i]) | number : '1.0-0' }}</div>
-              </div>
-            </div>
-            <ng-template #emptyTrend>
-              <div class="text-center text-muted py-5">No receipt amounts recorded for today in this scope.</div>
-            </ng-template>
+            <div class="metric-label">Today's follow-ups</div>
+            <div class="metric-value">{{ num(bundle.summary?.today_followup_count) | number : '1.0-0' }}</div>
+            <div class="metric-note">Click for detail</div>
+          </div>
+        </div>
+        <div class="card metric-card card-tile-collections" style="cursor:pointer" (click)="openModal(detailModal, 'collections')">
+          <div class="card-body">
+            <div class="metric-label">Today's collections</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.today_collection_total) | number : '1.0-0' }}</div>
+            <div class="metric-note">{{ bundle.today_collections?.length || 0 }} receipts</div>
+          </div>
+        </div>
+        <div class="card metric-card card-tile-payments" style="cursor:pointer" (click)="openModal(detailModal, 'payments')">
+          <div class="card-body">
+            <div class="metric-label">Today's payments</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.today_payment_total) | number : '1.0-0' }}</div>
+            <div class="metric-note">Chit payments</div>
+          </div>
+        </div>
+        <div class="card metric-card card-tile-pending">
+          <div class="card-body">
+            <div class="metric-label">Pending bid release</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.total_bid_pending) | number : '1.0-0' }}</div>
+            <div class="metric-note">Outstanding release</div>
           </div>
         </div>
       </div>
-      <div class="col-xl-5 mb-3">
-        <div class="row h-100">
-          <div class="col-sm-6 mb-3">
-            <div class="card panel-card h-100">
-              <div class="card-header">
-                <div class="card-title">Target achievement</div>
-                <div class="card-subtitle">Released vs pending bids</div>
+
+      <div class="dashboard-stat-cards mb-4">
+        <div class="card stat-card stat-tile-month" style="cursor:pointer" (click)="onStatTileClick('month')">
+          <div class="card-body">
+            <div class="metric-label">Month collection</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.current_month_collection) | number : '1.0-0' }}</div>
+            <div class="metric-note">Receipt report</div>
+          </div>
+        </div>
+        <div class="card stat-card stat-tile-running" style="cursor:pointer" (click)="onStatTileClick('running')">
+          <div class="card-body">
+            <div class="metric-label">Running groups</div>
+            <div class="metric-value">{{ num(bundle.summary?.running_groups) | number : '1.0-0' }}</div>
+            <div class="metric-note">View groups</div>
+          </div>
+        </div>
+        <div class="card stat-card stat-tile-vacant" style="cursor:pointer" (click)="onStatTileClick('vacant')">
+          <div class="card-body">
+            <div class="metric-label">Vacant groups</div>
+            <div class="metric-value">{{ num(bundle.summary?.vacant_groups) | number : '1.0-0' }}</div>
+            <div class="metric-note">View groups</div>
+          </div>
+        </div>
+        <div class="card stat-card stat-tile-subscribers" style="cursor:pointer" (click)="onStatTileClick('subscribers')">
+          <div class="card-body">
+            <div class="metric-label">Customers</div>
+            <div class="metric-value">{{ num(bundle.summary?.customers) | number : '1.0-0' }}</div>
+            <div class="metric-note">View customers</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-4">
+        <div class="col-xl-7 mb-3">
+          <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-start">
+              <div>
+                <div class="card-title">Collection by payment mode</div>
+                <div class="card-subtitle">{{ barScope === 'today' ? "Today's" : "This month's" }} receipts by payment mode</div>
               </div>
-              <div class="card-body">
-                <div class="mini-metric">Released amount</div>
-                <div class="mini-value">₹ {{ num(bundle.summary?.total_bid_released) | number : '1.0-0' }}</div>
-                <div class="mini-metric mt-3">Pending amount</div>
-                <div class="mini-value">₹ {{ num(bundle.summary?.total_bid_pending) | number : '1.0-0' }}</div>
-                <div class="progress mt-3" style="height: 14px; background: #e2e8f0; border-radius: 999px;">
-                  <div class="progress-bar bg-success" role="progressbar" [style.width.%]="bundle.summary?.total_bid_pending + bundle.summary?.total_bid_released ? (bundle.summary?.total_bid_released * 100) / (bundle.summary?.total_bid_pending + bundle.summary?.total_bid_released) : 0" [attr.aria-valuenow]="bundle.summary?.total_bid_released" aria-valuemin="0" aria-valuemax="100"></div>
+              <div class="small text-muted">Branch: {{ selectedBranchName() }}</div>
+            </div>
+            <div class="card-body">
+              <div *ngIf="barChartHasData(); else emptyTrend" class="chart-list">
+                <div *ngFor="let lb of barLabels; let i = index" class="chart-row">
+                  <div class="chart-label">{{ lb }}</div>
+                  <div class="chart-bar-wrapper">
+                    <div class="chart-bar" [style.width]="barWidth(i)"></div>
+                  </div>
+                  <div class="chart-value">₹ {{ num(barData[i]) | number : '1.0-0' }}</div>
                 </div>
-                <div class="small text-muted mt-2">Release completion for current scope</div>
               </div>
+              <ng-template #emptyTrend>
+                <div class="text-center text-muted py-5">No receipt amounts recorded for today in this scope.</div>
+              </ng-template>
             </div>
           </div>
-          <div class="col-sm-6 mb-3">
-            <div class="card panel-card h-100">
-              <div class="card-header">
-                <div class="card-title">Bid release mix</div>
-              </div>
-              <div class="card-body d-flex flex-column align-items-center justify-content-center">
-                <div class="donut-wrap mb-3">
-                  <div class="donut" [style.background]="pieSafeStyle"></div>
-                  <div class="donut-hole"></div>
+        </div>
+        <div class="col-xl-5 mb-3">
+          <div class="row h-100">
+            <div class="col-sm-6 mb-3">
+              <div class="card panel-card h-100">
+                <div class="card-header">
+                  <div class="card-title">Target achievement</div>
+                  <div class="card-subtitle">Released vs pending bids</div>
                 </div>
-                <div class="w-100">
-                  <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between align-items-center mb-2 small text-muted">
-                    <div><span class="pie-swatch swatch-{{ i }} mr-2"></span>{{ lb }}</div>
-                    <div>₹ {{ num(pieData[i]) | number : '1.0-0' }}</div>
+                <div class="card-body">
+                  <div class="mini-metric">Released amount</div>
+                  <div class="mini-value">₹ {{ num(bundle.summary?.total_bid_released) | number : '1.0-0' }}</div>
+                  <div class="mini-metric mt-3">Pending amount</div>
+                  <div class="mini-value">₹ {{ num(bundle.summary?.total_bid_pending) | number : '1.0-0' }}</div>
+                  <div class="progress mt-3" style="height: 14px; background: #e2e8f0; border-radius: 999px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                      [style.width.%]="bundle.summary?.total_bid_pending + bundle.summary?.total_bid_released ? (bundle.summary?.total_bid_released * 100) / (bundle.summary?.total_bid_pending + bundle.summary?.total_bid_released) : 0"
+                      [attr.aria-valuenow]="bundle.summary?.total_bid_released" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <div class="small text-muted mt-2">Release completion for current scope</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6 mb-3">
+              <div class="card panel-card h-100">
+                <div class="card-header">
+                  <div class="card-title">Bid release mix</div>
+                </div>
+                <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                  <div class="donut-wrap mb-3">
+                    <div class="donut" [style.background]="pieSafeStyle"></div>
+                    <div class="donut-hole"></div>
+                  </div>
+                  <div class="w-100">
+                    <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between align-items-center mb-2 small text-muted">
+                      <div><span class="pie-swatch swatch-{{ i }} mr-2"></span>{{ lb }}</div>
+                      <div>₹ {{ num(pieData[i]) | number : '1.0-0' }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -163,81 +248,81 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <div class="row">
-      <div class="col-lg-6 mb-3">
-        <div class="card panel-card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <div class="card-title">Today's auctions</div>
-              <div class="card-subtitle">Scheduled groups for current day</div>
+      <div class="row">
+        <div class="col-lg-6 mb-3">
+          <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-title">Today's auctions</div>
+                <div class="card-subtitle">Scheduled groups for current day</div>
+              </div>
+              <span class="badge badge-light text-primary">Auction day {{ bundle.as_of | date : 'd' }}</span>
             </div>
-            <span class="badge badge-light text-primary">Auction day {{ bundle.as_of | date : 'd' }}</span>
+            <div class="card-body p-0">
+              <div class="table-responsive" style="max-height: 320px;">
+                <table class="table table-sm table-striped mb-0">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Branch</th>
+                      <th>Group</th>
+                      <th class="text-right">Chit value</th>
+                      <th class="text-center">Next inst.</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let a of bundle.today_auctions">
+                      <td>{{ a.branch }}</td>
+                      <td>{{ a.group_name }}</td>
+                      <td class="text-right">₹ {{ num(a.chit_value) | number : '1.0-0' }}</td>
+                      <td class="text-center">{{ a.next_installment }}</td>
+                      <td>{{ a.auction_time }}</td>
+                    </tr>
+                    <tr *ngIf="!bundle.today_auctions?.length">
+                      <td colspan="5" class="text-center text-muted py-4">No auctions scheduled for today's calendar day.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 320px;">
-              <table class="table table-sm table-striped mb-0">
-                <thead class="thead-light">
-                  <tr>
-                    <th>Branch</th>
-                    <th>Group</th>
-                    <th class="text-right">Chit value</th>
-                    <th class="text-center">Next inst.</th>
-                    <th>Time</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let a of bundle.today_auctions">
-                    <td>{{ a.branch }}</td>
-                    <td>{{ a.group_name }}</td>
-                    <td class="text-right">₹ {{ num(a.chit_value) | number : '1.0-0' }}</td>
-                    <td class="text-center">{{ a.next_installment }}</td>
-                    <td>{{ a.auction_time }}</td>
-                  </tr>
-                  <tr *ngIf="!bundle.today_auctions?.length">
-                    <td colspan="5" class="text-center text-muted py-4">No auctions scheduled for today's calendar day.</td>
-                  </tr>
-                </tbody>
-              </table>
+        </div>
+        <div class="col-lg-6 mb-3">
+          <div class="card panel-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <div>
+                <div class="card-title">Top outstanding</div>
+                <div class="card-subtitle">Pending release by customer</div>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive" style="max-height: 320px;">
+                <table class="table table-sm table-striped mb-0">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Customer</th>
+                      <th>Mobile</th>
+                      <th class="text-right">Pending</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let o of bundle.outstanding_customers">
+                      <td>{{ o.customer_name }}</td>
+                      <td>{{ o.mobile }}</td>
+                      <td class="text-right">₹ {{ num(o.pending_amount) | number : '1.0-0' }}</td>
+                    </tr>
+                    <tr *ngIf="!bundle.outstanding_customers?.length">
+                      <td colspan="3" class="text-center text-muted py-4">No pending release amounts in this scope.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div class="col-lg-6 mb-3">
-        <div class="card panel-card h-100">
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <div>
-              <div class="card-title">Top outstanding</div>
-              <div class="card-subtitle">Pending release by customer</div>
-            </div>
-          </div>
-          <div class="card-body p-0">
-            <div class="table-responsive" style="max-height: 320px;">
-              <table class="table table-sm table-striped mb-0">
-                <thead class="thead-light">
-                  <tr>
-                    <th>Customer</th>
-                    <th>Mobile</th>
-                    <th class="text-right">Pending</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let o of bundle.outstanding_customers">
-                    <td>{{ o.customer_name }}</td>
-                    <td>{{ o.mobile }}</td>
-                    <td class="text-right">₹ {{ num(o.pending_amount) | number : '1.0-0' }}</td>
-                  </tr>
-                  <tr *ngIf="!bundle.outstanding_customers?.length">
-                    <td colspan="3" class="text-center text-muted py-4">No pending release amounts in this scope.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    </ng-container>
   </ng-container>
 </div>
 

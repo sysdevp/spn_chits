@@ -52,12 +52,12 @@ export class LayoutSidenavComponent implements AfterViewInit {
     this.hostClassHorizontal = !this.hostClassVertical;
     this.hostClassFlex = this.hostClassHorizontal;
 
-    // ✅ Company logo
-    if (
-      localStorage.getItem('company_logo') &&
-      localStorage.getItem('company_logo') !== ''
-    ) {
-      this.companyLogo = localStorage.getItem('company_logo');
+    // ✅ Company logo — prefer new SPN brand asset when tenant logo missing
+    const storedLogo = localStorage.getItem('company_logo');
+    if (storedLogo && storedLogo !== '' && storedLogo !== 'null') {
+      this.companyLogo = storedLogo;
+    } else {
+      this.companyLogo = 'assets/img/spn-logo.png';
     }
 
     this.sms = localStorage.getItem('sms_enable');
@@ -120,20 +120,7 @@ export class LayoutSidenavComponent implements AfterViewInit {
       }
       return true;
     }
-    if (this.menuPermission.canShowMenu(menuId, parentMenuId)) {
-      if (parentMenuId == 2 || menuId == 2) this.showMaster = true;
-      if (parentMenuId == 34 || menuId == 34) this.showEmployeeManager = true;
-      if (parentMenuId == 28 || menuId == 28) this.showCustomerManager = true;
-      if (parentMenuId == 37 || menuId == 37) this.showTransactionManager = true;
-      if (parentMenuId == 54 || menuId == 54) this.showOtherTransactionManager = true;
-      if (parentMenuId == 42 || menuId == 42) this.showReportsManager = true;
-      if (parentMenuId == 85 || menuId == 85) this.showOtherLoanManager = true;
-      return true;
-    }
-    if (!this.menuPermission.hasTenantScope()) {
-      return true;
-    }
-    return false;
+    return this.menuPermission.canShowMenu(menuId, parentMenuId);
   }
 
   /** Route-based permission (e.g. SPN Approval before menu 152 exists in DB). */

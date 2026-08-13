@@ -374,7 +374,7 @@
         <tr *ngFor="let row of dataList;">
           <td>{{row.sno}}</td>
           <td>{{row.branch_name}}</td>
-          <td>{{row.slabName}}</td>
+          <td>{{ row | slabAr }}</td>
           <td>{{row.other_branch_name}}</td>
           <td>{{row.customer_name}}</td>
           <td>{{row.employee_name}}</td>

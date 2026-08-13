@@ -109,6 +109,8 @@ class UserLoginScopeService
 
         if (!empty($request->branch_id)) {
             $bid = (int) $request->branch_id;
+            // If requested branch is outside allowed scope, use full allowed set
+            // (empty set made dashboards look "all zeros" / broken).
             if ($scope !== null && !in_array($bid, $scope, true)) {
                 return $scope;
             }

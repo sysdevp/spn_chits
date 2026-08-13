@@ -467,6 +467,7 @@ class ChitDetailController extends Controller
                 {
                     $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                    $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
                     $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
                     $enrol->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
                 }
@@ -589,6 +590,7 @@ class ChitDetailController extends Controller
                 {
                     $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                    $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
                     $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
                     
                 }
@@ -1094,6 +1096,7 @@ class ChitDetailController extends Controller
                     {   
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                        $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
                         $group_name = "Commitment ".$slab_name;
                         $chit_value = isset($enrol->scheme_det->chit_value) ? ($enrol->scheme_det->chit_value) : 0;
                     }
@@ -2161,7 +2164,10 @@ class ChitDetailController extends Controller
                 $enrol->branch_info = ($enrol->branch_det) ? ($enrol->branch_det) : [];
                 $enrol->customer_info = ($enrol->customer_det) ? ($enrol->customer_det) : []; 
                 $enrol->scheme_info = ($enrol->scheme_det) ? ($enrol->scheme_det) : []; 
-                $enrol->slab_info = ($enrol->slab_due_det) ? ($enrol->slab_due_det) : []; 
+                $enrol->slab_info = ($enrol->slab_due_det) ? ($enrol->slab_due_det) : [];
+                if (!empty($enrol->slab_info) && isset($enrol->slab_info->slab_name)) {
+                    $enrol->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($enrol->slab_info->slab_name, $enrol->ar_no ?? null);
+                } 
                 $enrol->collection_agent_info = ($enrol->collection_agent_det) ? ($enrol->collection_agent_det) : [];
                 $enrol->collection_area_info = ($enrol->collection_area_det) ? ($enrol->collection_area_det) : [];
                 $enrol->date_introduced = ($enrol->date_introduced!=0) ? date('d/m/Y',strtotime($enrol->date_introduced)) : '';
@@ -2215,7 +2221,10 @@ class ChitDetailController extends Controller
                 $enrol->tenant_info = isset($enrol->tenant_det) ? ($enrol->tenant_det) : [];
                 $enrol->branch_info = isset($enrol->branch_det) ? ($enrol->branch_det) : [];
                 $enrol->scheme_info = ($enrol->scheme_det) ? ($enrol->scheme_det) : []; 
-                $enrol->slab_info = ($enrol->slab_due_det) ? ($enrol->slab_due_det) : []; 
+                $enrol->slab_info = ($enrol->slab_due_det) ? ($enrol->slab_due_det) : [];
+                if (!empty($enrol->slab_info) && isset($enrol->slab_info->slab_name)) {
+                    $enrol->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($enrol->slab_info->slab_name, $enrol->ar_no ?? null);
+                } 
                 $enrol->customer_info = isset($enrol->customer_det) ? ($enrol->customer_det) : [];
                 $enrol->collection_agent_info = isset($enrol->collection_agent_det) ? ($enrol->collection_agent_det) : [];
                 $i++;
@@ -2357,6 +2366,9 @@ class ChitDetailController extends Controller
                 $enrol->customer_info = $enrol->customer_det ?? [];
                 $enrol->scheme_info = $enrol->scheme_det ?? [];
                 $enrol->slab_info = $enrol->slab_due_det ?? [];
+                if (!empty($enrol->slab_info) && isset($enrol->slab_info->slab_name)) {
+                    $enrol->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($enrol->slab_info->slab_name, $enrol->ar_no ?? null);
+                }
                 $enrol->branch_info = $enrol->branch_det ?? [];
                 $rows[] = $enrol;
             }
@@ -3320,6 +3332,7 @@ class ChitDetailController extends Controller
                     {
                         $slab_types = SlabDue::where('id',$payment->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                        $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $payment->ar_no ?? null);
                         $payment->group_name = "Commitment"."-".$slab_name;
                         $payment->ticket_no = "-";
                         $payment->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
@@ -3608,6 +3621,7 @@ class ChitDetailController extends Controller
                     {
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                        $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
                         $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
                         $enrol->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
                     }
@@ -3777,6 +3791,7 @@ class ChitDetailController extends Controller
                 {   
                     $slab_types = SlabDue::where('id',$payment->enrollment_det->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                    $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $payment->ar_no ?? null);
                     $group_name = "Commitment ".$slab_name;
                     $chit_value = isset($payment->enrollment_det->scheme_det->chit_value) ? ($payment->enrollment_det->scheme_det->chit_value) : [];
                 }
@@ -3865,6 +3880,7 @@ class ChitDetailController extends Controller
                 {
                     $slab_types = SlabDue::where('id',$payment->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                    $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $payment->ar_no ?? null);
                     $payment->group_name = "Commitment ".$slab_name;
                     $payment->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
                 }
@@ -4548,7 +4564,7 @@ class ChitDetailController extends Controller
                 {
                     $enrollment_id = isset($enroll->id) ? ($enroll->id) : 0;
                     $slab_types = SlabDue::where('id', $enroll->slab_id)->get();
-                    $enroll->slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : '';
+                    $enroll->slab_name = \App\Models\ChitDetail::formatSlabWithArNo(isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : '', $enroll->ar_no ?? null);
                     $chit_value = isset($slab_types[0]->scheme_det) ? (float) ($slab_types[0]->scheme_det->chit_value) : 0;
                     $enroll->chit_value = round($chit_value, 2);
 
@@ -6780,6 +6796,7 @@ class ChitDetailController extends Controller
                     {   
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                        $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
                         $group_name = "Commitment ".$slab_name;
                         $chit_value = isset($enrol->scheme_det->chit_value) ? ($enrol->scheme_det->chit_value) : 0;
                     }

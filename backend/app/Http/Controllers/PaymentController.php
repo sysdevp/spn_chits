@@ -600,6 +600,7 @@ $response['amount_in_words'] = $result;
                         $slab_id = isset($payment->enrol_det) ? ($payment->enrol_det->slab_id) : 0;
                         $slab_types = SlabDue::where('id',$slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                        $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $payment->ar_no ?? null);
                         $payment->group_name = "Commitment"."-".$slab_name;
     					$chit_value = isset($payment->enrol_det->scheme_det) ? ($payment->enrol_det->scheme_det->chit_value) : 0;
     				}
@@ -1155,7 +1156,8 @@ $response['amount_in_words'] = $result;
     				$chits = ChitDetail::where('id',$payment->enrollment_id)->get();
     				$slab_name = SlabDue::where('id',$chits[0]->slab_id)->get();
     				$schem_id = Scheme::where('id',$chits[0]->scheme_id)->get();
-    				$payment->slab_name = isset($slab_name[0]->slab_name) ? ($slab_name[0]->slab_name) : '';
+    				$payment->slab_name = \App\Models\ChitDetail::formatSlabWithArNo(isset($slab_name[0]->slab_name) ? ($slab_name[0]->slab_name) : '', $chits[0]->ar_no ?? null);
+    				$payment->ar_no = $chits[0]->ar_no ?? null;
     				$chit_value = isset($schem_id[0]->chit_value) ? ($schem_id[0]->chit_value) : 0;
                     $payment->chit_value = $chit_value;
     				$payment->payment_date = ($payment->payment_date!=0) ? date('d/m/Y',strtotime($payment->payment_date)) : '';
@@ -1265,7 +1267,7 @@ $response['amount_in_words'] = $result;
                     $pending->chit_value = $chit_value;
     				$pending->customer_name = isset($pending->customer_det->name) ? ($pending->customer_det->name) : [];
     				$slab_name = SlabDue::where('id',$pending->slab_id)->get();
-    				$pending->slab_name = $slab_name[0]->slab_name;
+    				$pending->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name[0]->slab_name ?? '', $pending->ar_no ?? null);
                     $pending->payment_type_name = '';
                     if(($pending->payment_type) == 1) {
                         $pending->payment_type_name = 'Daily';

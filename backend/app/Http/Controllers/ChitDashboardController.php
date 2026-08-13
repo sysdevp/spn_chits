@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use App\Services\UserLoginScopeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Unified web dashboard: charts, today follow-ups, collections, payments,
@@ -105,97 +106,161 @@ class ChitDashboardController extends Controller
             $lastDay = Carbon::now()->endOfMonth()->toDateString();
 
             // ---------- KPIs (month + totals) ----------
-            $runningGroups = Group::whereIn('branch_id', $branchIds)
-                ->where('group_status', 0)
-                ->count();
-            $vacantGroups = Group::whereIn('branch_id', $branchIds)
-                ->where(['group_status' => 0, 'is_filled' => 1])
-                ->count();
-            $customersCount = Customer::where('tenant_id', $tenantId)
-                ->whereIn('branch_id', $branchIds)
-                ->where('is_customer', 1)
-                ->count();
+            $runningGroups = 0;
+            $vacantGroups = 0;
+            $customersCount = 0;
+            $bidPending = 0.0;
+            $bidReleased = 0.0;
+            try {
+                $runningGroups = Group::whereIn('branch_id', $branchIds)
+                    ->where('group_status', 0)
+                    ->count();
+                $vacantGroups = Group::whereIn('branch_id', $branchIds)
+                    ->where(['group_status' => 0, 'is_filled' => 1])
+                    ->count();
+            } catch (\Exception $gEx) {
+                Log::warning('Dashboard groups KPI failed: ' . $gEx->getMessage());
+            }
+            try {
+                $customersCount = Customer::where('tenant_id', $tenantId)
+                    ->whereIn('branch_id', $branchIds)
+                    ->where('is_customer', 1)
+                    ->count();
+            } catch (\Exception $cEx) {
+                // Fallback if is_customer column missing on older DBs
+                try {
+                    $customersCount = Customer::where('tenant_id', $tenantId)
+                        ->whereIn('branch_id', $branchIds)
+                        ->count();
+                } catch (\Exception $cEx2) {
+                    Log::warning('Dashboard customers KPI failed: ' . $cEx2->getMessage());
+                }
+            }
+            try {
+                $bidPending = (float) BiddingDetail::whereIn('branch_id', $branchIds)->sum('pending_release');
+                $bidReleased = (float) BiddingDetail::whereIn('branch_id', $branchIds)->sum('customer_released');
+            } catch (\Exception $bEx) {
+                Log::warning('Dashboard bid KPI failed: ' . $bEx->getMessage());
+            }
 
-            $bidPending = (float) BiddingDetail::whereIn('branch_id', $branchIds)->sum('pending_release');
-            $bidReleased = (float) BiddingDetail::whereIn('branch_id', $branchIds)->sum('customer_released');
+            $monthReceipt = 0.0;
+            $monthAdv = 0.0;
+            $monthBefore = 0.0;
+            try {
+                $sumMonthR = $this->scopeReceiptsForDashboard(
+                    Receipt::whereIn('branch_id', $branchIds)
+                )
+                    ->whereBetween('receipt_date', [$firstDay, $lastDay])
+                    ->selectRaw('COALESCE(SUM(received_amount),0) as ra, COALESCE(SUM(penalty),0) as pe')
+                    ->first();
+                $monthReceipt = (float) ($sumMonthR->ra ?? 0) + (float) ($sumMonthR->pe ?? 0);
 
-            $sumMonthR = $this->scopeReceiptsForDashboard(
-                Receipt::whereIn('branch_id', $branchIds)
-            )
-                ->whereBetween('receipt_date', [$firstDay, $lastDay])
-                ->selectRaw('COALESCE(SUM(received_amount),0) as ra, COALESCE(SUM(penalty),0) as pe')
-                ->first();
-            $monthReceipt = (float) ($sumMonthR->ra ?? 0) + (float) ($sumMonthR->pe ?? 0);
+                $monthAdv = (float) AdvanceReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->where(function ($q) {
+                        $q->whereNull('payment_type_id')
+                            ->orWhere('payment_type_id', '<>', 9);
+                    })
+                    ->whereBetween('receipt_date', [$firstDay, $lastDay])
+                    ->sum('receipt_amount');
 
-            $monthAdv = (float) AdvanceReceipt::whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->where(function ($q) {
-                    $q->whereNull('payment_type_id')
-                        ->orWhere('payment_type_id', '<>', 9);
-                })
-                ->whereBetween('receipt_date', [$firstDay, $lastDay])
-                ->sum('receipt_amount');
-
-            $monthBefore = (float) BeforeEnrolReceipt::whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->whereBetween('received_date', [$firstDay, $lastDay])
-                ->sum('amount');
-
+                $monthBefore = (float) BeforeEnrolReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereBetween('received_date', [$firstDay, $lastDay])
+                    ->sum('amount');
+            } catch (\Exception $mEx) {
+                Log::warning('Dashboard month collection failed: ' . $mEx->getMessage());
+            }
             $currentMonthCollection = $monthReceipt + $monthAdv + $monthBefore;
 
             // Today collections (receipts + advances + before-enrol)
-            $sumTodayR = $this->scopeReceiptsForDashboard(
-                Receipt::whereIn('branch_id', $branchIds)
-            )
-                ->whereDate('receipt_date', $today)
-                ->selectRaw('COALESCE(SUM(received_amount),0) as ra, COALESCE(SUM(penalty),0) as pe')
-                ->first();
-            $todayReceipt = (float) ($sumTodayR->ra ?? 0) + (float) ($sumTodayR->pe ?? 0);
+            $todayReceipt = 0.0;
+            $todayAdv = 0.0;
+            $todayBefore = 0.0;
+            $todayPaymentTotal = 0.0;
+            try {
+                $sumTodayR = $this->scopeReceiptsForDashboard(
+                    Receipt::whereIn('branch_id', $branchIds)
+                )
+                    ->whereDate('receipt_date', $today)
+                    ->selectRaw('COALESCE(SUM(received_amount),0) as ra, COALESCE(SUM(penalty),0) as pe')
+                    ->first();
+                $todayReceipt = (float) ($sumTodayR->ra ?? 0) + (float) ($sumTodayR->pe ?? 0);
 
-            $todayAdv = (float) AdvanceReceipt::whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->whereDate('receipt_date', $today)
-                ->sum('receipt_amount');
+                $todayAdv = (float) AdvanceReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereDate('receipt_date', $today)
+                    ->sum('receipt_amount');
 
-            $todayBefore = (float) BeforeEnrolReceipt::whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->whereDate('received_date', $today)
-                ->sum('amount');
+                $todayBefore = (float) BeforeEnrolReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereDate('received_date', $today)
+                    ->sum('amount');
 
+                $todayPaymentTotal = (float) Payment::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereDate('payment_date', $today)
+                    ->sum('total_amount');
+            } catch (\Exception $tEx) {
+                Log::warning('Dashboard today totals failed: ' . $tEx->getMessage());
+            }
             $todayCollectionTotal = $todayReceipt + $todayAdv + $todayBefore;
 
-            // Today payments (bid / chit payments table)
-            $todayPaymentTotal = (float) Payment::whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->whereDate('payment_date', $today)
-                ->sum('total_amount');
-
-            // ---------- Bar chart: today's collection by payment mode (receipts only) ----------
-            $payModeExpr = 'COALESCE(NULLIF(payment_type_id, 0), 1)';
-            $receiptByMode = $this->scopeReceiptsForDashboard(
-                Receipt::whereIn('branch_id', $branchIds)
-            )
-                ->whereDate('receipt_date', $today)
-                ->select(
-                    DB::raw($payModeExpr . ' as pay_mode_id'),
-                    DB::raw('SUM(received_amount + COALESCE(penalty,0)) as amt')
-                )
-                ->groupBy(DB::raw($payModeExpr))
-                ->get();
-
+            // ---------- Bar chart: collection by payment mode (month-to-date; fall back to today) ----------
+            // CASE is safer than NULLIF across MySQL/MariaDB SQL modes
+            $payModeExpr = 'CASE WHEN payment_type_id IS NULL OR payment_type_id = 0 THEN 1 ELSE payment_type_id END';
             $barLabels = [];
             $barData = [];
-            foreach ($receiptByMode as $row) {
-                $modeId = (int) $row->pay_mode_id;
-                $pt = PaymentType::withTrashed()->find($modeId);
-                $barLabels[] = $pt && $pt->payment_name
-                    ? (string) $pt->payment_name
-                    : ($modeId === 1 ? 'Cash' : ('Mode ' . $modeId));
-                $barData[] = round((float) $row->amt, 2);
-            }
-            if (count($barLabels) === 0) {
+            $barScope = 'month';
+            try {
+                $buildModeBars = function (callable $applyDate) use ($branchIds, $payModeExpr) {
+                    $query = $this->scopeReceiptsForDashboard(
+                        Receipt::whereIn('branch_id', $branchIds)
+                    );
+                    $applyDate($query);
+                    $receiptByMode = $query
+                        ->select(
+                            DB::raw($payModeExpr . ' as pay_mode_id'),
+                            DB::raw('SUM(COALESCE(received_amount,0) + COALESCE(penalty,0)) as amt')
+                        )
+                        ->groupBy(DB::raw($payModeExpr))
+                        ->get();
+
+                    $labels = [];
+                    $data = [];
+                    foreach ($receiptByMode as $row) {
+                        $modeId = (int) $row->pay_mode_id;
+                        $pt = PaymentType::withTrashed()->find($modeId);
+                        $labels[] = $pt && $pt->payment_name
+                            ? (string) $pt->payment_name
+                            : ($modeId === 1 ? 'Cash' : ('Mode ' . $modeId));
+                        $data[] = round((float) $row->amt, 2);
+                    }
+
+                    return [$labels, $data];
+                };
+
+                list($barLabels, $barData) = $buildModeBars(function ($q) use ($firstDay, $lastDay) {
+                    $q->whereBetween('receipt_date', [$firstDay, $lastDay]);
+                });
+                $hasBarAmount = false;
+                foreach ($barData as $v) {
+                    if ((float) $v > 0) {
+                        $hasBarAmount = true;
+                        break;
+                    }
+                }
+                if (!$hasBarAmount) {
+                    list($barLabels, $barData) = $buildModeBars(function ($q) use ($today) {
+                        $q->whereDate('receipt_date', $today);
+                    });
+                    $barScope = 'today';
+                }
+            } catch (\Exception $chartEx) {
+                Log::warning('Dashboard mode chart failed: ' . $chartEx->getMessage());
                 $barLabels = [];
                 $barData = [];
+                $barScope = 'month';
             }
 
             // ---------- Pie: bidding released vs pending ----------
@@ -206,134 +271,224 @@ class ChitDashboardController extends Controller
             ];
 
             // ---------- Today follow-ups (next or actual follow-up date = today) ----------
-            $followups = Followup::with(['lead_management_det', 'branch_det', 'employee_det'])
-                ->where('tenant_id', $tenantId)
-                ->whereIn('branch_id', $branchIds)
-                ->where(function ($q) use ($today) {
-                    $q->whereDate('next_followup_date', $today)
-                        ->orWhereDate('followup_date', $today);
-                })
-                ->orderBy('id', 'desc')
-                ->limit(150)
-                ->get();
-
             $todayFollowupsList = [];
-            foreach ($followups as $f) {
-                $lead = $f->lead_management_det;
-                $todayFollowupsList[] = [
-                    'id' => $f->id,
-                    'lead_id' => $f->lead_management_id,
-                    'lead_name' => $lead ? $lead->lead_customer_name : '',
-                    'mobile' => $lead ? $lead->mobile_no : '',
-                    'branch' => optional($f->branch_det)->branch_name,
-                    'followup_date' => $f->followup_date,
-                    'next_followup_date' => $f->next_followup_date,
-                    'remarks' => $f->remarks,
-                    'employee' => $f->employee_det
-                        ? trim(($f->employee_det->first_name ?? '') . ' ' . ($f->employee_det->last_name ?? ''))
-                        : '',
-                ];
+            try {
+                $followups = Followup::with(['lead_management_det', 'branch_det', 'employee_det'])
+                    ->where('tenant_id', $tenantId)
+                    ->whereIn('branch_id', $branchIds)
+                    ->where(function ($q) use ($today) {
+                        $q->whereDate('next_followup_date', $today)
+                            ->orWhereDate('followup_date', $today);
+                    })
+                    ->orderBy('id', 'desc')
+                    ->limit(150)
+                    ->get();
+
+                foreach ($followups as $f) {
+                    $lead = $f->lead_management_det;
+                    $todayFollowupsList[] = [
+                        'id' => $f->id,
+                        'lead_id' => $f->lead_management_id,
+                        'lead_name' => $lead ? $lead->lead_customer_name : '',
+                        'mobile' => $lead ? $lead->mobile_no : '',
+                        'branch' => optional($f->branch_det)->branch_name,
+                        'followup_date' => $f->followup_date,
+                        'next_followup_date' => $f->next_followup_date,
+                        'remarks' => $f->remarks,
+                        'employee' => $f->employee_det
+                            ? trim(($f->employee_det->first_name ?? '') . ' ' . ($f->employee_det->last_name ?? ''))
+                            : '',
+                    ];
+                }
+            } catch (\Exception $fuEx) {
+                Log::warning('Dashboard followups failed: ' . $fuEx->getMessage());
             }
 
             // ---------- Today receipts detail ----------
-            $receiptRows = $this->scopeReceiptsForDashboard(
-                Receipt::whereIn('branch_id', $branchIds)
-            )
-                ->whereDate('receipt_date', $today)
-                ->with(['customer_det', 'payment_type_det', 'enrollment_det.customer_det'])
-                ->orderBy('id', 'desc')
-                ->limit(200)
-                ->get();
-
             $todayCollectionsList = [];
-            foreach ($receiptRows as $r) {
-                $pid = $r->payment_type_id;
-                $effectiveModeId = ($pid === null || (int) $pid === 0) ? 1 : (int) $pid;
-                $modeName = $this->dashboardPaymentModeLabel($r->payment_type_det, $effectiveModeId);
+            try {
+                $receiptRows = $this->scopeReceiptsForDashboard(
+                    Receipt::whereIn('branch_id', $branchIds)
+                )
+                    ->whereDate('receipt_date', $today)
+                    ->with(['customer_det', 'payment_type_det', 'enrollment_det.customer_det'])
+                    ->orderBy('id', 'desc')
+                    ->limit(200)
+                    ->get();
 
-                $cust = ($r->customer_id && (int) $r->customer_id > 0)
-                    ? $r->customer_det
-                    : optional($r->enrollment_det)->customer_det;
+                foreach ($receiptRows as $r) {
+                    $pid = $r->payment_type_id;
+                    $effectiveModeId = ($pid === null || (int) $pid === 0) ? 1 : (int) $pid;
+                    $modeName = $this->dashboardPaymentModeLabel($r->payment_type_det, $effectiveModeId);
 
-                $todayCollectionsList[] = [
-                    'receipt_no' => $r->receipt_no,
-                    'customer' => $this->dashboardCustomerName($cust),
-                    'amount' => round((float) $r->received_amount + (float) $r->penalty, 2),
-                    'mode' => $modeName,
-                    'receipt_date' => $r->receipt_date,
-                ];
+                    $cust = ($r->customer_id && (int) $r->customer_id > 0)
+                        ? $r->customer_det
+                        : optional($r->enrollment_det)->customer_det;
+
+                    $todayCollectionsList[] = [
+                        'receipt_no' => $r->receipt_no,
+                        'customer' => $this->dashboardCustomerName($cust),
+                        'amount' => round((float) $r->received_amount + (float) $r->penalty, 2),
+                        'mode' => $modeName,
+                        'receipt_date' => $r->receipt_date,
+                    ];
+                }
+            } catch (\Exception $recEx) {
+                Log::warning('Dashboard today collections failed: ' . $recEx->getMessage());
             }
 
             // ---------- Today payments detail ----------
-            $payRows = Payment::with(['customer_det', 'payment_type_det', 'group_det', 'enrol_det.customer_det'])
-                ->whereIn('branch_id', $branchIds)
-                ->where('status', 1)
-                ->whereDate('payment_date', $today)
-                ->orderBy('id', 'desc')
-                ->limit(200)
-                ->get();
-
             $todayPaymentsList = [];
-            foreach ($payRows as $p) {
-                $pid = $p->payment_type_id;
-                $effectivePayMode = ($pid === null || (int) $pid === 0) ? 1 : (int) $pid;
-                $payCust = ($p->customer_id && (int) $p->customer_id > 0)
-                    ? $p->customer_det
-                    : optional($p->enrol_det)->customer_det;
+            try {
+                $payRows = Payment::with(['customer_det', 'payment_type_det', 'group_det', 'enrol_det.customer_det'])
+                    ->whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereDate('payment_date', $today)
+                    ->orderBy('id', 'desc')
+                    ->limit(200)
+                    ->get();
 
-                $todayPaymentsList[] = [
-                    'id' => $p->id,
-                    'customer' => $this->dashboardCustomerName($payCust),
-                    'group' => optional($p->group_det)->group_name,
-                    'amount' => round((float) $p->total_amount, 2),
-                    'mode' => $this->dashboardPaymentModeLabel($p->payment_type_det, $effectivePayMode),
-                    'payment_date' => $p->payment_date,
-                ];
+                foreach ($payRows as $p) {
+                    $pid = $p->payment_type_id;
+                    $effectivePayMode = ($pid === null || (int) $pid === 0) ? 1 : (int) $pid;
+                    $payCust = ($p->customer_id && (int) $p->customer_id > 0)
+                        ? $p->customer_det
+                        : optional($p->enrol_det)->customer_det;
+
+                    $todayPaymentsList[] = [
+                        'id' => $p->id,
+                        'customer' => $this->dashboardCustomerName($payCust),
+                        'group' => optional($p->group_det)->group_name,
+                        'amount' => round((float) $p->total_amount, 2),
+                        'mode' => $this->dashboardPaymentModeLabel($p->payment_type_det, $effectivePayMode),
+                        'payment_date' => $p->payment_date,
+                    ];
+                }
+            } catch (\Exception $payEx) {
+                Log::warning('Dashboard today payments failed: ' . $payEx->getMessage());
             }
 
             // ---------- Today's auctions (same rule as legacy: auction_date = calendar day) ----------
-            $auctionGroups = Group::with(['branch_det', 'scheme_det'])
-                ->whereIn('branch_id', $branchIds)
-                ->where('tenant_id', $tenantId)
-                ->where(['group_status' => 0, 'is_filled' => 0])
-                ->where('auction_date', $dayOfMonth)
-                ->orderBy('branch_id')
-                ->orderBy('group_name')
-                ->limit(200)
-                ->get();
-
             $todayAuctions = [];
-            foreach ($auctionGroups as $g) {
-                $maxInst = BiddingDetail::where('group_id', $g->id)->max('installment_no');
-                $todayAuctions[] = [
-                    'group_id' => $g->id,
-                    'group_name' => $g->group_name,
-                    'branch' => optional($g->branch_det)->branch_name,
-                    'chit_value' => optional(optional($g->scheme_det))->chit_value,
-                    'auction_time' => $g->auction_time,
-                    'next_installment' => $maxInst ? ((int) $maxInst + 1) : 1,
-                ];
+            try {
+                $auctionGroups = Group::with(['branch_det', 'scheme_det'])
+                    ->whereIn('branch_id', $branchIds)
+                    ->where('tenant_id', $tenantId)
+                    ->where(['group_status' => 0, 'is_filled' => 0])
+                    ->where('auction_date', $dayOfMonth)
+                    ->orderBy('branch_id')
+                    ->orderBy('group_name')
+                    ->limit(200)
+                    ->get();
+
+                foreach ($auctionGroups as $g) {
+                    $maxInst = 0;
+                    try {
+                        $maxInst = BiddingDetail::where('group_id', $g->id)->max('installment_no');
+                    } catch (\Exception $ignored) {
+                    }
+                    $todayAuctions[] = [
+                        'group_id' => $g->id,
+                        'group_name' => $g->group_name,
+                        'branch' => optional($g->branch_det)->branch_name,
+                        'chit_value' => optional(optional($g->scheme_det))->chit_value,
+                        'auction_time' => $g->auction_time,
+                        'next_installment' => $maxInst ? ((int) $maxInst + 1) : 1,
+                    ];
+                }
+            } catch (\Exception $aucEx) {
+                Log::warning('Dashboard auctions failed: ' . $aucEx->getMessage());
             }
 
             // ---------- Outstanding: top customers by pending_release ----------
-            $outstandingRows = BiddingDetail::select('customer_id', DB::raw('SUM(pending_release) as pending'))
-                ->whereIn('branch_id', $branchIds)
-                ->where('tenant_id', $tenantId)
-                ->groupBy('customer_id')
-                ->having('pending', '>', 0)
-                ->orderByDesc('pending')
-                ->limit(25)
-                ->get();
-
             $outstandingList = [];
-            foreach ($outstandingRows as $row) {
-                $cust = Customer::find($row->customer_id);
-                $outstandingList[] = [
-                    'customer_id' => $row->customer_id,
-                    'customer_name' => $this->dashboardCustomerName($cust),
-                    'mobile' => $cust ? $cust->mobile_no : '',
-                    'pending_amount' => round((float) $row->pending, 2),
-                ];
+            try {
+                $outstandingRows = BiddingDetail::select('customer_id', DB::raw('SUM(pending_release) as pending'))
+                    ->whereIn('branch_id', $branchIds)
+                    ->where('tenant_id', $tenantId)
+                    ->groupBy('customer_id')
+                    ->havingRaw('SUM(pending_release) > 0')
+                    ->orderByDesc(DB::raw('SUM(pending_release)'))
+                    ->limit(25)
+                    ->get();
+
+                foreach ($outstandingRows as $row) {
+                    $cust = Customer::find($row->customer_id);
+                    $outstandingList[] = [
+                        'customer_id' => $row->customer_id,
+                        'customer_name' => $this->dashboardCustomerName($cust),
+                        'mobile' => $cust ? $cust->mobile_no : '',
+                        'pending_amount' => round((float) $row->pending, 2),
+                    ];
+                }
+            } catch (\Exception $outEx) {
+                Log::warning('Dashboard outstanding failed: ' . $outEx->getMessage());
+            }
+
+            // ---------- Branch-wise collection (month) for ranking / map list ----------
+            $branchCollections = [];
+            try {
+                $branchAmt = [];
+                $receiptBranch = $this->scopeReceiptsForDashboard(
+                    Receipt::whereIn('branch_id', $branchIds)
+                )
+                    ->whereBetween('receipt_date', [$firstDay, $lastDay])
+                    ->select('branch_id', DB::raw('SUM(COALESCE(received_amount,0) + COALESCE(penalty,0)) as amt'))
+                    ->groupBy('branch_id')
+                    ->get();
+                foreach ($receiptBranch as $row) {
+                    $bid = (int) $row->branch_id;
+                    $branchAmt[$bid] = ($branchAmt[$bid] ?? 0) + (float) $row->amt;
+                }
+
+                $advBranch = AdvanceReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereBetween('receipt_date', [$firstDay, $lastDay])
+                    ->select('branch_id', DB::raw('SUM(COALESCE(receipt_amount,0)) as amt'))
+                    ->groupBy('branch_id')
+                    ->get();
+                foreach ($advBranch as $row) {
+                    $bid = (int) $row->branch_id;
+                    $branchAmt[$bid] = ($branchAmt[$bid] ?? 0) + (float) $row->amt;
+                }
+
+                $befBranch = BeforeEnrolReceipt::whereIn('branch_id', $branchIds)
+                    ->where('status', 1)
+                    ->whereBetween('received_date', [$firstDay, $lastDay])
+                    ->select('branch_id', DB::raw('SUM(COALESCE(amount,0)) as amt'))
+                    ->groupBy('branch_id')
+                    ->get();
+                foreach ($befBranch as $row) {
+                    $bid = (int) $row->branch_id;
+                    $branchAmt[$bid] = ($branchAmt[$bid] ?? 0) + (float) $row->amt;
+                }
+
+                arsort($branchAmt);
+                $maxAmt = 0;
+                foreach ($branchAmt as $amt) {
+                    if ($amt > $maxAmt) {
+                        $maxAmt = $amt;
+                    }
+                }
+                $rank = 1;
+                foreach ($branchAmt as $bid => $amt) {
+                    if ($amt <= 0) {
+                        continue;
+                    }
+                    $br = Branch::find($bid);
+                    $branchCollections[] = [
+                        'rank' => $rank++,
+                        'branch_id' => $bid,
+                        'branch_name' => $br ? $br->branch_name : ('Branch ' . $bid),
+                        'amount' => round((float) $amt, 2),
+                        'pct' => $maxAmt > 0 ? (int) round(($amt / $maxAmt) * 100) : 0,
+                    ];
+                    if (count($branchCollections) >= 15) {
+                        break;
+                    }
+                }
+            } catch (\Exception $brEx) {
+                Log::warning('Dashboard branch collections failed: ' . $brEx->getMessage());
             }
 
             $payload = [
@@ -353,12 +508,14 @@ class ChitDashboardController extends Controller
                     'collection_by_mode' => [
                         'labels' => $barLabels,
                         'data' => $barData,
+                        'scope' => $barScope,
                     ],
                     'bidding_release_mix' => [
                         'labels' => $pieLabels,
                         'data' => $pieData,
                     ],
                 ],
+                'branch_collections' => $branchCollections,
                 'today_auctions' => $todayAuctions,
                 'outstanding_customers' => $outstandingList,
                 'today_followups' => $todayFollowupsList,
@@ -372,10 +529,15 @@ class ChitDashboardController extends Controller
                 'data' => $payload,
             ], 200);
         } catch (\Exception $e) {
+            Log::error('get-chit-dashboard-bundle failed: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
             return response()->json([
                 'status' => 'Error',
                 'msg' => 'Unable to load dashboard',
-            ], 401);
+                'error' => $e->getMessage(),
+            ], 200);
         }
     }
 
@@ -395,9 +557,13 @@ class ChitDashboardController extends Controller
                 'today_followup_count' => 0,
             ],
             'charts' => [
-                'collection_by_mode' => ['labels' => [], 'data' => []],
-                'bidding_release_mix' => ['labels' => ['Pending', 'Released'], 'data' => [0, 0]],
+                'collection_by_mode' => ['labels' => [], 'data' => [], 'scope' => 'month'],
+                'bidding_release_mix' => [
+                    'labels' => ['Pending release', 'Released to customers'],
+                    'data' => [0, 0],
+                ],
             ],
+            'branch_collections' => [],
             'today_auctions' => [],
             'outstanding_customers' => [],
             'today_followups' => [],

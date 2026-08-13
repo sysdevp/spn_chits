@@ -43,10 +43,12 @@ export const MODULE_TITLES: { [id: number]: string } = {
   124: 'Customer Report',
   85: 'Loan Management',
   53: 'Security Permissions',
+  162: 'SMS',
+  168: 'SPN Collection Reports',
 };
 
 /** Order of modules in saved role_access (after flatten). */
-export const SAVED_MODULE_ORDER = [1, 2, 19, 28, 34, 37, 42, 48, 65, 43, 66, 67, 68, 83, 88, 124, 85, 62, 53];
+export const SAVED_MODULE_ORDER = [1, 2, 19, 28, 34, 37, 42, 48, 65, 43, 66, 67, 68, 83, 88, 124, 85, 62, 53, 162, 168];
 
 const P = {
   VIEW: 1,
@@ -61,7 +63,14 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     title: 'Dashboard',
     menuId: 1,
     pageType: P.DASH,
-    leaves: [],
+    leaves: [
+      { title: 'MD Dashboard – Overall View', menuId: 201, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+      { title: 'Branch Admin Panel', menuId: 202, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+      { title: 'Branch Manager Dashboard', menuId: 203, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+      { title: 'Sales Manager Dashboard', menuId: 204, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+      { title: 'Collections Manager Dashboard', menuId: 205, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+      { title: 'Branch Sales Panel', menuId: 206, storageModuleId: 1, pageType: P.DASH, route: 'dashboard' },
+    ],
   },
   {
     title: 'Chit',
@@ -92,7 +101,7 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
       { title: 'Employee', menuId: 3, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee' },
       { title: 'Designation', menuId: 12, storageModuleId: 2, pageType: P.VIEW, route: 'view-designation' },
       { title: 'Role', menuId: 11, storageModuleId: 2, pageType: P.VIEW, route: 'view-role' },
-      { title: 'Security Permissions', menuId: 53, storageModuleId: 0, pageType: P.VIEW, route: 'add-permission' },
+      { title: 'Security Permissions', menuId: 53, storageModuleId: 53, pageType: P.VIEW, route: 'add-permission' },
       { title: 'User Logins', menuId: 36, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee-login' },
       { title: 'Employee Salary', menuId: 101, storageModuleId: 34, pageType: P.VIEW, route: 'employee-salary' },
       { title: 'Collection Area Mapping', menuId: 55, storageModuleId: 34, pageType: P.VIEW, route: 'view-collection-area-mapping' },
@@ -108,6 +117,8 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     leaves: [
       { title: 'Leads', menuId: 41, storageModuleId: 28, pageType: P.VIEW, route: 'view-lead-management' },
       { title: 'Lead Source', menuId: 90, storageModuleId: 2, pageType: P.VIEW, route: 'view-source-type' },
+      { title: 'New Group Notifications', menuId: 160, storageModuleId: 28, pageType: P.VIEW, route: 'sales-promotion' },
+      { title: 'Customer Birthday Report', menuId: 161, storageModuleId: 28, pageType: P.REPORT, route: 'customer-birthday-report' },
     ],
   },
   {
@@ -125,6 +136,15 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     leaves: [
       { title: 'Case Stages', menuId: 116, storageModuleId: 2, pageType: P.VIEW, route: 'view-case-stage' },
       { title: 'Lawyer', menuId: 117, storageModuleId: 2, pageType: P.VIEW, route: 'view-lawyer' },
+    ],
+  },
+  {
+    title: 'SMS',
+    virtual: true,
+    leaves: [
+      { title: 'Template', menuId: 162, storageModuleId: 162, pageType: P.VIEW, route: 'sms-content' },
+      { title: 'SMS Notification', menuId: 163, storageModuleId: 162, pageType: P.VIEW, route: 'send-message' },
+      { title: 'Birthday SMS', menuId: 161, storageModuleId: 162, pageType: P.REPORT, route: 'customer-birthday-report' },
     ],
   },
   {
@@ -228,6 +248,15 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
         title: 'Log Monitoring Report',
         leaves: [
           { title: 'Logs', menuId: 89, storageModuleId: 88, pageType: P.REPORT, route: 'log-monitoring-report' },
+        ],
+      },
+      {
+        title: 'SPN Collection Reports',
+        leaves: [
+          { title: 'Scheme-wise Payable & Pending', menuId: 164, storageModuleId: 168, pageType: P.REPORT, route: 'scheme-wise-payable-pending-report' },
+          { title: 'Next Month Collection', menuId: 165, storageModuleId: 168, pageType: P.REPORT, route: 'next-month-collection-report' },
+          { title: 'This Month Unpaid (Running)', menuId: 166, storageModuleId: 168, pageType: P.REPORT, route: 'this-month-unpaid-report' },
+          { title: 'Due No Customer List', menuId: 167, storageModuleId: 168, pageType: P.REPORT, route: 'due-no-customer-report' },
         ],
       },
     ],

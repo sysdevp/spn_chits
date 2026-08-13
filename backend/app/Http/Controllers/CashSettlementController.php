@@ -217,5 +217,70 @@ class CashSettlementController extends Controller
             return response()->json($response, 401);
         }
     }
+
+    /**
+     * One-time approval of a cash settlement (with remarks).
+     */
+    public function approve_cash_settlement(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required',
+            'approval_remarks' => 'required',
+        ]);
+        if ($validator->fails()) {
+            $response['status'] = 'Error';
+            $response['msg'] = $validator->errors()->first();
+            return response()->json($response, 200);
+        }
+
+        try {
+            if (!\Schema::hasColumn('cash_settlements', 'is_approved')) {
+                $response['status'] = 'Error';
+                $response['msg'] = 'Approval columns not found. Please run migration add_approval_columns_to_cash_settlements_table.';
+                return response()->json($response, 200);
+            }
+
+            $cashsettlement = CashSettlement::find($request->id);
+            if (!$cashsettlement) {
+                $response['status'] = 'Error';
+                $response['msg'] = \Lang::get('api.record_not_identified');
+                return response()->json($response, 200);
+            }
+
+            if ((int) $cashsettlement->is_approved === 1) {
+                $response['status'] = 'Error';
+                $response['msg'] = 'Settlement already approved';
+                return response()->json($response, 200);
+            }
+
+            $cashsettlement->is_approved = 1;
+            $cashsettlement->approval_remarks = $request->approval_remarks;
+            $approvedBy = 0;
+            if (!empty($request->approved_by)) {
+                $approvedBy = (int) $request->approved_by;
+            } elseif (!empty($request->log_id)) {
+                $approvedBy = (int) $request->log_id;
+            }
+            $cashsettlement->approved_by = $approvedBy;
+            $cashsettlement->approved_at = date('Y-m-d H:i:s');
+            $cashsettlement->updated_by = $approvedBy;
+
+            if ($cashsettlement->save()) {
+                $response['status'] = 'Success';
+                $response['msg'] = 'Settlement approved successfully';
+                $response['data'] = $cashsettlement;
+                return response()->json($response, 200);
+            }
+
+            $response['status'] = 'Error';
+            $response['msg'] = \Lang::get('api.global_error');
+            return response()->json($response, 401);
+        } catch (\Exception $e) {
+            $response['status'] = 'Error';
+            $response['msg'] = \Lang::get('api.global_error');
+            $response['error'] = $e->getMessage();
+            return response()->json($response, 401);
+        }
+    }
 }
     

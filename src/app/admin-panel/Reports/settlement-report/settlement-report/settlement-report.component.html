@@ -2,19 +2,17 @@
   <div class="card-header">
     <div class="row" [hidden]="selectionfield">
       <div class="col-6 my-auto font-weight-bold">Settlement Report</div>
-      <div class="col-6 text-right">
-        <!--<a [routerLink]="['/admin-panel/add-advanced-receipt']" class="bg-success border-0 text-white px-3 py-2"> + Add  Advance Receipt</a>-->
-      </div>
+      <div class="col-6 text-right">&nbsp;</div>
     </div>
     <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
-        <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
-      </div>
-      <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
-        <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
-      </div>
+      <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
+    </div>
+    <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+      <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
+    </div>
   </div>
   <div class="card-body">
-    <div >
+    <div>
       <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="SettlementReport" (ngSubmit)="onSubmit()">
         <div class="form-group row" [hidden]="!isSuperAdmin">
           <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
@@ -57,6 +55,18 @@
           </div>
           <div class="col-6">
             <div class="form-group row">
+              <label class="col-sm-4">Approval Status</label>
+              <div class="col-sm-8">
+                <select class="form-control form-control w-100 border-dark" formControlName="approval_status">
+                  <option value="">All</option>
+                  <option value="0">Non-Approved</option>
+                  <option value="1">Approved</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
               <label class="col-sm-4">Start Date</label>
               <div class="col-sm-8">
                 <input #start_date type="text" formControlName="start_date" class="form-control calendar" placeholder="Enter Date" (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false">
@@ -79,30 +89,32 @@
           </div>
         </div>
       </form>
+
       <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
         <table class="table table-responsive">
           <thead>
-          <tr>
-            <th>S No</th>
-            <th>Branch Name</th>
-            <th>Employee Name</th>
-            <th>Settlement Date</th>
-            <th>Received Amount</th>
-            <th>Remarks</th>
-          </tr>
-        </thead>
+            <tr>
+              <th>S No</th>
+              <th>Branch Name</th>
+              <th>Employee Name</th>
+              <th>Settlement Date</th>
+              <th>Received Amount</th>
+              <th>Denomination</th>
+              <th>Remarks</th>
+              <th>Status</th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
-              <td colspan="12" style="color: #d9534f;
-              border: transparent;
-              font-size: 20px;">
+              <td colspan="12" style="color: #d9534f; border: transparent; font-size: 20px;">
                 No Records Found
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-	  <div class="row recp_rep" [hidden]="hideReport">
+
+      <div class="row recp_rep" [hidden]="hideReport">
         <div class="test-header col-5">
           Show:
           <select (change)="onPageSizeChanged()" id="page-size">
@@ -114,17 +126,17 @@
           entries
         </div>
         <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
-          <button (click)="onBtnExport()" >Excel</button>
+          <button (click)="onBtnExport()">Excel</button>
           <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
         </div>
         <div class="col-3 r_rep">
-          <span >Search</span> 
+          <span>Search</span>
           <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
-        </div> 
+        </div>
         <ag-grid-angular *ngIf="showReportGrid" #agGrid
-          style="width: 100%; height: 450px; margin-top: 15px;" 
+          style="width: 100%; height: 450px; margin-top: 15px;"
           class="ag-theme-balham chq"
-          [rowData]="rowData" 
+          [rowData]="rowData"
           [columnDefs]="columnDefs"
           [defaultColDef]="defaultColDef"
           [pagination]="true"
@@ -132,10 +144,9 @@
           [paginationNumberFormatter]="paginationNumberFormatter"
           [rowHeight]="50"
           [headerHeight]="50"
-          [suppressExcelExport] = "true" 
+          [suppressExcelExport]="true"
           (gridReady)="onGridReady($event)"
-          [gridOptions]="gridOptions"
-        >     
+          [gridOptions]="gridOptions">
         </ag-grid-angular>
 
         <h4 class="text-center col-12">Grand Total </h4>
@@ -148,26 +159,61 @@
           </tr>
         </table>
       </div>
+
       <div>
-      <table class="text-center mx-3 table-bordered" [hidden]="pdfrectab" id="contentToConvert">
-        <tr>
-          <th class="bg-secondary text-white">Sno</th>
-          <th class="bg-secondary text-white">Branch Name</th>
-          <th class="bg-secondary text-white">Employee Name</th>
-          <th class="bg-secondary text-white">Settlement Date</th>
-          <th class="bg-secondary text-white">Received Amount</th>
-          <th class="bg-secondary text-white">Remarks</th>
-        </tr>
-        <tr *ngFor="let row of dataList;">
-          <td>{{row.sno}}</td>
-          <td>{{row.branch_name}}</td>
-          <td>{{row.employee_name}}</td>
-          <td>{{row.settlement_date}}</td>
-          <td>{{row.received_amount}}</td>
-          <td>{{row.remarks}}</td>
-        </tr>
-      </table>
-    </div>
+        <table class="text-center mx-3 table-bordered" [hidden]="pdfrectab" id="contentToConvert">
+          <tr>
+            <th class="bg-secondary text-white">Sno</th>
+            <th class="bg-secondary text-white">Branch Name</th>
+            <th class="bg-secondary text-white">Employee Name</th>
+            <th class="bg-secondary text-white">Settlement Date</th>
+            <th class="bg-secondary text-white">Received Amount</th>
+            <th class="bg-secondary text-white">Denomination</th>
+            <th class="bg-secondary text-white">Remarks</th>
+            <th class="bg-secondary text-white">Status</th>
+            <th class="bg-secondary text-white">Approval Remarks</th>
+          </tr>
+          <tr *ngFor="let row of dataList;">
+            <td>{{row.sno}}</td>
+            <td>{{row.branch_name}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.settlement_date}}</td>
+            <td>{{row.received_amount}}</td>
+            <td>{{row.denomination}}</td>
+            <td>{{row.remarks}}</td>
+            <td>{{row.approval_status_name}}</td>
+            <td>{{row.approval_remarks}}</td>
+          </tr>
+        </table>
+      </div>
     </div>
   </div>
 </div>
+
+<ng-template #approveModal let-c="close" let-d="dismiss">
+  <div class="modal-header">
+    <h5 class="modal-title">Approve Cash Settlement</h5>
+    <button type="button" class="close" (click)="d('cancel')">&times;</button>
+  </div>
+  <div class="modal-body" *ngIf="selectedSettlement">
+    <div class="mb-2">
+      <strong>Employee:</strong> {{selectedSettlement.employee_name}}<br>
+      <strong>Date:</strong> {{selectedSettlement.settlement_date}}<br>
+      <strong>Received Amount:</strong> {{selectedSettlement.received_amount}}<br>
+      <strong>Denomination:</strong> {{selectedSettlement.denomination}}
+    </div>
+    <form [formGroup]="ApproveForm" (ngSubmit)="onApproveSubmit()">
+      <div class="form-group">
+        <label>Approval Remarks <span class="error">*</span></label>
+        <textarea class="form-control border-dark" rows="3" formControlName="approval_remarks" placeholder="Enter approval remarks"></textarea>
+        <div *ngIf="approveSubmitted && af.approval_remarks.errors" class="invalid-feedback d-block">
+          <label *ngIf="af.approval_remarks.errors.required">Remarks is required</label>
+        </div>
+      </div>
+      <div class="text-right">
+        <button type="button" class="btn btn-secondary mr-1" (click)="d('cancel')">Cancel</button>
+        <button type="submit" class="btn btn-success" [disabled]="disableApproveBtn">Approve</button>
+      </div>
+    </form>
+  </div>
+</ng-template>

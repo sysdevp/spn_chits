@@ -28,14 +28,23 @@ import { AgGridModule } from 'ag-grid-angular';
 import { RouterModule } from '@angular/router';
 import { ReportPopupModalComponent } from '../modal/report-popup-modal/report-popup-modal.component';
 import { ReportRedirectModalComponent } from '../modal/report-redirect-modal/report-redirect-modal.component';
+import { SettlementApproveCellComponent } from './Reports/settlement-report/settlement-approve-cell.component';
 import {ReportChequeSubmitComponent} from '../modal/report-cheque-submit-modal/report-cheque-submit-modal.component';
 import {ReportChequeBankComponent} from '../modal/report-cheque-bank-modal/report-cheque-bank-modal.component';
 import { NgxSmartModalModule } from 'ngx-smart-modal';
+import { SlabArPipe } from '../pipes/slab-ar.pipe';
+import { SharedWidgetsModule } from '../shared/shared-widgets.module';
 // *******************************************************************************
 import { NoAccessComponent } from './NoAccess/no-access.component';
 import { NgMultiSelectDropDownModule } from 'ng-multiselect-dropdown';
 //Dashboard
 import { DashboardComponent } from './dashboard/dashboard.component';
+import { MdDashboardComponent } from './dashboard/views/md-dashboard/md-dashboard.component';
+import { AdminDashboardViewComponent } from './dashboard/views/admin-dashboard/admin-dashboard.component';
+import { BranchManagerDashboardComponent } from './dashboard/views/branch-manager-dashboard/branch-manager-dashboard.component';
+import { SalesManagerDashboardComponent } from './dashboard/views/sales-manager-dashboard/sales-manager-dashboard.component';
+import { CollectionManagerDashboardComponent } from './dashboard/views/collection-manager-dashboard/collection-manager-dashboard.component';
+import { BranchSalesDashboardComponent } from './dashboard/views/branch-sales-dashboard/branch-sales-dashboard.component';
 // Masters
 //Bank Detail
 import { AddBankDetailsComponent } from './Masters/BankDetails/add-bank-details/add-bank-details.component';
@@ -341,6 +350,10 @@ import { OtherReceiptChargesReportComponent } from './Reports/other-Receipt-Char
 //Commitment Pending Report
 import { CommitmentPendingReportComponent } from './Reports/commitment-pending/commitment-pending-report/commitment-pending-report.component';
 import { CommitmentEligibilityApprovalComponent } from './Reports/commitment-eligibility-approval/commitment-eligibility-approval.component';
+import { SchemeWisePayablePendingReportComponent } from './Reports/spn-collection-reports/scheme-wise-payable-pending/scheme-wise-payable-pending-report.component';
+import { NextMonthCollectionReportComponent } from './Reports/spn-collection-reports/next-month-collection/next-month-collection-report.component';
+import { ThisMonthUnpaidReportComponent } from './Reports/spn-collection-reports/this-month-unpaid/this-month-unpaid-report.component';
+import { DueNoCustomerReportComponent } from './Reports/spn-collection-reports/due-no-customer/due-no-customer-report.component';
 //Customer Ledger
 import { CustomerLedgerComponent } from './TransactionManagement/customer-ledger/customer-ledger.component';
 import { AddDuplicateReceiptComponent } from './SubscriberManagement/DuplicateReceipt/add-duplicate-receipt/add-duplicate-receipt.component';
@@ -621,7 +634,6 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 export class DemoMaterialModule {}
 @NgModule({
   imports: [
-    //AgGridModule.withComponents([]),
     CommonModule,
     HttpClientModule,
     FormsModule,
@@ -630,8 +642,15 @@ export class DemoMaterialModule {}
     adminpanelRoutingModule,
     NgbModule,
     NgxSmartModalModule,
-    AgGridModule,
-    NgMultiSelectDropDownModule.forRoot()
+    AgGridModule.withComponents([
+      ReportPopupModalComponent,
+      ReportRedirectModalComponent,
+      ReportChequeSubmitComponent,
+      ReportChequeBankComponent,
+      SettlementApproveCellComponent,
+    ]),
+    NgMultiSelectDropDownModule.forRoot(),
+    SharedWidgetsModule
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
   declarations: [
@@ -639,8 +658,16 @@ export class DemoMaterialModule {}
     ReportRedirectModalComponent,
     ReportChequeSubmitComponent,
     ReportChequeBankComponent,
+    SettlementApproveCellComponent,
+    SlabArPipe,
     //Dashboard
     DashboardComponent,
+    MdDashboardComponent,
+    AdminDashboardViewComponent,
+    BranchManagerDashboardComponent,
+    SalesManagerDashboardComponent,
+    CollectionManagerDashboardComponent,
+    BranchSalesDashboardComponent,
     //Masters
     //Bank Detail
     AddBankDetailsComponent,
@@ -946,6 +973,10 @@ export class DemoMaterialModule {}
     //Commitment Pending Report
     CommitmentPendingReportComponent,
     CommitmentEligibilityApprovalComponent,
+    SchemeWisePayablePendingReportComponent,
+    NextMonthCollectionReportComponent,
+    ThisMonthUnpaidReportComponent,
+    DueNoCustomerReportComponent,
     //Customer ledger
     CustomerLedgerComponent,
     AddDuplicateReceiptComponent,

@@ -446,6 +446,9 @@ class SlabDueController extends Controller
 				if(count($slab_due)>0) {
 					$slab_type->sno = $i;
 					$slab_type->slab_info = $slab_due[0];
+					if (isset($slab_type->slab_info->slab_name)) {
+						$slab_type->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_type->slab_info->slab_name, $slab_type->ar_no ?? null);
+					}
 					$i++;
 					
 				}

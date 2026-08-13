@@ -1,0 +1,106 @@
+<div class="rd-kpi-grid">
+  <div class="rd-kpi" (click)="openDetail.emit('collections')">
+    <div class="rd-kpi-label">Total Collections</div>
+    <div class="rd-kpi-value">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">This month</div>
+  </div>
+  <div class="rd-kpi accent-gold">
+    <div class="rd-kpi-label">Collection Target</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi accent-teal">
+    <div class="rd-kpi-label">Achievement %</div>
+    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-note">Placeholder</div>
+  </div>
+  <div class="rd-kpi accent-orange">
+    <div class="rd-kpi-label">Pending Collections</div>
+    <div class="rd-kpi-value">₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</div>
+  </div>
+  <div class="rd-kpi accent-red">
+    <div class="rd-kpi-label">Overdue Collections</div>
+    <div class="rd-kpi-value">{{ outstanding().length }}</div>
+    <div class="rd-kpi-note">Members</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">
+        Collection by Mode
+        <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'today' : 'month' }})</small>
+      </div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasBars()" class="rd-placeholder">No mode data</div>
+        <div *ngFor="let label of barLabels; let i = index" class="mb-2">
+          <div class="d-flex justify-content-between small mb-1"><span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong></div>
+          <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Bid Release Mix</div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasPie()" class="rd-placeholder">No bid data</div>
+        <ng-container *ngIf="hasPie()">
+          <div class="rd-donut-wrap">
+            <div class="rd-donut" [style.background]="pieSafeStyle"></div>
+            <div class="rd-donut-hole"></div>
+          </div>
+          <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between rd-pie-legend mb-1">
+            <span><span class="rd-pie-swatch" [ngClass]="'s' + i"></span>{{ lb }}</span>
+            <strong>₹ {{ n(pieData[i]) | number:'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Collection by Payment Status</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">On Time / Pending / Overdue donut — API pending</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Branch Collection Performance</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Branch target / efficiency table — API pending</div></div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Recent Collections</div>
+      <div class="rd-panel-b table-responsive">
+        <table class="rd-table" *ngIf="collections().length; else emptyR">
+          <thead><tr><th>Member</th><th>Amount</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of collections() | slice:0:10">
+              <td>{{ r.customer || r.customer_name || r.name || '—' }}</td>
+              <td>₹ {{ n(r.amount || r.total_paid || r.received_amount) | number:'1.0-0' }}</td>
+              <td class="rd-actions"><a title="View"><i class="fas fa-eye"></i></a></td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #emptyR><div class="rd-placeholder">No recent collections</div></ng-template>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Top Collecting Plans</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Plans mix — API pending</div></div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Members Snapshot</div>
+      <div class="rd-panel-b">
+        <div class="d-flex justify-content-between mb-2"><span>Total Customers</span><strong>{{ n(s().customers) | number:'1.0-0' }}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Today's Collection</span><strong>₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</strong></div>
+        <div class="d-flex justify-content-between"><span>Follow-ups Today</span><strong>{{ n(s().today_followup_count) }}</strong></div>
+      </div>
+    </div>
+  </div>
+</div>

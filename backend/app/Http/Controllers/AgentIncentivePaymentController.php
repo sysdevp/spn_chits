@@ -358,6 +358,7 @@ class AgentIncentivePaymentController extends Controller
                 {
                     $slab_types = SlabDue::where('id',$cd->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
+                    $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $cd->ar_no ?? null);
                     $enrol_det['group_info'] = "Commitment ".$slab_name;
                 }
                 $enrol_det['customer_id'] = isset($cd->customer_id) ? ($cd->customer_id) : 0;

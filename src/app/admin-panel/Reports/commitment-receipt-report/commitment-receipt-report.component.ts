@@ -9,6 +9,8 @@ import {ReportRedirectModalComponent} from '../../../modal/report-redirect-modal
 import { NgxSmartModalService } from 'ngx-smart-modal';
 import  jspdf from 'jspdf';  
 import html2canvas from 'html2canvas';
+import { getGridReportBaseUrl, gridDeleteAction, gridPrintAction } from '../../utils/grid-action.util';
+import { enrichRowsWithArNo } from '../../../utils/enrollment-display.util';
 
 @Component({
   
@@ -297,48 +299,31 @@ export class CommitmentReceiptReportComponent implements OnInit {
           },
             {headerName: 'Cheque Debit To', field: 'cheque_bank_name',resizable: true },
             {headerName: 'Status', field: 'status_name',resizable: true },
-            {headerName: 'Actions', 
-              cellRenderer: function(params) {  
-                let currentUrl = location.href; 
-                let splited = currentUrl.split("#");
-                let redirectable = '';
-                if(splited.length > 0) {
-                  redirectable = splited[0];
-                }
-                //return '<a href=location.origin+"/admin-panel/delete-enrol-refund-amount/' + params.data.id + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
-                return '<a href="'+redirectable+'#/admin-panel/delete-commitment-receipt/' + params.data.receipt_no + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
-               
+            {headerName: 'Actions', width: 100, resizable: true,
+              cellRenderer: function(params) {
+                return gridDeleteAction(getGridReportBaseUrl() + '#/admin-panel/delete-commitment-receipt/' + params.data.receipt_no);
               }
-              //field: 'action_html' 
             },
-            {headerName: 'Print', 
-            cellRenderer: function(params) {  
-              let currentUrl = location.href; 
-              let splited = currentUrl.split("#");
-              let redirectable = '';
-              if(splited.length > 0) {
-                redirectable = splited[0];
-              }
-              //return '<a href=location.origin+"/admin-panel/delete-enrol-refund-amount/' + params.data.id + '" class="rpt-grid-btn rpt-grid-btn--delete"><i class="fas fa-trash-alt"></i> Delete</a>';
+            {headerName: 'Print', width: 90, resizable: true,
+            cellRenderer: function(params) {
+             const base = getGridReportBaseUrl();
              if(params.data.receipt_passbook_mode == 'advance' ){
-              return '<a href="'+redirectable+'#/admin-panel/advance-receipt-print/' + params.data.receipt_no + '" class="rpt-grid-btn rpt-grid-btn--print"><i class="fas fa-print"></i> Print</a>';
-             } else {
-              return '<a href="'+redirectable+'#/admin-panel/commitment-receipt-print/' + params.data.receipt_no + '" class="rpt-grid-btn rpt-grid-btn--print"><i class="fas fa-print"></i> Print</a>';
+              return gridPrintAction(base + '#/admin-panel/advance-receipt-print/' + params.data.receipt_no);
              }
+              return gridPrintAction(base + '#/admin-panel/commitment-receipt-print/' + params.data.receipt_no);
             }
-            //field: 'action_html' 
           },
           ];
           this.defaultColDef = { 
             sortable: true,
             width: 150, 
           };
-          this.rowData = response.data;
+          this.rowData = enrichRowsWithArNo(response.data || []);
           this.bonusAmt=response.grand_bonus_amt;
           this.paidamt=response.grand_paid_amt;
           this.penaltyAmt=response.grand_penalty_amt;
           this.receivedAmt=response.grand_received;
-          this.dataList = response.data;
+          this.dataList = this.rowData;
 		  if((response.data.length)>0) {
       this.hideDataList = false; 
       this.nodataFoundMessage=true;

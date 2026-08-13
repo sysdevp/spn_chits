@@ -96,7 +96,14 @@
                 {{ Permissions.at(si).get('Submenus').at(idx).get('menu_title').value }}
               </label>
             </div>
-            <ng-container *ngIf="(Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=2 && (Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=4">
+            <ng-container *ngIf="(Permissions.at(si).get('Submenus').at(idx).get('page_type').value)==3">
+              <div class="form-check ml-3">
+                <label class="form-check-label">
+                  <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('view_perm').value)==1" (change)="viewPermChg($event, si, idx)"> View
+                </label>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="(Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=2 && (Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=3 && (Permissions.at(si).get('Submenus').at(idx).get('page_type').value)!=4">
               <div class="form-check ml-3">
                 <label class="form-check-label">
                   <input type="checkbox" class="form-check-input" [checked]="(Permissions.at(si).get('Submenus').at(idx).get('add_perm').value)==1" (change)="addPermChg($event, si, idx)"> Add

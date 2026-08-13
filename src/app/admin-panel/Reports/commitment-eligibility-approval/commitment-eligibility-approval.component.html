@@ -44,7 +44,7 @@
             <td>{{ row.sno }}</td>
             <td>{{ row.customer_info && row.customer_info.name }} {{ row.customer_info && row.customer_info.last_name }}</td>
             <td>{{ row.customer_info && row.customer_info.mobile_no }}</td>
-            <td>{{ row.scheme_info && row.scheme_info.chit_value }} / {{ row.slab_info && row.slab_info.slab_name }}</td>
+            <td>{{ row.scheme_info && row.scheme_info.chit_value }} / {{ row | slabAr }}</td>
             <td>{{ row.first_installment_due }}</td>
             <td>{{ row.paid_amount_total }}</td>
             <td>{{ row.payment_percent }}%</td>

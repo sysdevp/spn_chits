@@ -187,7 +187,7 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
           this.totalPaid=response.grand_total_overal_paid
           this.totalPending=response.grand_total_overal_pending
           this.totalPenalty=response.grand_total_penalty
-          this.dataList = response.data;
+          this.dataList = this.rowData || response.data;
 		  if((response.data.length)>0) {
 			this.hideDataList = false; 
 			this.nodataFoundMessage = true;

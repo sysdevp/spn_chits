@@ -167,7 +167,7 @@
                 <tbody>
                   <tr *ngFor="let row of enrollmentInfo; let i=index">
                     <td>{{i+1}}</td>
-                    <td>{{row.slab_name || '-'}}</td>
+                    <td>{{ row | slabAr }}</td>
                     <td style="text-align:right">{{row.chit_value | number:'1.2-2'}}</td>
                     <td>
                       <span class="stmt-badge" [ngClass]="row.prized_status==1 ? 'prized' : 'not-prized'">
@@ -434,7 +434,7 @@
               <label>Select Commitment Enrollment</label>
               <select id="accountEnrollSelect" class="form-control" (change)="enrollChg($event)">
                 <option value="">Select Enrollment</option>
-                <option *ngFor="let data of enrolList" [value]="data.id">{{data.enrol_name}}</option>
+                <option *ngFor="let data of enrolList" [value]="data.id">{{ data | slabAr:'enrol' }}</option>
               </select>
             </div>
             <button type="button" (click)="onAccountPdf()" class="btn btn-success" [disabled]="hideEnrolmentDetails">
@@ -723,7 +723,7 @@
             <label>Select Commitment Enrollment</label>
             <select class="form-control" (change)="enrollstatementChg($event)">
               <option value="">Select Enrollment</option>
-              <option *ngFor="let data of enrolList" [value]="data.id">{{data.enrol_name}}</option>
+              <option *ngFor="let data of enrolList" [value]="data.id">{{ data | slabAr:'enrol' }}</option>
             </select>
           </div>
           <button type="button" (click)="onpdfcustomerstatement()" class="btn btn-success" [disabled]="hideEnrolment2Details">

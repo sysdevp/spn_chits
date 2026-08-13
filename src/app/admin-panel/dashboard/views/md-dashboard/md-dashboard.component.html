@@ -1,0 +1,433 @@
+<div class="ad-wrap">
+
+  <!-- Row 1: KPI cards -->
+  <div class="ad-kpi-row">
+    <div class="ad-kpi" (click)="openDetail.emit('collections')" style="cursor:pointer">
+      <div class="ad-kpi-ico g"><i class="fas fa-rupee-sign"></i></div>
+      <div class="ad-kpi-l">Total Collections</div>
+      <div class="ad-kpi-v">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+      <div class="ad-kpi-trend muted">This month</div>
+    </div>
+    <div class="ad-kpi">
+      <div class="ad-kpi-ico b"><i class="fas fa-bullseye"></i></div>
+      <div class="ad-kpi-l">Total Target</div>
+      <div class="ad-kpi-v">—</div>
+      <div class="ad-prog"><span [style.width]="achievedPct() + '%'"></span></div>
+      <div class="ad-kpi-trend muted">{{ achievedPct() }}% bid release (proxy)</div>
+    </div>
+    <div class="ad-kpi" (click)="openDetail.emit('subscribers')" style="cursor:pointer">
+      <div class="ad-kpi-ico p"><i class="fas fa-users"></i></div>
+      <div class="ad-kpi-l">Total Customers</div>
+      <div class="ad-kpi-v">{{ n(s().customers) | number:'1.0-0' }}</div>
+      <div class="ad-kpi-trend muted">Active subscribers</div>
+    </div>
+    <div class="ad-kpi">
+      <div class="ad-kpi-ico t"><i class="fas fa-briefcase"></i></div>
+      <div class="ad-kpi-l">Active Chit Groups</div>
+      <div class="ad-kpi-v">{{ n(s().running_groups) | number:'1.0-0' }}</div>
+      <div class="ad-kpi-trend muted">Running groups</div>
+    </div>
+    <div class="ad-kpi" (click)="openDetail.emit('followups')" style="cursor:pointer">
+      <div class="ad-kpi-ico y"><i class="fas fa-filter"></i></div>
+      <div class="ad-kpi-l">Total Leads</div>
+      <div class="ad-kpi-v">—</div>
+      <div class="ad-kpi-trend muted">Leads API pending</div>
+    </div>
+    <div class="ad-kpi">
+      <div class="ad-kpi-ico o"><i class="fas fa-clock"></i></div>
+      <div class="ad-kpi-l">Pending Collections</div>
+      <div class="ad-kpi-v">₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</div>
+      <div class="ad-kpi-trend muted">Bid pending release</div>
+    </div>
+    <div class="ad-kpi">
+      <div class="ad-kpi-ico r"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="ad-kpi-l">Overdue Collections</div>
+      <div class="ad-kpi-v">₹ {{ overdueTotal() | number:'1.0-0' }}</div>
+      <div class="ad-kpi-trend down">{{ outstanding().length }} members listed</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Charts -->
+  <div class="row">
+    <div class="col-lg-5 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h ad-panel-h-flex">
+          <span>Collection Trend <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'Today' : 'This Month' }})</small></span>
+        </div>
+        <div class="rd-panel-b">
+          <div *ngIf="!hasBars()" class="rd-placeholder">
+            No receipts by payment mode for this company/branch this month.<br>
+            <small>Try All Branches, or check that receipts exist for the selected month.</small>
+          </div>
+          <ng-container *ngIf="hasBars()">
+            <svg class="ad-trend-svg" viewBox="0 0 320 160" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="mdTrendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22c55e" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#22c55e" stop-opacity="0.02"/>
+                </linearGradient>
+              </defs>
+              <polygon [attr.points]="trendArea" fill="url(#mdTrendFill)"></polygon>
+              <polyline [attr.points]="trendPoints" fill="none" stroke="#16a34a" stroke-width="2.5"
+                stroke-linejoin="round" stroke-linecap="round"></polyline>
+            </svg>
+            <div class="small text-muted mt-2">Built from payment-mode totals (live). Daily series API pending.</div>
+            <div class="mt-2" *ngFor="let label of barLabels; let i = index">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong>
+              </div>
+              <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h">Target vs Achievement</div>
+        <div class="rd-panel-b">
+          <div class="ad-vbars">
+            <div class="ad-vbar-col">
+              <div class="ad-vbar-amt">—</div>
+              <div class="ad-vbar" [style.height]="targetBarH()"></div>
+              <div class="ad-vbar-lbl">Target</div>
+            </div>
+            <div class="ad-vbar-col">
+              <div class="ad-vbar-amt">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+              <div class="ad-vbar ach" [style.height]="achievedBarH()"></div>
+              <div class="ad-vbar-lbl">Achieved</div>
+            </div>
+          </div>
+          <div class="ad-gauge-wrap">
+            <div class="ad-gauge" [style.background]="gaugeSafe"></div>
+            <div class="ad-gauge-hole">
+              <div class="ad-gauge-pct">{{ achievedPct() }}%</div>
+              <div class="ad-gauge-sub">Released</div>
+            </div>
+          </div>
+          <div class="small text-muted text-center mt-2">Gauge uses bid release mix until target API is available</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-4 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h">Collection by Branch</div>
+        <div class="rd-panel-b">
+          <div class="row">
+            <div class="col-5">
+              <div class="ad-map-box">
+                <div>
+                  <i class="fas fa-map-marker-alt text-success mb-2 d-block" style="font-size:1.4rem"></i>
+                  Branch map<br><small>API pending</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-7">
+              <div *ngIf="!branchRows().length" class="rd-placeholder mt-2 py-2" style="padding:0.75rem">
+                No branch collections this month
+              </div>
+              <div class="ad-branch-row" *ngFor="let b of branchRows().slice(0, 5)">
+                <div class="ad-branch-name">{{ b.branch_name }}</div>
+                <div class="flex-grow-1">
+                  <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="(b.pct || 0) + '%'"></div></div>
+                </div>
+                <div class="ad-branch-amt">₹ {{ n(b.amount) | number:'1.0-0' }}</div>
+              </div>
+              <div class="d-flex justify-content-between mt-2 small font-weight-bold">
+                <span>Total (month)</span>
+                <span>₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Mini metrics -->
+  <div class="ad-mini-row">
+    <div class="ad-mini">
+      <div class="ad-mini-l">Collections (Today)</div>
+      <div class="ad-mini-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">New Customers</div>
+      <div class="ad-mini-v">—</div>
+      <div class="ad-mini-t" style="color:#94a3b8">This month · API pending</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">New Leads</div>
+      <div class="ad-mini-v">—</div>
+      <div class="ad-mini-t" style="color:#94a3b8">This month · API pending</div>
+    </div>
+    <div class="ad-mini" (click)="openDetail.emit('followups')" style="cursor:pointer">
+      <div class="ad-mini-l">Follow-ups Pending</div>
+      <div class="ad-mini-v">{{ n(s().today_followup_count) | number:'1.0-0' }}</div>
+      <div class="ad-mini-t">Due today</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">Overdue Members</div>
+      <div class="ad-mini-v">{{ outstanding().length }}</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">Active Employees</div>
+      <div class="ad-mini-v">—</div>
+      <div class="ad-mini-t" style="color:#94a3b8">API pending</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">Auction Today</div>
+      <div class="ad-mini-v">{{ auctions().length }}</div>
+    </div>
+    <div class="ad-mini">
+      <div class="ad-mini-l">Payments Today</div>
+      <div class="ad-mini-v">₹ {{ n(s().today_payment_total) | number:'1.0-0' }}</div>
+    </div>
+  </div>
+
+  <!-- Row 4: Tables / overview -->
+  <div class="row">
+    <div class="col-lg-4 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h">Top Performing Branches <small class="text-muted font-weight-normal">(This Month)</small></div>
+        <div class="rd-panel-b table-responsive p-0">
+          <table class="rd-table mb-0">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Branch</th>
+                <th>Collection (₹)</th>
+                <th>Target</th>
+                <th>%</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngIf="!branchRows().length">
+                <td colspan="5" class="text-center text-muted py-4">No branch collections this month</td>
+              </tr>
+              <tr *ngFor="let b of branchRows()">
+                <td>{{ b.rank }}</td>
+                <td>{{ b.branch_name }}</td>
+                <td>{{ n(b.amount) | number:'1.0-0' }}</td>
+                <td>—</td>
+                <td>{{ b.pct }}%</td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><strong>Total</strong></td>
+                <td><strong>{{ n(s().current_month_collection) | number:'1.0-0' }}</strong></td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h">Business Overview</div>
+        <div class="rd-panel-b text-center">
+          <div class="rd-donut-wrap mx-auto">
+            <div class="rd-donut" [style.background]="bizDonutSafe"></div>
+            <div class="rd-donut-hole d-flex flex-column align-items-center justify-content-center" style="font-size:0.7rem;color:#64748b;line-height:1.2">
+              <strong style="font-size:1.1rem;color:#0f172a">{{ totalGroups() || n(s().running_groups) }}</strong>
+              Total Groups
+            </div>
+          </div>
+          <div class="ad-biz-legend text-left small mt-2">
+            <div class="mb-1"><span style="background:#16a34a"></span> Active Chits — {{ n(s().running_groups) }}</div>
+            <div class="mb-1"><span style="background:#94a3b8"></span> Vacant — {{ n(s().vacant_groups) }}</div>
+            <div class="mb-1"><span style="background:#38bdf8"></span> Closed — —</div>
+            <div><span style="background:#cbd5e1"></span> Others — —</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-2 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h">Financial Overview</div>
+        <div class="rd-panel-b">
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico g"><i class="fas fa-rupee-sign"></i></span> Collections</div>
+            <strong>₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</strong>
+          </div>
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico b"><i class="fas fa-hand-holding-usd"></i></span> Disbursements</div>
+            <strong>₹ {{ n(s().today_payment_total) | number:'1.0-0' }}</strong>
+          </div>
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico t"><i class="fas fa-university"></i></span> Bank Balance</div>
+            <strong>—</strong>
+          </div>
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico y"><i class="fas fa-wallet"></i></span> Cash in Hand</div>
+            <strong>—</strong>
+          </div>
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico o"><i class="fas fa-clock"></i></span> Pending</div>
+            <strong>₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</strong>
+          </div>
+          <div class="ad-fin-row">
+            <div class="ad-fin-l"><span class="ad-fin-ico r"><i class="fas fa-exclamation"></i></span> Overdue</div>
+            <strong>₹ {{ overdueTotal() | number:'1.0-0' }}</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-3 mb-3">
+      <div class="rd-panel h-100">
+        <div class="rd-panel-h ad-panel-h-flex">
+          <span>Alerts &amp; Notifications</span>
+          <a class="ad-link" (click)="openDetail.emit('followups')">View All</a>
+        </div>
+        <div class="rd-panel-b">
+          <div class="ad-alert" *ngIf="outstanding().length">
+            <span class="ad-alert-dot red"></span>
+            <div>
+              <strong>High Overdue Members ({{ outstanding().length }})</strong>
+              <div class="text-muted small">₹ {{ overdueTotal() | number:'1.0-0' }} pending release</div>
+            </div>
+          </div>
+          <div class="ad-alert" *ngIf="n(s().today_followup_count)">
+            <span class="ad-alert-dot orange"></span>
+            <div>
+              <strong>Follow-ups Pending ({{ n(s().today_followup_count) }})</strong>
+              <div class="text-muted small">Due today</div>
+            </div>
+          </div>
+          <div class="ad-alert" *ngIf="auctions().length">
+            <span class="ad-alert-dot green"></span>
+            <div>
+              <strong>Auction Scheduled Today ({{ auctions().length }})</strong>
+              <div class="text-muted small">{{ auctions()[0]?.group_name || 'Groups ready' }}</div>
+            </div>
+          </div>
+          <div class="ad-alert">
+            <span class="ad-alert-dot blue"></span>
+            <div>
+              <strong>Bid Release Status ({{ achievedPct() }}%)</strong>
+              <div class="text-muted small">Released vs pending</div>
+            </div>
+          </div>
+          <div class="ad-alert" *ngIf="n(s().vacant_groups)">
+            <span class="ad-alert-dot orange"></span>
+            <div>
+              <strong>Vacant Groups ({{ n(s().vacant_groups) }})</strong>
+              <div class="text-muted small">Tickets still open</div>
+            </div>
+          </div>
+          <div *ngIf="!outstanding().length && !n(s().today_followup_count) && !auctions().length" class="rd-placeholder">
+            No active alerts
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 5: Sparkline cards -->
+  <div class="ad-spark-row">
+    <div class="ad-spark">
+      <div class="ad-spark-l">Collections (This Month)</div>
+      <div class="ad-spark-v">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+      <div class="ad-spark-t muted" style="color:#94a3b8">Live</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline [attr.points]="sparkPoints" fill="none" stroke="#16a34a" stroke-width="2"></polyline>
+      </svg>
+    </div>
+    <div class="ad-spark">
+      <div class="ad-spark-l">Leads (This Month)</div>
+      <div class="ad-spark-v">—</div>
+      <div class="ad-spark-t" style="color:#94a3b8">API pending</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline points="0,28 20,24 40,26 60,18 80,20 100,14 120,16 140,10" fill="none" stroke="#94a3b8" stroke-width="2"></polyline>
+      </svg>
+    </div>
+    <div class="ad-spark">
+      <div class="ad-spark-l">Customers</div>
+      <div class="ad-spark-v">{{ n(s().customers) | number:'1.0-0' }}</div>
+      <div class="ad-spark-t muted" style="color:#94a3b8">Total</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline [attr.points]="sparkPoints" fill="none" stroke="#7c3aed" stroke-width="2"></polyline>
+      </svg>
+    </div>
+    <div class="ad-spark">
+      <div class="ad-spark-l">Today Collections</div>
+      <div class="ad-spark-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+      <div class="ad-spark-t muted" style="color:#94a3b8">Live</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline [attr.points]="sparkPoints" fill="none" stroke="#0d9488" stroke-width="2"></polyline>
+      </svg>
+    </div>
+    <div class="ad-spark">
+      <div class="ad-spark-l">Overdue (Listed)</div>
+      <div class="ad-spark-v">₹ {{ overdueTotal() | number:'1.0-0' }}</div>
+      <div class="ad-spark-t down">{{ outstanding().length }} members</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline points="0,8 20,12 40,10 60,18 80,16 100,24 120,22 140,28" fill="none" stroke="#dc2626" stroke-width="2"></polyline>
+      </svg>
+    </div>
+    <div class="ad-spark">
+      <div class="ad-spark-l">Running Groups</div>
+      <div class="ad-spark-v">{{ n(s().running_groups) }}</div>
+      <div class="ad-spark-t muted" style="color:#94a3b8">Vacant {{ n(s().vacant_groups) }}</div>
+      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
+        <polyline [attr.points]="sparkPoints" fill="none" stroke="#2563eb" stroke-width="2"></polyline>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Extra: recent collections + overdue (from live data) -->
+  <div class="row mt-2">
+    <div class="col-lg-7 mb-3">
+      <div class="rd-panel">
+        <div class="rd-panel-h ad-panel-h-flex">
+          <span>Recent Collections</span>
+          <a class="ad-link" (click)="openDetail.emit('collections')">View All</a>
+        </div>
+        <div class="rd-panel-b table-responsive">
+          <table class="rd-table" *ngIf="collections().length; else emptyC">
+            <thead><tr><th>Receipt</th><th>Member</th><th>Mode</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let r of collections() | slice:0:10">
+                <td>{{ r.receipt_no || '—' }}</td>
+                <td>{{ r.customer || r.customer_name || r.name || '—' }}</td>
+                <td>{{ r.mode || '—' }}</td>
+                <td>₹ {{ n(r.amount || r.total_paid || r.received_amount) | number:'1.0-0' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #emptyC><div class="rd-placeholder">No recent collections today</div></ng-template>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-5 mb-3">
+      <div class="rd-panel">
+        <div class="rd-panel-h">Top Overdue Members</div>
+        <div class="rd-panel-b">
+          <div class="mb-2" *ngFor="let o of outstanding() | slice:0:8; let i = index">
+            <span class="ad-rank mr-1">{{ i + 1 }}</span>
+            <strong>{{ o.customer_name || o.name || 'Member' }}</strong>
+            <span class="float-right font-weight-bold">₹ {{ n(o.pending_amount || o.amount || o.outstanding) | number:'1.0-0' }}</span>
+            <div class="small text-muted ml-4">{{ o.mobile || '' }}</div>
+          </div>
+          <div *ngIf="!outstanding().length" class="rd-placeholder">No overdue list</div>
+        </div>
+      </div>
+      <div class="rd-panel">
+        <div class="rd-panel-h">Quick Actions</div>
+        <div class="rd-panel-b rd-quick">
+          <a routerLink="/admin-panel/view-customer">Add New Member</a>
+          <a routerLink="/admin-panel/add-commitment-receipt">Add New Collection</a>
+          <a routerLink="/admin-panel/view-feed-back">Add Follow-up</a>
+          <a routerLink="/admin-panel/receipt-report">Export / Receipt Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

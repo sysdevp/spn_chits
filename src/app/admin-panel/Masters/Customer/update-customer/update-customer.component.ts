@@ -329,10 +329,21 @@ export class UpdateCustomerComponent implements OnInit {
   }
 
   getChitSlabLabel(chit: any): string {
-    if (!chit || !chit.slab_info) {
+    if (!chit) {
       return "-";
     }
-    return chit.slab_info.slab_name || "-";
+    const slab = chit.slab_info && chit.slab_info.slab_name ? chit.slab_info.slab_name : (chit.slab_name || "");
+    const ar = chit.ar_no != null && chit.ar_no !== "" ? String(chit.ar_no) : "";
+    if (!slab && !ar) {
+      return "-";
+    }
+    if (!ar) {
+      return slab || "-";
+    }
+    if (String(slab).indexOf(ar) >= 0) {
+      return slab;
+    }
+    return slab ? slab + " / " + ar : ar;
   }
 
   getChitStatusLabel(chit: any): string {

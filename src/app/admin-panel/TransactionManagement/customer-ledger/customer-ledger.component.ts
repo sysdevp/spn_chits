@@ -1,6 +1,6 @@
 import { Component, OnInit , ElementRef,ViewChild  } from '@angular/core';
 import { AppService } from '../../../app.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../../Services/user.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import  jspdf from 'jspdf';  
@@ -8,6 +8,7 @@ import html2canvas from 'html2canvas';
 import {saveAs} from 'file-saver';
 import {ExcelService} from '../../../Services/excel.service';
 import  XLSX from 'xlsx';
+import { enrolNameWithAr, formatSlabWithArNo, slabLabelFromRow } from '../../../utils/enrollment-display.util';
 
 @Component({
   
@@ -213,8 +214,16 @@ export class CustomerLedgerComponent implements OnInit {
   otherchargeInfo: any;
   customeradvanceList: any;
 
-  constructor(private excelService:ExcelService,private formBuilder: FormBuilder,private appService: AppService,private userservice: UserService, private router: Router) 
-  { 
+  private pendingDeepLink: { branch_id?: string; customer_id?: string } = null;
+
+  constructor(
+    private excelService: ExcelService,
+    private formBuilder: FormBuilder,
+    private appService: AppService,
+    private userservice: UserService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.SubmitbuttonName = "Submit";
     if((localStorage.getItem('company_logo') != null) && (localStorage.getItem('company_logo') != ''))
     {
@@ -235,7 +244,7 @@ export class CustomerLedgerComponent implements OnInit {
     this.setBranchList(tenant_id);
   }
 
-  setBranchList(tenant_id) {
+  setBranchList(tenant_id, afterLoad?: () => void) {
     let cond = {
       "conditions[tenant_id]": tenant_id,
       "log_id" : localStorage.getItem('logged_employee_id')
@@ -248,7 +257,69 @@ export class CustomerLedgerComponent implements OnInit {
           this.branchList = [];
         }
       } catch (err) { }
+      if (afterLoad) {
+        afterLoad();
+      }
+    }, (err: any) => {
+      if (afterLoad) {
+        afterLoad();
+      }
+    });
+  }
+
+  /** Load customer dropdown for a branch, then optionally select + open ledger. */
+  loadCustomersForBranch(branchId: any, selectCustomerId?: any, autoSubmit?: boolean) {
+    if (!branchId) {
+      return;
+    }
+    this.CustomerLedger.get('branch_id').setValue(String(branchId));
+    const cond = {
+      "conditions[branch_id]": branchId,
+    };
+    this.userservice.getData(cond, "get-customers-view", "POST").subscribe((response: any) => {
+      try {
+        if (response.status == 'Success') {
+          this.customerList = response.data;
+        } else {
+          this.customerList = [];
+        }
+      } catch (err) { }
+
+      if (selectCustomerId) {
+        this.CustomerLedger.get('customer_id').setValue(String(selectCustomerId));
+        this.custid = String(selectCustomerId);
+        this.customerChg({ target: { value: String(selectCustomerId) } });
+        if (autoSubmit) {
+          setTimeout(() => this.onSubmit(), 150);
+        }
+      }
     }, (err: any) => { });
+  }
+
+  applyDeepLinkFromQuery() {
+    const qp = this.route.snapshot.queryParams || {};
+    const branchId = qp['branch_id'];
+    const customerId = qp['customer_id'];
+    if (!customerId) {
+      return;
+    }
+    this.pendingDeepLink = { branch_id: branchId, customer_id: customerId };
+    if (branchId) {
+      this.loadCustomersForBranch(branchId, customerId, true);
+    } else {
+      // Resolve branch from customer record
+      this.userservice.getData({ "conditions[id]": customerId }, "get-customers", "POST").subscribe((response: any) => {
+        try {
+          if (response.status === 'Success' && response.data && response.data[0]) {
+            const c = response.data[0];
+            const bid = c.branch_id || (c.branch_info && c.branch_info.id);
+            if (bid) {
+              this.loadCustomersForBranch(bid, customerId, true);
+            }
+          }
+        } catch (err) { }
+      });
+    }
   }
   
   branchChg(event)
@@ -425,7 +496,10 @@ export class CustomerLedgerComponent implements OnInit {
     this.userservice.getData(cond3, "enrollment-wise-details", "POST").subscribe((response: any) => {
       try { 
         if (response.status == 'Success') { 
-          this.enrollmentInfo = response.data;
+          this.enrollmentInfo = (response.data || []).map((row: any) => {
+            row.slab_name = this.formatEnrollmentSlab(row);
+            return row;
+          });
          /*  this.ticketNo=response.data[0].ticket_no;
           this.chitValue=response.data[0].chit_value;
           //this.chitValue=response.data[0].chit_value;
@@ -524,7 +598,12 @@ export class CustomerLedgerComponent implements OnInit {
       try { 
         if (response.status == 'Success') { 
           // Customer statement should show only Commitment Chits
-          this.enrolList = (response.data || []).filter((e: any) => Number(e.chit_type) === 3);
+          this.enrolList = (response.data || [])
+            .filter((e: any) => Number(e.chit_type) === 3)
+            .map((e: any) => {
+              e.enrol_name = this.formatEnrollmentName(e);
+              return e;
+            });
           /*  this.groupName=response.data[0].group_info.group_name;
           this.ticketNo=response.data[0].ticket_no;  */
         } else {
@@ -546,7 +625,15 @@ export class CustomerLedgerComponent implements OnInit {
     }, (err: any) => { });
   }
 
-    runningGroupClick()
+    formatEnrollmentSlab(row: any): string {
+    return slabLabelFromRow(row) || '-';
+  }
+
+  formatEnrollmentName(row: any): string {
+    return enrolNameWithAr(row);
+  }
+
+  runningGroupClick()
     {
       this.hiderunningGroup=false;
       this.hideClosedGroup=true;
@@ -633,9 +720,7 @@ export class CustomerLedgerComponent implements OnInit {
         this.accountChitValue = parseFloat(enrol.chit_value || 0);
         this.accountPaidAmount = parseFloat(enrol.paid_amount || 0);
         this.accountPendingAmount = parseFloat(enrol.pending_amount || 0);
-        if (!this.accountSlabName) {
-          this.accountSlabName = enrol.slab_name || '';
-        }
+        this.accountSlabName = this.formatEnrollmentSlab(enrol);
       }
 
       const cond = { "conditions[id]": enrolId };
@@ -644,9 +729,11 @@ export class CustomerLedgerComponent implements OnInit {
 
       this.userservice.getData(cond, "customer-ledger-get-enrol-details", "POST").subscribe((response: any) => {
         if (response.status == 'Success') {
-          this.accountSlabName = response.data.group_name;
-          this.groupName = response.data.group_name;
-          this.ticketNo = response.data.ticket_no;
+          const enrol = (this.enrollmentInfo || []).find((e: any) => String(e.id) === String(enrolId));
+          const baseName = response.data.group_name || response.data.slab_name || '';
+          this.accountSlabName = formatSlabWithArNo(baseName, enrol && enrol.ar_no);
+          this.groupName = this.accountSlabName;
+          this.ticketNo = (enrol && enrol.ar_no) ? enrol.ar_no : response.data.ticket_no;
         }
       });
 
@@ -902,7 +989,10 @@ export class CustomerLedgerComponent implements OnInit {
             this.monthly_subscription = meta.monthly_subscription;
             this.term_period = meta.term_period;
             this.ticket_no = meta.ticket_no || '-';
-            this.slab_name = meta.slab_name || meta.group_name || '-';
+            const stmtEnrol = (this.enrolList || []).find((e: any) => String(e.id) === String(this.LoanstatementId));
+            const stmtAr = (stmtEnrol && stmtEnrol.ar_no) || meta.ar_no || '';
+            this.ticket_no = stmtAr || this.ticket_no;
+            this.slab_name = formatSlabWithArNo(meta.slab_name || meta.group_name || '', stmtAr) || '-';
             this.first_auction_date = meta.first_auction_date;
             this.total_months = meta.total_months != null ? meta.total_months : meta.auction_completed;
             this.running_month = meta.running_month != null ? meta.running_month : meta.incomplete_auction;
@@ -1112,16 +1202,7 @@ export class CustomerLedgerComponent implements OnInit {
    
   }
   
-  ngOnInit() {
-    /* this.userservice.getData('', "list-branches", "POST").subscribe((response: any) => {
-      try { 
-        if (response.status == 'Success') {
-          this.branchList = response.data;
-        } else {
-          this.branchList = [];
-        }
-      }  catch (err) { }
-    }, (err: any) => { }); */
+    ngOnInit() {
     this.CustomerLedger = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
@@ -1133,7 +1214,7 @@ export class CustomerLedgerComponent implements OnInit {
     if (tenant_id) {
       this.CustomerLedger.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
-      this.setBranchList(tenant_id);
+      this.setBranchList(tenant_id, () => this.applyDeepLinkFromQuery());
     }
     else {
       this.isSuperAdmin = true;
@@ -1145,10 +1226,18 @@ export class CustomerLedgerComponent implements OnInit {
             this.companyList = [];
           }
         } catch (err) { }
+        this.applyDeepLinkFromQuery();
       }, (err: any) => { });
     }
 
-  }
+    this.route.queryParams.subscribe((qp) => {
+      if (qp && qp['customer_id'] && this.CustomerLedger) {
+        if (this.pendingDeepLink && String(this.pendingDeepLink.customer_id) === String(qp['customer_id'])) {
+          return;
+        }
+        this.applyDeepLinkFromQuery();
+      }
+    });
   }
 
-
+  }

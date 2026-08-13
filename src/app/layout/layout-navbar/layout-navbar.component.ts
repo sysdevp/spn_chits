@@ -15,12 +15,12 @@ export class LayoutNavbarComponent {
   isRTL: boolean;
   profileImg = 'assets/img/spn-logo.png';
   loggedUserName = '';
-  favicon = 'assets/img/spn-logo.png';
+  favicon = 'assets/img/favicon-spn.png';
 
   @Input() sidenavToggle = true;
 
   @HostBinding('class.layout-navbar') hostClassMain = true;
-  companyLogo = 'assets/img/logo1.jpg';
+  companyLogo = 'assets/img/spn-logo.png';
   version: string;
   logged_user_type: any;
 

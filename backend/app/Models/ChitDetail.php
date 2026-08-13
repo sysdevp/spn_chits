@@ -94,4 +94,33 @@ class ChitDetail extends Model
 	{
 		return $this->hasMany(GuarantorRelation::class);
 	}
+
+  /**
+   * Display label for commitment enrollment: "Slab Name / AR No".
+   */
+  public static function formatSlabWithArNo($slabName, $arNo = null): string
+  {
+    $slab = trim((string) ($slabName ?? ''));
+    $ar = trim((string) ($arNo ?? ''));
+    if ($slab !== '' && $ar !== '') {
+      return $slab . ' / ' . $ar;
+    }
+    if ($slab !== '') {
+      return $slab;
+    }
+    return $ar !== '' ? $ar : '';
+  }
+
+  /** Resolve slab_name + ar_no for this enrollment row. */
+  public function slabLabelWithArNo(): string
+  {
+    $slab = '';
+    if ($this->relationLoaded('slab_due_det') && $this->slab_due_det) {
+      $slab = (string) ($this->slab_due_det->slab_name ?? '');
+    } elseif (!empty($this->slab_id)) {
+      $due = SlabDue::find($this->slab_id);
+      $slab = $due ? (string) ($due->slab_name ?? '') : '';
+    }
+    return self::formatSlabWithArNo($slab, $this->ar_no ?? null);
+  }
 }

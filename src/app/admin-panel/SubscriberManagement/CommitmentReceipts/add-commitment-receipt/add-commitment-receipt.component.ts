@@ -54,7 +54,7 @@ export class AddCommitmentReceiptComponent implements OnInit {
   enrollementList: any[];
   paymentTypeList: any[];
   bankList: any[];
-  enrolList: any[];
+  enrolList: any;
   pendingDetail: any[];
   employeeSet: boolean=true;
   hidePayment: boolean=true;
@@ -179,6 +179,26 @@ export class AddCommitmentReceiptComponent implements OnInit {
     this.hidePayment = true;
     this.hideChitDetails = true;
     this.enrolChg = false;
+  }
+
+  /** Slab dropdown / table label: "Slab Name / AR No" (no duplicate if API already appended). */
+  slabLabelWithAr(row: any): string {
+    if (!row) {
+      return '';
+    }
+    const slab = (row.slab_info && row.slab_info.slab_name) || row.slab_name || '';
+    const ar = (row.ar_no != null && row.ar_no !== '') ? String(row.ar_no).trim() : '';
+    const slabStr = String(slab).trim();
+    if (!slabStr && !ar) {
+      return '';
+    }
+    if (!ar) {
+      return slabStr;
+    }
+    if (slabStr.indexOf(ar) >= 0) {
+      return slabStr;
+    }
+    return slabStr ? (slabStr + ' / ' + ar) : ar;
   }
 
   enrollementChg(event)
@@ -561,7 +581,10 @@ export class AddCommitmentReceiptComponent implements OnInit {
       this.userservice.getData(cond, "get-customer-slab-type", "POST").subscribe((response: any) => {
       try { 
         if (response.status == 'Success') { 
-          this.enrollementList = response.data;
+          this.enrollementList = (response.data || []).map((row: any) => {
+            row.slab_display = this.slabLabelWithAr(row);
+            return row;
+          });
           this.hideChitDetails = true;
           this.hidePayment = true;
           this.hideDebitTo=true;

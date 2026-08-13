@@ -1,18 +1,15 @@
-import { Component, OnInit, ElementRef, ViewChild, Renderer2 } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, TemplateRef } from '@angular/core';
 import { applyReportGridData } from '../../../../utils/report-grid.helper';
 import { UserService } from '../../../../Services/user.service';
 import { AppService } from '../../../../app.service';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { GridOptions } from 'ag-grid/main';
-//import {ReportPopupModalComponent} from '../../../../modal/report-popup-modal/report-popup-modal.component';
-import {ReportRedirectModalComponent} from '../../../../modal/report-redirect-modal/report-redirect-modal.component';
-import { NgxSmartModalService } from 'ngx-smart-modal';
-import  jspdf from 'jspdf';  
+import { SettlementApproveCellComponent } from '../settlement-approve-cell.component';
+import jspdf from 'jspdf';
 import html2canvas from 'html2canvas';
 
 @Component({
-  
   selector: 'app-settlement-report',
   templateUrl: './settlement-report.component.html',
   styles: []
@@ -20,33 +17,22 @@ import html2canvas from 'html2canvas';
 export class SettlementReportComponent implements OnInit {
   @ViewChild('tenant_id') focus1: ElementRef;
   @ViewChild('branch_id') focus2: ElementRef;
+  @ViewChild('approveModal') approveModalTpl: TemplateRef<any>;
 
   SettlementReport: FormGroup;
-  ChequeGroup: FormGroup;
+  ApproveForm: FormGroup;
   dataList: any;
-  showloader: boolean;
   TableHidden: boolean = true;
   SubmitbuttonName: string;
-  SubmitChequeButtonName: string;
   companyList: any[];
   branchList: any[];
-  groupList: any[];
-  //reportData: any[];
   isSuperAdmin: boolean;
   submitted: boolean;
-  chequeSubmitted: boolean;
+  approveSubmitted: boolean;
   disableBtn: boolean;
-  disableChequeBtn: boolean;
-  customerList: any[];
+  disableApproveBtn: boolean;
   employeeList: any[];
-  paymentList: any[];
-  bankList: any[];
-  ScrollCls: string = "";
-  Scrollwidth: number;
-  ScrollOpacity: number=0;
-  isChequeReturnClk: boolean = false;
-  isChequeClearClk: boolean = false;
-  
+
   paginationPageSize;
   paginationNumberFormatter;
   gridApi;
@@ -58,29 +44,29 @@ export class SettlementReportComponent implements OnInit {
   showReportGrid = true;
   hideDataList: boolean = true;
   nodataFoundMessage: boolean = true;
-  ChequeGroupId: any;
-  decimalPattern = "^[0-9]+(.[0-9]{0,4})?$";
   totalAmt: any;
   tenantid: any;
   branchid: any;
-  selectionfield: boolean=false;
+  selectionfield: boolean = false;
   pdfrectab: boolean = true;
-  viewadvancedreceiptInfo: ViewData[]=[];
+  viewadvancedreceiptInfo: ViewData[] = [];
+  activeApproveModal: NgbModalRef;
+  selectedSettlement: any;
 
-  constructor(public ngxSmartModalService: NgxSmartModalService,private modalService: NgbModal,private ren: Renderer2, private formBuilder: FormBuilder, private appService: AppService, private userservice: UserService) {
-    this.SubmitbuttonName = "Filter";
-    this.SubmitChequeButtonName = "Submit";
+  constructor(
+    private modalService: NgbModal,
+    private formBuilder: FormBuilder,
+    private appService: AppService,
+    private userservice: UserService
+  ) {
+    this.SubmitbuttonName = 'Filter';
     this.gridOptions = <GridOptions>{
       context: {
         userservice: this.userservice,
         appService: this.appService,
-        parentComponent: this,
-        ngxSmartModalService: this.ngxSmartModalService,
-        ChequeGroup: this.ChequeGroup,
-        //AddAdvancedReceiptReport: this.AddAdvancedReceiptReport
+        parentComponent: this
       },
-      components: {
-      },
+      components: {}
     };
   }
 
@@ -88,298 +74,288 @@ export class SettlementReportComponent implements OnInit {
     return this.SettlementReport.controls;
   }
 
-  get cf() {
-    return this.ChequeGroup.controls;
+  get af() {
+    return this.ApproveForm.controls;
   }
-  
+
   companyChg(event) {
-    let tenant_id = event.target.value;
-    this.setBranchList(tenant_id);
+    this.setBranchList(event.target.value);
   }
 
   setBranchList(tenant_id) {
-    let cond = {
-      "conditions[tenant_id]": tenant_id,
-      "log_id" : localStorage.getItem('logged_employee_id')
-    }
-    this.userservice.getData(cond, "get-branches", "POST").subscribe((response: any) => {
+    const cond = {
+      'conditions[tenant_id]': tenant_id,
+      log_id: localStorage.getItem('logged_employee_id')
+    };
+    this.userservice.getData(cond, 'get-branches', 'POST').subscribe((response: any) => {
       try {
-        if (response.status == 'Success') {
-          this.branchList = response.data;
-        } else {
-          this.branchList = [];
-        }
-      } catch (err) { }
-    }, (err: any) => { });
-
-    this.userservice.getData('', "list-payment-types", "POST").subscribe((response: any) => {
-      try {
-        if (response.status == 'Success') {
-          this.paymentList = response.data;
-        } else {
-          this.paymentList = [];
-        }
-      } catch (err) { }
-    }, (err: any) => { });
+        this.branchList = response.status === 'Success' ? response.data : [];
+      } catch (err) {}
+    }, () => {});
   }
 
   branchChg(event) {
-    let cond = {
-      "conditions[tenant_id]" : this.SettlementReport.get('tenant_id').value,
-      "conditions[branch_id]" : event.target.value,
+    this.tenantid = this.SettlementReport.get('tenant_id').value;
+    this.branchid = event.target.value;
+
+    if (this.tenantid !== '' && this.branchid > 0) {
+      const cond = {
+        'conditions[tenant_id]': this.tenantid,
+        'conditions[branch_id]': this.branchid
+      };
+      this.userservice.getData(cond, 'get-employees', 'POST').subscribe((response: any) => {
+        try {
+          this.employeeList = response.status === 'Success' ? response.data : [];
+        } catch (err) {}
+      }, () => {});
+    } else if (this.tenantid !== '' && +this.branchid === 0) {
+      this.userservice.getData({ tenant_id: this.tenantid }, 'list-employees', 'POST').subscribe((response: any) => {
+        try {
+          this.employeeList = response.status === 'Success' ? response.data : [];
+        } catch (err) {}
+      }, () => {});
+    } else {
+      this.employeeList = [];
     }
-      this.tenantid=this.SettlementReport.get('tenant_id').value,
-      this.branchid=event.target.value
-    
-      if (this.tenantid!='' && this.branchid > 0)
-      {
-        
-        this.userservice.getData(cond, "get-employees", "POST").subscribe((response: any) => {
-          try { 
-            if (response.status == 'Success') {
-              this.employeeList = response.data;
-            } else {
-              this.employeeList = [];
-            }
-          }  catch (err) { }
-        }, (err: any) => { });
-      }
-      else if(this.tenantid!=''&& this.branchid==0) 
-      {
-        let cond1 = {
-          'tenant_id' : this.SettlementReport.get('tenant_id').value,
-        }
-        
-        this.userservice.getData(cond1, "list-employees", "POST").subscribe((response: any) => {
-          try { 
-            if (response.status == 'Success') {
-              this.employeeList = response.data;
-            } else {
-              this.employeeList = [];
-            }
-          }  catch (err) { }
-        }, (err: any) => { });
-      }
-      else{
-
-      }
   }
-
-  
 
   setData(data) {
     this.dataList = data;
     $(function () {
       $('#dtable').DataTable();
-    });  
+    });
   }
 
   resetReport() {
     this.submitted = false;
-    this.hideReport=true;
-    this.nodataFoundMessage=true;
-    let emptyData = [];
-    this.setData(emptyData);
-    //this.AddAdvancedReceiptReport.get('tenant_id').setValue('');
-    let tenant_id = localStorage.getItem('tenant_id');
-    if(!tenant_id) {
+    this.hideReport = true;
+    this.nodataFoundMessage = true;
+    this.setData([]);
+    const tenant_id = localStorage.getItem('tenant_id');
+    if (!tenant_id) {
       this.SettlementReport.get('tenant_id').setValue('');
       this.branchList = [];
     }
     this.SettlementReport.get('branch_id').setValue('');
     this.SettlementReport.get('employee_id').setValue('');
+    this.SettlementReport.get('approval_status').setValue('');
     this.SettlementReport.get('start_date').setValue(null);
     this.SettlementReport.get('end_date').setValue(null);
     this.employeeList = [];
   }
 
-  private getDismissReason(reason: any): string {
-    if (reason === ModalDismissReasons.ESC) {
-      return 'by pressing ESC';
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-      return 'by clicking on a backdrop';
-    } else {
-      return `with: ${reason}`;
+  openApproveModal(record) {
+    this.selectedSettlement = record && record.data ? record.data : null;
+    if (!this.selectedSettlement || Number(this.selectedSettlement.is_approved) === 1) {
+      return;
+    }
+    this.approveSubmitted = false;
+    this.disableApproveBtn = false;
+    this.ApproveForm.reset({
+      id: this.selectedSettlement.id,
+      approval_remarks: ''
+    });
+    this.activeApproveModal = this.modalService.open(this.approveModalTpl, { centered: true });
+  }
+
+  closeApproveModal() {
+    if (this.activeApproveModal) {
+      this.activeApproveModal.close();
+      this.activeApproveModal = null;
     }
   }
 
+  onApproveSubmit() {
+    this.approveSubmitted = true;
+    if (this.ApproveForm.invalid) {
+      return;
+    }
+    this.disableApproveBtn = true;
+    const payload: any = Object.assign({}, this.ApproveForm.value);
+    payload.log_id = localStorage.getItem('logged_employee_id');
+    payload.approved_by = localStorage.getItem('logged_employee_id');
+
+    this.userservice.getData(payload, 'approve-cash-settlement', 'POST').subscribe((response: any) => {
+      this.disableApproveBtn = false;
+      try {
+        if (response.status === 'Success') {
+          this.appService.showAlert('Settlement Report', response.msg || 'Approved successfully', 'success');
+          this.closeApproveModal();
+          this.onSubmit();
+        } else {
+          this.appService.showAlert('Settlement Report', response.msg || 'Approval failed', 'error');
+        }
+      } catch (err) {
+        this.appService.showAlert('Settlement Report', 'Sorry!! Something went wrong!', 'error');
+      }
+    }, () => {
+      this.disableApproveBtn = false;
+      this.appService.showAlert('Settlement Report', 'Sorry!! Something went wrong!', 'error');
+    });
+  }
+
   onSubmit() {
-    this.SubmitbuttonName = "Loading...";
+    this.SubmitbuttonName = 'Loading...';
     this.submitted = true;
     const result = Object.assign({}, this.SettlementReport.value);
     if (this.SettlementReport.invalid) {
-      this.SubmitbuttonName = "Filter";
+      this.SubmitbuttonName = 'Filter';
       this.disableBtn = false;
       if (this.f.tenant_id.errors) {
         this.focus1.nativeElement.focus();
-      }
-      else if (this.f.branch_id.errors) {
+      } else if (this.f.branch_id.errors) {
         this.focus2.nativeElement.focus();
       }
       return;
     }
-    this.userservice.getData(result, "cash-settlement-report", "JSON").subscribe((response: any) => {
-      this.SubmitbuttonName = "Filter";
+    this.userservice.getData(result, 'cash-settlement-report', 'JSON').subscribe((response: any) => {
+      this.SubmitbuttonName = 'Filter';
       try {
         if (response.status == 'Success') {
           this.viewadvancedreceiptInfo = response.data[0];
-			    this.columnDefs = [
-            {headerName: 'Sno', field: 'sno',sort: "asc",resizable: true},
-            {headerName: 'Branch Name', field: 'branch_name',resizable: true },
-            {headerName: 'Employee Name', field: 'employee_name' ,resizable: true},
-            {headerName: 'Settlement Date', field: 'settlement_date',resizable: true},
-            {headerName: 'Received Amount', field: 'received_amount',resizable: true},
-            {headerName: 'Remarks', field: 'remarks',resizable: true },
-           
-        ]; 
-        this.defaultColDef = { 
-          sortable: true,
-          width: 150, 
-        };
-        applyReportGridData(this, response.data);
-        this.totalAmt=response.grand_pending_amt;
-        this.dataList = response.data;
-		  if((response.data.length)>0) { 
-        this.hideDataList = false; 
-        this.nodataFoundMessage = true;
-        this.hideReport = false;
-		  }
-		  else {
-			this.hideDataList = true; 
-			this.nodataFoundMessage = false;
-			this.hideReport = true;	  
-		  }
-      this.paginationPageSize = 10;
-      this.paginationNumberFormatter = function(params) {
-        return "[" + params.value.toLocaleString() + "]";
-      };
-    } else {
-      this.appService.showAlert("Settlement Report", response.msg, "error");
-    }
+          this.columnDefs = [
+            { headerName: 'Sno', field: 'sno', sort: 'asc', resizable: true },
+            { headerName: 'Branch Name', field: 'branch_name', resizable: true },
+            { headerName: 'Employee Name', field: 'employee_name', resizable: true },
+            { headerName: 'Settlement Date', field: 'settlement_date', resizable: true },
+            { headerName: 'Received Amount', field: 'received_amount', resizable: true },
+            { headerName: 'Denomination', field: 'denomination', resizable: true, width: 280 },
+            { headerName: 'Collection Employee', field: 'collection_employee_name', resizable: true },
+            { headerName: 'Remarks', field: 'remarks', resizable: true },
+            { headerName: 'Status', field: 'approval_status_name', resizable: true },
+            { headerName: 'Approval Remarks', field: 'approval_remarks', resizable: true },
+            {
+              headerName: 'Action',
+              field: 'action',
+              width: 120,
+              resizable: true,
+              cellRendererFramework: SettlementApproveCellComponent,
+              cellRendererParams: {
+                action: this.openApproveModal.bind(this)
+              }
+            }
+          ];
+          this.defaultColDef = {
+            sortable: true,
+            width: 150
+          };
+          applyReportGridData(this, response.data);
+          this.totalAmt = response.grand_pending_amt;
+          this.dataList = response.data;
+          if ((response.data.length) > 0) {
+            this.hideDataList = false;
+            this.nodataFoundMessage = true;
+            this.hideReport = false;
+          } else {
+            this.hideDataList = true;
+            this.nodataFoundMessage = false;
+            this.hideReport = true;
+          }
+          this.paginationPageSize = 10;
+          this.paginationNumberFormatter = function (params) {
+            return '[' + params.value.toLocaleString() + ']';
+          };
+        } else {
+          this.appService.showAlert('Settlement Report', response.msg, 'error');
+        }
       } catch (err) {
-        this.appService.showAlert("Settlement Report", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert('Settlement Report', 'Sorry!! Something went wrong!', 'error');
       }
-    }, (err: any) => { 
+    }, (err: any) => {
       this.disableBtn = false;
-      this.SubmitbuttonName = "Filter";
-      if (err.status == 401) {
-        this.appService.showAlert("Settlement Report", "Sorry!! Something went wrong!", "error");
-      }
-      else {
-        this.appService.showAlert("Settlement Report", "Sorry!! Something went wrong!", "error");
-      }
+      this.SubmitbuttonName = 'Filter';
+      this.appService.showAlert('Settlement Report', 'Sorry!! Something went wrong!', 'error');
     });
   }
 
-  
   onFilterTextBoxChanged() {
     this.gridApi.setQuickFilter((<HTMLInputElement>document.getElementById('filter-text-box')).value);
   }
 
   onBtnExport(): void {
-    const params = {
+    this.gridApi.exportDataAsCsv({
       columnGroups: true,
       allColumns: true,
       fileName: 'settlement_report',
       columnSeparator: ','
-    };
-    this.gridApi.exportDataAsCsv(params);
+    });
   }
 
-  onBtnpdf():void
-  {
-    this.pdfrectab=false;
-    this.hideReport=true;
-    this.nodataFoundMessage=true;
-    this.selectionfield=true;
-  }
-  oncancel():void
-  {
-    this.pdfrectab=true;
-    this.hideReport=false;
-    this.selectionfield=false;
+  onBtnpdf(): void {
+    this.pdfrectab = false;
+    this.hideReport = true;
+    this.nodataFoundMessage = true;
+    this.selectionfield = true;
   }
 
-  onpdf():void
-  { 
-    var data = document.getElementById('contentToConvert');  
-    html2canvas(data).then(canvas => {  
-      // Few necessary setting options  
-      var imgWidth = 210;   
-      var pageHeight = 295;    
-      var imgHeight = canvas.height * imgWidth / canvas.width;  
-      var heightLeft = imgHeight;  
-  
-      const contentDataURL = canvas.toDataURL('image/jpeg')  
-      let pdf = new jspdf('p', 'mm', 'a4'); // A4 size page of PDF  
-      var position = 0;  
-      pdf.addImage(contentDataURL, 'JPEG', 0, position, imgWidth, imgHeight) 
-      heightLeft -= pageHeight; 
+  oncancel(): void {
+    this.pdfrectab = true;
+    this.hideReport = false;
+    this.selectionfield = false;
+  }
+
+  onpdf(): void {
+    const data = document.getElementById('contentToConvert');
+    html2canvas(data).then(canvas => {
+      const imgWidth = 210;
+      const pageHeight = 295;
+      let imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      const contentDataURL = canvas.toDataURL('image/jpeg');
+      const pdf = new jspdf('p', 'mm', 'a4');
+      let position = 0;
+      pdf.addImage(contentDataURL, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(contentDataURL, 'JPEG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
-      } 
-      pdf.save('Settlementreport.pdf'); // Generated PDF   
+      }
+      pdf.save('Settlementreport.pdf');
     });
   }
-  
+
   onPageSizeChanged() {
-    var value = (<HTMLInputElement>document.getElementById("page-size")).value;
-    this.gridApi.paginationSetPageSize(Number(value));
+    this.gridApi.paginationSetPageSize(Number((<HTMLInputElement>document.getElementById('page-size')).value));
   }
 
   onGridReady(params) {
     this.gridApi = params.api;
   }
 
-  chequeClearanceClk(event) {
-    console.log("event",event)
-  }
-
-  
- 
   ngOnInit() {
     this.SettlementReport = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       employee_id: [''],
+      approval_status: [''],
       start_date: [null],
       end_date: [null]
     });
 
-    this.ChequeGroup = this.formBuilder.group({
-      id: [''],
-      remarks: ['', Validators.required],
-      cheque_clear_return_date: [null, Validators.required],
-      cheque_return_amount: [0,[Validators.required, Validators.pattern(this.decimalPattern)]],
-      cheque_debit_to: [0]
+    this.ApproveForm = this.formBuilder.group({
+      id: ['', Validators.required],
+      approval_remarks: ['', Validators.required]
     });
-   
-    let tenant_id = localStorage.getItem('tenant_id');
+
+    const tenant_id = localStorage.getItem('tenant_id');
     if (tenant_id) {
       this.SettlementReport.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
       this.setBranchList(tenant_id);
-    }
-    else {
+    } else {
       this.isSuperAdmin = true;
-      this.userservice.getData('', "list-tenants", "POST").subscribe((response: any) => {
+      this.userservice.getData('', 'list-tenants', 'POST').subscribe((response: any) => {
         try {
-          if (response.status == 'Success') {
-            this.companyList = response.data;
-          } else {
-            this.companyList = [];
-          }
-        } catch (err) { }
-      }, (err: any) => { });
+          this.companyList = response.status === 'Success' ? response.data : [];
+        } catch (err) {}
+      }, () => {});
     }
   }
 }
-export interface ViewData 
-{
-    sno:string;
-    branch_name: string;
-}
 
+export interface ViewData {
+  sno: string;
+  branch_name: string;
+}

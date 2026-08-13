@@ -1,0 +1,83 @@
+<div class="rd-kpi-grid">
+  <div class="rd-kpi accent-purple">
+    <div class="rd-kpi-label">Total Leads</div>
+    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-note">Leads API placeholder</div>
+  </div>
+  <div class="rd-kpi accent-gold">
+    <div class="rd-kpi-label">Overall Target</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi">
+    <div class="rd-kpi-label">Total Achieved</div>
+    <div class="rd-kpi-value">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">Using month collections as proxy</div>
+  </div>
+  <div class="rd-kpi accent-teal" (click)="openDetail.emit('collections')">
+    <div class="rd-kpi-label">Collections</div>
+    <div class="rd-kpi-value">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">Today</div>
+  </div>
+  <div class="rd-kpi accent-orange">
+    <div class="rd-kpi-label">Conversion Rate</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-5">
+    <div class="rd-panel">
+      <div class="rd-panel-h">
+        Collection by Mode
+        <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'today' : 'month' }})</small>
+      </div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasBars()" class="rd-placeholder">No data</div>
+        <div *ngFor="let label of barLabels; let i = index" class="mb-2">
+          <div class="d-flex justify-content-between small mb-1"><span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong></div>
+          <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Bid Release Mix</div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasPie()" class="rd-placeholder">No bid data</div>
+        <ng-container *ngIf="hasPie()">
+          <div class="rd-donut-wrap">
+            <div class="rd-donut" [style.background]="pieSafeStyle"></div>
+            <div class="rd-donut-hole"></div>
+          </div>
+          <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between rd-pie-legend mb-1">
+            <span><span class="rd-pie-swatch" [ngClass]="'s' + i"></span>{{ lb }}</span>
+            <strong>₹ {{ n(pieData[i]) | number:'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-3">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Quick Actions</div>
+      <div class="rd-panel-b rd-quick">
+        <a routerLink="/admin-panel/view-customer">Add New Lead / Customer</a>
+        <a routerLink="/admin-panel/view-feed-back">Add Follow-up</a>
+        <a routerLink="/admin-panel/overall-business-report">Download Report</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rd-panel">
+  <div class="rd-panel-h">Branch Performance Overview</div>
+  <div class="rd-panel-b"><div class="rd-placeholder">Multi-branch leads / target table — API pending</div></div>
+</div>
+
+<div class="rd-kpi-grid">
+  <div class="rd-kpi"><div class="rd-kpi-label">Total Customers</div><div class="rd-kpi-value">{{ n(s().customers) | number:'1.0-0' }}</div></div>
+  <div class="rd-kpi accent-teal"><div class="rd-kpi-label">Running Groups</div><div class="rd-kpi-value">{{ n(s().running_groups) }}</div></div>
+  <div class="rd-kpi accent-orange"><div class="rd-kpi-label">Follow-ups Due</div><div class="rd-kpi-value">{{ n(s().today_followup_count) }}</div></div>
+  <div class="rd-kpi accent-purple"><div class="rd-kpi-label">Vacant Groups</div><div class="rd-kpi-value">{{ n(s().vacant_groups) }}</div></div>
+</div>

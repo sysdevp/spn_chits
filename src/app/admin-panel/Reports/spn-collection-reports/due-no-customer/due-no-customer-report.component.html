@@ -1,0 +1,173 @@
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row" [hidden]="selectionfield">
+      <div class="col-6 my-auto font-weight-bold">Due No Customer List</div>
+      <div class="col-6 text-right">&nbsp;</div>
+    </div>
+    <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
+      <button (click)="oncancel()" class="mr-1"><i class="fas"></i>Cancel</button>
+    </div>
+    <div class="col-12 r_rep pr-6" [hidden]="pdfrectab">
+      <button (click)="onpdf()" class="mr-1"><i class="fas"></i>Download</button>
+    </div>
+  </div>
+  <div class="card-body">
+    <form class="bs-example form-horizontal" [hidden]="selectionfield" [formGroup]="filterForm" (ngSubmit)="onSubmit()">
+      <div class="form-group row" [hidden]="!isSuperAdmin">
+        <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
+        <div class="col-sm-10 col-md-7 col-9">
+          <select #tenant_id class="form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
+          </select>
+          <div *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
+            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Select Branch <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <select #branch_id class="form-control w-100 border-dark" formControlName="branch_id">
+                <option value="">Select Branch</option>
+                <option value="0">All Branch</option>
+                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
+              </select>
+              <div *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
+                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group row">
+            <label class="col-sm-4">Due No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #due_no type="number" min="1" class="form-control w-100 border-dark" formControlName="due_no" placeholder="e.g. 4"/>
+              <div *ngIf="submitted && f.due_no.errors" class="invalid-feedback">
+                <label *ngIf="f.due_no.errors.required">Due No is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-3">
+          <div class="form-group row">
+            <label class="col-sm-8">Unpaid only</label>
+            <div class="col-sm-4">
+              <input type="checkbox" formControlName="unpaid_only" class="mt-2"/>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
+          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <button type="button" class="btn btn-danger mr-1" (click)="resetReport()">Reset</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="col-12 text-center no_data" [hidden]="nodataFoundMessage">
+      <table class="table table-responsive">
+        <tbody>
+          <tr>
+            <td colspan="12" style="color:#d9534f;border:transparent;font-size:20px;">No Records Found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="row recp_rep" [hidden]="hideReport">
+      <div class="test-header col-5">
+        Show:
+        <select (change)="onPageSizeChanged()" id="page-size">
+          <option value="10" selected="">10</option>
+          <option value="100">100</option>
+          <option value="500">500</option>
+          <option value="1000">1000</option>
+        </select>
+        entries
+      </div>
+      <div class="col-4 r_rep pr-5" [hidden]="hideDataList">
+        <button (click)="onBtnExport()">Excel</button>
+        <button (click)="onBtnpdf()" class="mr-2">Pdf</button>
+      </div>
+      <div class="col-3 r_rep">
+        <span>Search</span>
+        <input type="text" id="filter-text-box" (input)="onFilterTextBoxChanged()"/>
+      </div>
+      <ag-grid-angular *ngIf="showReportGrid"
+        style="width: 100%; height: 450px; margin-top: 15px;"
+        class="ag-theme-balham"
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [pagination]="true"
+        [paginationPageSize]="paginationPageSize"
+        [paginationNumberFormatter]="paginationNumberFormatter"
+        [rowHeight]="50"
+        [headerHeight]="50"
+        [suppressExcelExport]="true"
+        (gridReady)="onGridReady($event)">
+      </ag-grid-angular>
+
+      <h4 class="text-center col-12">Grand Total</h4>
+      <table class="table text-center mx-3 table-bordered">
+        <tr>
+          <th class="bg-secondary text-white">Due Amount</th>
+          <th class="bg-secondary text-white">Paid on Due</th>
+          <th class="bg-secondary text-white">This Due Pending</th>
+          <th class="bg-secondary text-white">Overall Pending</th>
+        </tr>
+        <tr>
+          <td>{{grandDue}}</td>
+          <td>{{grandPaidDue}}</td>
+          <td>{{grandPendingDue}}</td>
+          <td>{{grandOverallPending}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div [hidden]="pdfrectab" id="mygrid">
+      <h4 style="text-align: center;">Due No Customer List</h4><br>
+      <table class="table text-center mx-3 table-bordered">
+        <tr>
+          <th class="bg-secondary text-white">Sno</th>
+          <th class="bg-secondary text-white">Customer</th>
+          <th class="bg-secondary text-white">SPN No</th>
+          <th class="bg-secondary text-white">AR No</th>
+          <th class="bg-secondary text-white">Slab / AR No</th>
+          <th class="bg-secondary text-white">Agent</th>
+          <th class="bg-secondary text-white">Area</th>
+          <th class="bg-secondary text-white">Running Month</th>
+          <th class="bg-secondary text-white">Paid</th>
+          <th class="bg-secondary text-white">This Due Pending</th>
+          <th class="bg-secondary text-white">Overall Pending</th>
+          <th class="bg-secondary text-white">Payment Received</th>
+          <th class="bg-secondary text-white">Paid on Due</th>
+          <th class="bg-secondary text-white">Due Amount</th>
+          <th class="bg-secondary text-white">Due Date</th>
+        </tr>
+        <tr *ngFor="let row of dataList;">
+          <td>{{row.sno}}</td>
+          <td>{{row.customer_name}}</td>
+          <td>{{row.customer_code}}</td>
+          <td>{{row.ar_no}}</td>
+          <td>{{ row | slabAr }}</td>
+          <td>{{row.collection_agent}}</td>
+          <td>{{row.collection_area}}</td>
+          <td>{{row.running_month}}</td>
+          <td>{{row.paid}}</td>
+          <td>{{row.current_due_pending}}</td>
+          <td>{{row.overall_pending}}</td>
+          <td>{{row.payment_received}}</td>
+          <td>{{row.paid_on_due}}</td>
+          <td>{{row.due_amount}}</td>
+          <td>{{row.due_date}}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</div>

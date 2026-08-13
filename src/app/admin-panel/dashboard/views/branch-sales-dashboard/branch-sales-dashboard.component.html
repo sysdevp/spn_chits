@@ -1,0 +1,89 @@
+<div class="rd-kpi-grid">
+  <div class="rd-kpi accent-purple">
+    <div class="rd-kpi-label">Total Leads</div>
+    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-note">Leads API placeholder</div>
+  </div>
+  <div class="rd-kpi">
+    <div class="rd-kpi-label">New Leads (This Month)</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi accent-teal">
+    <div class="rd-kpi-label">Converted Leads</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi accent-gold">
+    <div class="rd-kpi-label">Conversion Rate</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi accent-orange">
+    <div class="rd-kpi-label">Sales Target (Monthly)</div>
+    <div class="rd-kpi-value">—</div>
+  </div>
+  <div class="rd-kpi">
+    <div class="rd-kpi-label">Target Achieved</div>
+    <div class="rd-kpi-value">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">Collections proxy</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">
+        Collection by Mode
+        <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'today' : 'month' }})</small>
+      </div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasBars()" class="rd-placeholder">No data</div>
+        <div *ngFor="let label of barLabels; let i = index" class="mb-2">
+          <div class="d-flex justify-content-between small mb-1"><span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong></div>
+          <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Bid Release Mix</div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasPie()" class="rd-placeholder">No bid data</div>
+        <ng-container *ngIf="hasPie()">
+          <div class="rd-donut-wrap">
+            <div class="rd-donut" [style.background]="pieSafeStyle"></div>
+            <div class="rd-donut-hole"></div>
+          </div>
+          <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between rd-pie-legend mb-1">
+            <span><span class="rd-pie-swatch" [ngClass]="'s' + i"></span>{{ lb }}</span>
+            <strong>₹ {{ n(pieData[i]) | number:'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Lead Source Distribution</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Walk-in / Referral / Digital — API pending</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Leads Overview</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Recent leads table — API pending</div></div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Today's Activities</div>
+      <div class="rd-panel-b">
+        <div class="d-flex justify-content-between mb-2"><span>Follow-ups</span><strong>{{ n(s().today_followup_count) }}</strong></div>
+        <div class="d-flex justify-content-between mb-2"><span>Today Collections</span><strong>₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</strong></div>
+        <div class="mb-1" *ngFor="let f of followups() | slice:0:4">• {{ f.lead_name || f.customer_name || f.name || 'Task' }}</div>
+      </div>
+    </div>
+  </div>
+</div>

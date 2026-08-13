@@ -313,6 +313,10 @@ import { ViewOtherReceiptChargesComponent } from './SubscriberManagement/otherRe
 import { OtherReceiptChargesReportComponent } from './Reports/other-Receipt-Charges/other-receipt-charges-report/other-receipt-charges-report.component';
 //Commitment Pending Report
 import { CommitmentPendingReportComponent } from './Reports/commitment-pending/commitment-pending-report/commitment-pending-report.component';
+import { SchemeWisePayablePendingReportComponent } from './Reports/spn-collection-reports/scheme-wise-payable-pending/scheme-wise-payable-pending-report.component';
+import { NextMonthCollectionReportComponent } from './Reports/spn-collection-reports/next-month-collection/next-month-collection-report.component';
+import { ThisMonthUnpaidReportComponent } from './Reports/spn-collection-reports/this-month-unpaid/this-month-unpaid-report.component';
+import { DueNoCustomerReportComponent } from './Reports/spn-collection-reports/due-no-customer/due-no-customer-report.component';
 import { CommitmentEligibilityApprovalComponent } from './Reports/commitment-eligibility-approval/commitment-eligibility-approval.component';
 //Customer Ledger
 import { CustomerLedgerComponent } from './TransactionManagement/customer-ledger/customer-ledger.component';
@@ -861,6 +865,10 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
  //Commitment  Report
  { path: 'commitment-payment-report', component: CommitmentPaymentReportComponent,canActivate: [AuthGuardService],data: {menuId: 70, parentMenuId: 42, permType:'add_perm'}}, 
  { path: 'commitment-pending-report', component: CommitmentPendingReportComponent,canActivate: [AuthGuardService],data: {menuId: 71, parentMenuId: 65, permType:'view_perm'}}, 
+ { path: 'scheme-wise-payable-pending-report', component: SchemeWisePayablePendingReportComponent,canActivate: [AuthGuardService],data: {menuId: 164, parentMenuId: 168, permType:'view_perm'}},
+ { path: 'next-month-collection-report', component: NextMonthCollectionReportComponent,canActivate: [AuthGuardService],data: {menuId: 165, parentMenuId: 168, permType:'view_perm'}},
+ { path: 'this-month-unpaid-report', component: ThisMonthUnpaidReportComponent,canActivate: [AuthGuardService],data: {menuId: 166, parentMenuId: 168, permType:'view_perm'}},
+ { path: 'due-no-customer-report', component: DueNoCustomerReportComponent,canActivate: [AuthGuardService],data: {menuId: 167, parentMenuId: 168, permType:'view_perm'}},
  { path: 'commitment-eligibility-approval', component: CommitmentEligibilityApprovalComponent,canActivate: [AuthGuardService],data: { menuId: 152, parentMenuId: 28, permType:'add_perm' }},
   //Commission Payment Report
   { path: 'commission-payment-report', component: CommissionPaymentReportComponent,canActivate: [AuthGuardService],data: {menuId: 79, parentMenuId: 42, permType:'add_perm'}},

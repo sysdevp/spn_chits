@@ -51,16 +51,25 @@ export class MenuPermissionService {
     }
     if (parentMenuId === 0) {
       const mod = this.permissionList.find((item: any) => Number(item.menu_id) === Number(menuId));
-      if (!mod) {
-        return null;
+      if (mod) {
+        if (this.isPermEnabled(mod, 'view_perm')) {
+          return mod;
+        }
+        if (Array.isArray(mod.Submenus)) {
+          const child = mod.Submenus.find((s: any) => this.isPermEnabled(s, 'view_perm'));
+          if (child) {
+            return child;
+          }
+        }
       }
-      if (this.isPermEnabled(mod, 'view_perm')) {
-        return mod;
-      }
-      if (Array.isArray(mod.Submenus)) {
-        const child = mod.Submenus.find((s: any) => this.isPermEnabled(s, 'view_perm'));
-        if (child) {
-          return child;
+      // Also resolve leaf stored as a submenu (e.g. Security Permissions menu_id 53).
+      for (const module of this.permissionList) {
+        if (!Array.isArray(module.Submenus)) {
+          continue;
+        }
+        const hit = module.Submenus.find((item: any) => Number(item.menu_id) === Number(menuId));
+        if (hit && this.isPermEnabled(hit, 'view_perm')) {
+          return hit;
         }
       }
       return null;

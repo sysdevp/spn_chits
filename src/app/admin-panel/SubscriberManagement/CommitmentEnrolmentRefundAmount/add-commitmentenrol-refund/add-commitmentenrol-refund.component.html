@@ -117,7 +117,7 @@
                   *ngFor="let data of enrollementList"
                   value="{{ data.id }}"
                 >
-                  {{ data.slab_info.slab_name }}
+                  {{ data | slabAr }}
                 </option>
               </select>
             </div>

@@ -73,7 +73,7 @@
             <div class="col-sm-8">
               <select #slab_type formControlName="slab_type" (change)="slabTypeChg($event)">
                 <option value="">Select Slab Type</option>
-                <option *ngFor="let data of slabTypeList" value="{{data.id}}">{{data.slab_info.slab_name}}</option>
+                <option *ngFor="let data of slabTypeList" value="{{data.id}}">{{ data | slabAr }}</option>
               </select>
               <div class="col-md-12" *ngIf="submitted && f.slab_type.errors" class="invalid-feedback">
                 <label *ngIf="f.slab_type.errors.required">Slab Type is required</label>

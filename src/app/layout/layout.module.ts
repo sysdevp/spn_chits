@@ -30,6 +30,7 @@ import { LayoutFooterComponent } from './layout-footer/layout-footer.component';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SidenavModule } from '../../vendor/libs/sidenav/sidenav.module';
+import { SharedWidgetsModule } from '../shared/shared-widgets.module';
 
 
 // *******************************************************************************
@@ -46,7 +47,8 @@ import { LayoutService } from './layout.service';
     CommonModule,
     RouterModule,
     NgbModule,
-    SidenavModule
+    SidenavModule,
+    SharedWidgetsModule
   ],
   declarations: [
     Layout1Component,

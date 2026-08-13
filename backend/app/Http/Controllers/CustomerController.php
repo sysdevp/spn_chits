@@ -1338,7 +1338,7 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
                 
                 $enroll->customer_address = $door_no.', '.$buildling_name.', '.$address_line_1.', '.$address_line_2.', '.$landmark.', '.$city_name.'-'.$pincode;
                 $enrollment_id = isset($enroll->id) ? ($enroll->id) : 0; 
-                $enroll->slab_info = ($enroll->slab_due_det) ? ($enroll->slab_due_det->slab_name) : []; 
+                $enroll->slab_info = ($enroll->slab_due_det) ? \App\Models\ChitDetail::formatSlabWithArNo($enroll->slab_due_det->slab_name, $enroll->ar_no ?? null) : ''; 
                 $enroll->collection_area_name = ($enroll->collection_area_det) ? ($enroll->collection_area_det->collection_area) : [];
                 $enroll->collection_agent_name = ($enroll->collection_agent_det) ? ($enroll->collection_agent_det->first_name.' '.$enroll->collection_agent_det->last_name) : []; 
                 $enroll->refered_by_name = ($enroll->employee_agent_intro_det) ? ($enroll->employee_agent_intro_det->first_name.' '.$enroll->employee_agent_intro_det->last_name) : []; 
@@ -2627,6 +2627,152 @@ $grandchitstotal=0;
             $response['statuss'] = $e;
             $response['msg'] = \Lang::get('api.global_error');
             return response()->json($response, 401);
+        }
+    }
+
+    /**
+     * Dashboard / header typeahead: search customers by name, mobile, code, or AR No.
+     */
+    public function search_customers_history(Request $request)
+    {
+        try {
+            $q = trim((string) ($request->q ?? $request->search ?? ''));
+            if (mb_strlen($q) < 2) {
+                return response()->json(['status' => 'Success', 'msg' => '', 'data' => []], 200);
+            }
+
+            $tenantId = 0;
+            if (isset($request->conditions['tenant_id'])) {
+                $tenantId = (int) $request->conditions['tenant_id'];
+            } elseif (!empty($request->tenant_id)) {
+                $tenantId = (int) $request->tenant_id;
+            }
+
+            $branchId = !empty($request->branch_id) ? (int) $request->branch_id : 0;
+
+            $scopeService = app(\App\Services\UserLoginScopeService::class);
+            $allowedBranches = $scopeService->resolveAllowedBranchIdsFromRequest($request);
+            if ($branchId > 0) {
+                if ($allowedBranches !== null && !in_array($branchId, $allowedBranches, true)) {
+                    return response()->json(['status' => 'Success', 'msg' => '', 'data' => []], 200);
+                }
+                $branchIds = [$branchId];
+            } elseif ($allowedBranches !== null) {
+                $branchIds = $allowedBranches;
+                if (empty($branchIds)) {
+                    return response()->json(['status' => 'Success', 'msg' => '', 'data' => []], 200);
+                }
+            } else {
+                $branchIds = null;
+            }
+
+            $like = '%' . str_replace(['%', '_'], ['\\%', '\\_'], $q) . '%';
+
+            $customerQuery = Customer::query()
+                ->where('status', 1)
+                ->where('is_customer', 1)
+                ->where(function ($w) use ($like) {
+                    $w->where('name', 'like', $like)
+                        ->orWhere('last_name', 'like', $like)
+                        ->orWhere('mobile_no', 'like', $like)
+                        ->orWhere('customer_code', 'like', $like)
+                        ->orWhereRaw("CONCAT(COALESCE(name,''),' ',COALESCE(last_name,'')) LIKE ?", [$like]);
+                });
+
+            if ($tenantId > 0) {
+                $customerQuery->where('tenant_id', $tenantId);
+            }
+            if ($branchIds !== null) {
+                $customerQuery->whereIn('branch_id', $branchIds);
+            }
+
+            $customers = $customerQuery->orderBy('name')->limit(25)->get();
+
+            $arQuery = ChitDetail::query()
+                ->whereNotNull('ar_no')
+                ->where('ar_no', '!=', '')
+                ->where('ar_no', 'like', $like)
+                ->where('status', 1);
+            if ($tenantId > 0) {
+                $arQuery->where('tenant_id', $tenantId);
+            }
+            if ($branchIds !== null) {
+                $arQuery->whereIn('branch_id', $branchIds);
+            }
+            $arRows = $arQuery->orderByDesc('id')->limit(25)->get(['id', 'customer_id', 'branch_id', 'ar_no', 'slab_id']);
+
+            $byId = [];
+            foreach ($customers as $c) {
+                $byId[(int) $c->id] = [
+                    'id' => (int) $c->id,
+                    'branch_id' => (int) $c->branch_id,
+                    'customer_code' => $c->customer_code,
+                    'name' => trim(($c->name ?? '') . ' ' . ($c->last_name ?? '')),
+                    'mobile_no' => $c->mobile_no,
+                    'matched_ar_no' => null,
+                ];
+            }
+            foreach ($arRows as $ar) {
+                $cid = (int) $ar->customer_id;
+                if ($cid <= 0) {
+                    continue;
+                }
+                if (!isset($byId[$cid])) {
+                    $c = Customer::find($cid);
+                    if (!$c || (int) $c->status !== 1) {
+                        continue;
+                    }
+                    $byId[$cid] = [
+                        'id' => $cid,
+                        'branch_id' => (int) ($c->branch_id ?: $ar->branch_id),
+                        'customer_code' => $c->customer_code,
+                        'name' => trim(($c->name ?? '') . ' ' . ($c->last_name ?? '')),
+                        'mobile_no' => $c->mobile_no,
+                        'matched_ar_no' => $ar->ar_no,
+                    ];
+                } elseif (empty($byId[$cid]['matched_ar_no'])) {
+                    $byId[$cid]['matched_ar_no'] = $ar->ar_no;
+                }
+            }
+
+            $data = [];
+            foreach ($byId as $row) {
+                $branchName = '';
+                if (!empty($row['branch_id'])) {
+                    $br = Branch::find($row['branch_id']);
+                    $branchName = $br ? ($br->branch_name ?? '') : '';
+                }
+                $display = trim(($row['name'] ?? '') . ' / ' . ($row['customer_code'] ?? ''));
+                if (!empty($row['matched_ar_no'])) {
+                    $display .= ' · AR ' . $row['matched_ar_no'];
+                }
+                $data[] = [
+                    'id' => $row['id'],
+                    'branch_id' => $row['branch_id'],
+                    'branch_name' => $branchName,
+                    'customer_code' => $row['customer_code'],
+                    'name' => $row['name'],
+                    'mobile_no' => $row['mobile_no'],
+                    'matched_ar_no' => $row['matched_ar_no'],
+                    'display_name' => $display,
+                    'full_name' => $display,
+                ];
+                if (count($data) >= 20) {
+                    break;
+                }
+            }
+
+            return response()->json([
+                'status' => 'Success',
+                'msg' => '',
+                'data' => $data,
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => \Lang::get('api.global_error'),
+                'error' => $e->getMessage(),
+            ], 200);
         }
     }
 	

@@ -1,12 +1,12 @@
-// Login — SPN logo palette (green, gold, magenta)
-$spn-green: #16a34a;
-$spn-green-light: #22c55e;
-$spn-green-dark: #15803d;
-$spn-green-darker: #14532d;
-$spn-gold: #eab308;
-$spn-gold-dark: #ca8a04;
-$spn-gold-light: #facc15;
-$spn-magenta: #db2777;
+// Login — SPN logo palette (deep forest green + gold + magenta)
+$spn-green: #025E2D;
+$spn-green-light: #1B7A3A;
+$spn-green-dark: #013618;
+$spn-green-darker: #012610;
+$spn-gold: #FEEB2D;
+$spn-gold-dark: #D4AF37;
+$spn-gold-light: #FFF176;
+$spn-magenta: #C2185B;
 
 .spn-login-page {
   display: flex;
@@ -22,7 +22,7 @@ $spn-magenta: #db2777;
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  background: linear-gradient(160deg, $spn-green-light 0%, $spn-green 35%, $spn-green-dark 70%, $spn-green-darker 100%);
+  background: linear-gradient(160deg, #025E2D 0%, #013618 45%, #012610 100%);
   position: relative;
   overflow: hidden;
 
@@ -34,7 +34,7 @@ $spn-magenta: #db2777;
     width: 380px;
     height: 380px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(250, 204, 21, 0.35) 0%, transparent 68%);
+    background: radial-gradient(circle, rgba(254, 235, 45, 0.28) 0%, transparent 68%);
     pointer-events: none;
   }
 
@@ -46,24 +46,24 @@ $spn-magenta: #db2777;
     width: 320px;
     height: 320px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(219, 39, 119, 0.2) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(194, 24, 91, 0.18) 0%, transparent 70%);
     pointer-events: none;
   }
 }
 
 .spn-login-logo {
-  max-width: 260px;
+  max-width: 280px;
   width: 100%;
   height: auto;
   margin-bottom: 1.5rem;
   position: relative;
   z-index: 1;
-  border-radius: 50%;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 4px rgba(250, 204, 21, 0.35);
+  border-radius: 28px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(254, 235, 45, 0.45);
 }
 
 .spn-login-brand-title {
-  color: $spn-gold-light;
+  color: $spn-gold;
   font-size: 1.25rem;
   font-weight: 800;
   letter-spacing: 0.1em;
@@ -71,7 +71,7 @@ $spn-magenta: #db2777;
   margin: 0 0 0.35rem;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
 }
 
 .spn-login-brand-subtitle {
@@ -98,7 +98,7 @@ $spn-magenta: #db2777;
   align-items: center;
   justify-content: center;
   padding: 2rem 1.5rem;
-  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 50%, #fff 100%);
+  background: linear-gradient(180deg, #f3f7f4 0%, #eef5f0 50%, #fff 100%);
 }
 
 .spn-login-card {
@@ -107,24 +107,24 @@ $spn-magenta: #db2777;
   background: #fff;
   border-radius: 20px;
   padding: 2.5rem 2.25rem;
-  border-top: 4px solid $spn-gold;
-  box-shadow: 0 20px 50px rgba(20, 83, 45, 0.12), 0 4px 16px rgba(20, 83, 45, 0.06);
+  border-top: 4px solid $spn-gold-dark;
+  box-shadow: 0 20px 50px rgba(1, 54, 24, 0.14), 0 4px 16px rgba(1, 54, 24, 0.08);
 }
 
 .spn-login-card-logo {
   display: none;
-  max-width: 180px;
+  max-width: 160px;
   width: 100%;
   height: auto;
   margin: 0 auto 1.25rem;
-  border-radius: 50%;
-  box-shadow: 0 8px 24px rgba(20, 83, 45, 0.2), 0 0 0 3px rgba(234, 179, 8, 0.4);
+  border-radius: 22px;
+  box-shadow: 0 8px 24px rgba(1, 54, 24, 0.25), 0 0 0 3px rgba(254, 235, 45, 0.4);
 }
 
 .spn-login-heading {
   font-size: 1.65rem;
   font-weight: 700;
-  color: $spn-green-darker;
+  color: $spn-green-dark;
   margin: 0 0 0.35rem;
   text-align: center;
 }
@@ -149,7 +149,7 @@ $spn-magenta: #db2777;
 .spn-login-form .form-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: $spn-green-darker;
+  color: $spn-green-dark;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   margin-bottom: 0.4rem;
@@ -157,15 +157,15 @@ $spn-magenta: #db2777;
 
 .spn-login-form .form-control {
   height: 46px;
-  border: 1px solid #bbf7d0;
+  border: 1px solid #a7d4b5;
   border-radius: 10px;
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
   transition: border-color 0.2s, box-shadow 0.2s;
 
   &:focus {
-    border-color: $spn-gold;
-    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.25);
+    border-color: $spn-gold-dark;
+    box-shadow: 0 0 0 3px rgba(254, 235, 45, 0.28);
     outline: none;
   }
 }
@@ -181,7 +181,7 @@ $spn-magenta: #db2777;
     text-decoration: none;
 
     &:hover {
-      color: $spn-green-dark;
+      color: $spn-green;
       text-decoration: underline;
     }
   }
@@ -202,7 +202,7 @@ $spn-magenta: #db2777;
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 24px rgba(202, 138, 4, 0.45);
+    box-shadow: 0 8px 24px rgba(212, 175, 55, 0.45);
     background: linear-gradient(135deg, $spn-gold-light 0%, $spn-gold 100%);
   }
 

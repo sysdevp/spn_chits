@@ -153,10 +153,11 @@ export function flattenSectionsForSave(sections: PermissionFormSection[]): any[]
 
   const ensureModule = (moduleId: number) => {
     if (!moduleMap.has(moduleId)) {
+      const isDashboard = Number(moduleId) === 1;
       moduleMap.set(moduleId, {
         menu_id: moduleId,
         menu_title: MODULE_TITLES[moduleId] || 'Module',
-        page_type: 4,
+        page_type: isDashboard ? 3 : 4,
         has_sub_menu: 1,
         add_perm: 0,
         edit_perm: 0,
@@ -204,6 +205,20 @@ export function flattenSectionsForSave(sections: PermissionFormSection[]): any[]
         mergeSubmenuPerms(existing, sub);
       }
     });
+  });
+
+  // Roll up parent view when any dashboard design (or other submenu) is visible
+  moduleMap.forEach((mod) => {
+    if (!Array.isArray(mod.Submenus) || !mod.Submenus.length) {
+      return;
+    }
+    const anyView = mod.Submenus.some(
+      (s: any) => Number(s.view_perm) === 1 || Number(s.top_perm) === 1
+    );
+    if (anyView) {
+      mod.view_perm = 1;
+      mod.has_sub_menu = 1;
+    }
   });
 
   const ordered: any[] = [];

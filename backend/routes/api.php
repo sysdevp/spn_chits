@@ -327,6 +327,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('delete-family-code','CustomerController@delete_family_code');
 	Route::post('get-customers-full','CustomerController@get_customers_full');
 	Route::post('get-customers-view','CustomerController@get_customers_view');
+	Route::post('search-customers-history','CustomerController@search_customers_history');
 	
 	//Bid Advance
 	Route::post('store-bid-advance','PaymentController@store_bid_advance');
@@ -495,6 +496,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('get-receipts','ReceiptController@get_receipts');
 	Route::post('list-receipts','ReceiptController@list_receipts');
 	Route::post('delete-receipt','ReceiptController@delete_receipt');
+	Route::post('delete-commitment-receipt','ReceiptController@delete_receipt');
 	Route::post('delete-receipt-before','ReceiptController@delete_receipt_before');
 	Route::post('cheque-return','ReceiptController@cheque_return');
 	Route::post('cheque-submit','ReceiptController@cheque_submit');
@@ -568,6 +570,10 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('day-closing-reports','PaymentController@day_closing_reports');
 	Route::post('accounts-report','PaymentController@accounts_report');
 	Route::post('get-commitment-pending-report','PaymentController@get_commitment_pending_report');
+	Route::post('scheme-wise-payable-pending-report','SpnCollectionReportController@scheme_wise_payable_pending');
+	Route::post('next-month-collection-report','SpnCollectionReportController@next_month_collection');
+	Route::post('this-month-unpaid-report','SpnCollectionReportController@this_month_unpaid');
+	Route::post('due-no-customer-report','SpnCollectionReportController@due_no_customer_list');
 	Route::post('get-customer-ledger-payment','PaymentController@customer_ledger_payment_details');
 	Route::post('cheque-return-commitment-payment','PaymentController@cheque_return_commitment_payment');
 	Route::post('cheque-cleared-commitment-payment','PaymentController@cheque_cleared_commitment_payment');
@@ -599,6 +605,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('get-cash-settlements','CashSettlementController@get_cash_settlements');
 	Route::post('list-cash-settlements','CashSettlementController@list_cash_settlements');
 	Route::post('delete-cash-settlement','CashSettlementController@delete_cash_settlement');
+	Route::post('approve-cash-settlement','CashSettlementController@approve_cash_settlement');
 	//Collection Area Mapping
 	Route::post('store-collection-area-mapping','CollectionAreaMappingController@store_collection_area_mapping');
 	Route::post('update-collection-area-mapping','CollectionAreaMappingController@update_collection_area_mapping');

@@ -9686,16 +9686,27 @@ public function mobile_get_collection_area_customers_new(Request $request)
         DB::reconnect('mysql');
 
         /* =========================
+           RESOLVE EMPLOYEE
+        ========================= */
+        $empId = !empty($request->employee_id) ? (int) $request->employee_id : 0;
+        $user = null;
+        if (!empty($request->user_id)) {
+            $userQuery = User::where('id', $request->user_id);
+            if (!empty($request->tenant_id)) {
+                $userQuery->where('tenant_id', $request->tenant_id);
+            }
+            $user = $userQuery->first();
+            if ($empId <= 0 && $user && !empty($user->employee_id)) {
+                $empId = (int) $user->employee_id;
+            }
+        }
+
+        /* =========================
            CASH IN HAND (ADDED)
         ========================= */
-        $user = User::where('tenant_id', $request->tenant_id)
-                    ->where('id', $request->user_id)
-                    ->first();
-
         $cashInHand = "0";
 
-        if ($user) {
-            $empId = $user->employee_id;
+        if ($empId > 0) {
             $startDate = "2022-04-26";
             $today = date('Y-m-d');
 
@@ -9723,11 +9734,46 @@ public function mobile_get_collection_area_customers_new(Request $request)
         }
 
         /* =========================
-           CUSTOMER IDS FROM CHIT DETAILS
+           COLLECTION AREA MAPPED CUSTOMERS ONLY
+           (same mapping as mobile_get_collection_area_customers)
         ========================= */
-        $customerIds = ChitDetail::pluck('customer_id')
-            ->unique()
-            ->values();
+        $areaIds = [];
+        if ($empId > 0) {
+            $mapQuery = CollectionAreaMapping::where('employee_id', $empId);
+            if (!empty($request->tenant_id)) {
+                $mapQuery->where('tenant_id', $request->tenant_id);
+            }
+            $collectionAreaMappings = $mapQuery->get();
+            foreach ($collectionAreaMappings as $cm) {
+                $rawArea = $cm->collection_area_id;
+                $parsed = @unserialize($rawArea);
+                if (is_array($parsed)) {
+                    foreach ($parsed as $area) {
+                        if (isset($area['item_id']) && (int) $area['item_id'] > 0) {
+                            $areaIds[] = (int) $area['item_id'];
+                        }
+                    }
+                } elseif (is_numeric($rawArea) && (int) $rawArea > 0) {
+                    $areaIds[] = (int) $rawArea;
+                }
+            }
+        }
+        $areaIds = array_values(array_unique(array_filter($areaIds)));
+
+        if (empty($areaIds)) {
+            return response()->json([
+                'cash_in_hand' => $cashInHand,
+                'overall_to_be_collected' => "0",
+                'customers' => []
+            ], 200);
+        }
+
+        $chitQuery = ChitDetail::whereIn('collection_area_id', $areaIds)
+            ->where('customer_id', '!=', 1);
+        if (!empty($request->tenant_id)) {
+            $chitQuery->where('tenant_id', $request->tenant_id);
+        }
+        $customerIds = $chitQuery->pluck('customer_id')->unique()->values();
 
         if ($customerIds->isEmpty()) {
             return response()->json([

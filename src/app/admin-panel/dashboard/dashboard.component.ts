@@ -1,10 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Router } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { UserService } from '../../Services/user.service';
 import { AppService } from '../../app.service';
+import { DashboardAccessService } from '../../Services/dashboard-access.service';
+import { DashboardKey, DashboardTypeDef } from '../../config/dashboard-types.config';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +27,7 @@ import { AppService } from '../../app.service';
         font-size: 1.85rem;
         font-weight: 700;
         letter-spacing: -.02em;
+        color: #013618;
       }
       .dashboard-subtitle {
         color: #6b7280;
@@ -45,18 +48,19 @@ import { AppService } from '../../app.service';
         gap: 0.75rem;
         margin-bottom: 0;
       }
-      .dashboard-top-kpis,
-      .dashboard-stat-cards {
-        display: grid;
-        grid-template-columns: repeat(1, minmax(0, 1fr));
-        gap: 1rem;
-        grid-auto-rows: minmax(160px, auto);
+      .dashboard-switcher {
+        min-width: 220px;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #013618;
       }
       .dashboard-top-kpis,
       .dashboard-stat-cards {
         display: grid;
         grid-template-columns: repeat(1, minmax(0, 1fr));
         gap: 1rem;
+        grid-auto-rows: minmax(160px, auto);
       }
       @media (min-width: 576px) {
         .dashboard-top-kpis,
@@ -108,13 +112,13 @@ import { AppService } from '../../app.service';
         color: rgba(255, 255, 255, 0.82);
       }
       .card-tile-followups {
-        background: linear-gradient(135deg, #2146a3 0%, #1d5bb8 100%);
+        background: linear-gradient(135deg, #013618 0%, #025E2D 100%);
       }
       .card-tile-collections {
         background: linear-gradient(135deg, #117a6b 0%, #18a17e 100%);
       }
       .card-tile-payments {
-        background: linear-gradient(135deg, #1557a3 0%, #2e7ad7 100%);
+        background: linear-gradient(135deg, #025E2D 0%, #20C25B 100%);
       }
       .card-tile-pending {
         background: linear-gradient(135deg, #bb6b12 0%, #f5851a 100%);
@@ -123,7 +127,7 @@ import { AppService } from '../../app.service';
         color: #fff;
       }
       .stat-tile-month {
-        background: linear-gradient(135deg, #0d4b7b 0%, #1a7cca 100%);
+        background: linear-gradient(135deg, #013618 0%, #1a7cca 100%);
       }
       .stat-tile-running {
         background: linear-gradient(135deg, #006b5a 0%, #1ca286 100%);
@@ -183,7 +187,7 @@ import { AppService } from '../../app.service';
       .chart-bar {
         height: 100%;
         border-radius: 999px;
-        background: linear-gradient(90deg, #2563eb, #10b981);
+        background: linear-gradient(90deg, #025E2D, #20C25B);
       }
       .chart-value {
         text-align: right;
@@ -200,66 +204,45 @@ import { AppService } from '../../app.service';
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
       }
       .donut-hole {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 86px;
-        height: 86px;
-        border-radius: 50%;
+        inset: 28%;
         background: #fff;
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.04);
+        border-radius: 50%;
       }
       .pie-swatch {
-        width: 12px;
-        height: 12px;
-        border-radius: 3px;
         display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
       }
-      .pie-swatch.swatch-0 { background: #4e79a7; }
-      .pie-swatch.swatch-1 { background: #59a14f; }
-      .mini-metric {
-        font-size: 0.75rem;
-        color: #6b7280;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        margin-bottom: 0.75rem;
-      }
-      .mini-value {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: #111827;
-      }
-      .mini-note {
-        font-size: 0.85rem;
-        color: #64748b;
-        margin-top: 0.5rem;
-      }
-      .table-responsive table {
-        margin-bottom: 0;
-      }
-      .badge {
-        font-size: 0.75rem;
-        padding: 0.45rem 0.7rem;
-      }
+      .swatch-0 { background: #025E2D; }
+      .swatch-1 { background: #D4AF37; }
+      .mini-metric { font-size: 0.8rem; color: #64748b; }
+      .mini-value { font-size: 1.25rem; font-weight: 700; color: #013618; }
       .btn-export {
-        min-width: 130px;
+        background: #025E2D;
+        border-color: #013618;
       }
     `,
   ],
 })
 export class DashboardComponent implements OnInit {
+  @ViewChild('detailModal') detailModal: TemplateRef<any>;
+
   loading = false;
   bundle: any = null;
   filterForm: FormGroup;
   isSuperAdmin = false;
   companyList: any[] = [];
   branchList: any[] = [];
-  /** Hide "All branches" when login is limited to one (or few mapped) branches */
   showAllBranchesOption = true;
+
+  allowedDashboards: DashboardTypeDef[] = [];
+  activeKey: DashboardKey = 'classic';
+  activeTitle = 'Admin Dashboard';
+  activeSubtitle = 'Snapshot view of collections, auctions, and branch performance.';
 
   modalDetailTitle = '';
   modalRows: any[] = [];
@@ -267,10 +250,10 @@ export class DashboardComponent implements OnInit {
 
   barLabels: string[] = [];
   barData: number[] = [];
+  barScope = 'month';
   pieLabels: string[] = [];
   pieData: number[] = [];
   conicGradient = 'conic-gradient(#e0e0e0 0 360deg)';
-  /** Angular strips conic-gradient() from [style.background] unless bypassed */
   pieSafeStyle: SafeStyle;
 
   constructor(
@@ -280,12 +263,14 @@ export class DashboardComponent implements OnInit {
     private modal: NgbModal,
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private dashboardAccess: DashboardAccessService
   ) {
     this.pieSafeStyle = this.sanitizer.bypassSecurityTrustStyle(this.conicGradient);
   }
 
   ngOnInit() {
+    this.resolveDashboardAccess();
     this.filterForm = this.fb.group({
       tenant_id: [''],
       branch_id: [''],
@@ -318,6 +303,32 @@ export class DashboardComponent implements OnInit {
         () => {}
       );
     }
+  }
+
+  resolveDashboardAccess() {
+    this.allowedDashboards = this.dashboardAccess.getAllowedDashboards();
+    this.activeKey = this.dashboardAccess.getActiveDashboardKey();
+    this.applyActiveMeta();
+  }
+
+  applyActiveMeta() {
+    if (this.activeKey === 'classic') {
+      this.activeTitle = 'Admin Dashboard';
+      this.activeSubtitle = 'Snapshot view of collections, auctions, and branch performance.';
+      return;
+    }
+    const def = this.dashboardAccess.getActiveDashboard();
+    if (def) {
+      this.activeTitle = def.title;
+      this.activeSubtitle = def.subtitle;
+    }
+  }
+
+  onDashboardSwitch(event: Event) {
+    const key = (event.target as HTMLSelectElement).value as DashboardKey;
+    this.dashboardAccess.setActiveDashboard(key);
+    this.activeKey = key;
+    this.applyActiveMeta();
   }
 
   companyChg(event: Event) {
@@ -400,9 +411,10 @@ export class DashboardComponent implements OnInit {
           this.cdr.detectChanges();
         } else {
           this.bundle = null;
+          const detail = (res && res.error) ? (' — ' + res.error) : '';
           this.appService.showAlert(
             'Dashboard',
-            res.msg || 'Unable to load dashboard',
+            (res.msg || 'Unable to load dashboard') + detail,
             'error'
           );
         }
@@ -423,6 +435,7 @@ export class DashboardComponent implements OnInit {
     this.barLabels = c1 && c1.labels ? c1.labels : [];
     this.barData =
       c1 && c1.data ? c1.data.map((x: any) => (isNaN(Number(x)) ? 0 : Number(x))) : [];
+    this.barScope = (c1 && c1.scope) ? c1.scope : 'month';
     const c2 = data.charts && data.charts.bidding_release_mix;
     this.pieLabels = c2 && c2.labels ? c2.labels : [];
     this.pieData =
@@ -435,13 +448,12 @@ export class DashboardComponent implements OnInit {
     const b = this.pieData[1] || 0;
     const t = a + b;
     if (t <= 0) {
-      this.conicGradient =
-        'conic-gradient(#cfd8dc 0deg 360deg)';
+      this.conicGradient = 'conic-gradient(#cfd8dc 0deg 360deg)';
       this.pieSafeStyle = this.sanitizer.bypassSecurityTrustStyle(this.conicGradient);
       return;
     }
     const deg = Math.max(0.5, Math.min(359.5, (a / t) * 360));
-    this.conicGradient = `conic-gradient(#4e79a7 0deg ${deg}deg, #59a14f ${deg}deg 360deg)`;
+    this.conicGradient = `conic-gradient(#025E2D 0deg ${deg}deg, #D4AF37 ${deg}deg 360deg)`;
     this.pieSafeStyle = this.sanitizer.bypassSecurityTrustStyle(this.conicGradient);
   }
 
@@ -455,12 +467,10 @@ export class DashboardComponent implements OnInit {
     return Math.min(100, raw);
   }
 
-  barBarClass(i: number): string {
-    const palette = ['bg-primary', 'bg-success', 'bg-info', 'bg-warning', 'bg-danger'];
-    return palette[i % palette.length];
+  barWidth(i: number): string {
+    return this.barPct(i) + '%';
   }
 
-  /** Stat tiles: open the related working screen */
   onStatTileClick(target: 'month' | 'running' | 'vacant' | 'subscribers') {
     switch (target) {
       case 'month':
@@ -533,6 +543,14 @@ export class DashboardComponent implements OnInit {
       return;
     }
     this.modal.open(content, { size: 'lg', backdrop: true });
+  }
+
+  onRoleOpenDetail(kind: string) {
+    if (kind === 'subscribers') {
+      this.onStatTileClick('subscribers');
+      return;
+    }
+    this.openModal(this.detailModal, kind);
   }
 
   rowVal(row: any, key: string): any {

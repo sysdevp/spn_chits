@@ -296,7 +296,7 @@ export class CommitmentPaymentReportComponent implements OnInit {
           applyReportGridData(this, response.data);
           this.totalChitValue=response.grand_chit_value;
           this.totalPaidAmt=response.grand_paid_amt;
-          this.dataList = response.data;
+          this.dataList = this.rowData || response.data;
 		  if((response.data.length)>0) {
 			this.hideDataList = false; 
 			this.nodataFoundMessage = true;

@@ -1,0 +1,190 @@
+<div class="ba-welcome">
+  <h3>Branch Admin Panel</h3>
+  <p>Today’s branch snapshot — collections, follow-ups, auctions, and member actions</p>
+</div>
+
+<!-- Branch ops KPIs -->
+<div class="ba-kpi-row">
+  <div class="ba-kpi" (click)="openDetail.emit('collections')" style="cursor:pointer">
+    <div class="ba-kpi-l">Today's Collection</div>
+    <div class="ba-kpi-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+    <div class="ba-kpi-n">{{ collections().length }} receipts</div>
+  </div>
+  <div class="ba-kpi">
+    <div class="ba-kpi-l">Monthly Collection</div>
+    <div class="ba-kpi-v">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+    <div class="ba-kpi-n">This month</div>
+  </div>
+  <div class="ba-kpi">
+    <div class="ba-kpi-l">Monthly Target</div>
+    <div class="ba-kpi-v">—</div>
+    <div class="ba-kpi-n">Target API pending</div>
+  </div>
+  <div class="ba-kpi" (click)="openDetail.emit('subscribers')" style="cursor:pointer">
+    <div class="ba-kpi-l">Branch Customers</div>
+    <div class="ba-kpi-v">{{ n(s().customers) | number:'1.0-0' }}</div>
+  </div>
+  <div class="ba-kpi">
+    <div class="ba-kpi-l">Pending Collection</div>
+    <div class="ba-kpi-v">₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</div>
+    <div class="ba-kpi-n">Bid pending</div>
+  </div>
+  <div class="ba-kpi">
+    <div class="ba-kpi-l">Overdue Members</div>
+    <div class="ba-kpi-v">{{ outstanding().length }}</div>
+    <div class="ba-kpi-n">₹ {{ overdueTotal() | number:'1.0-0' }}</div>
+  </div>
+</div>
+
+<div class="row">
+  <!-- Collection by mode -->
+  <div class="col-lg-4 mb-3">
+    <div class="rd-panel h-100">
+      <div class="rd-panel-h">
+        Collection by Payment Mode
+        <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'today' : 'month' }})</small>
+      </div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasBars()" class="rd-placeholder">No mode data</div>
+        <div *ngFor="let label of barLabels; let i = index" class="mb-2">
+          <div class="d-flex justify-content-between small mb-1">
+            <span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong>
+          </div>
+          <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bid release -->
+  <div class="col-lg-4 mb-3">
+    <div class="rd-panel h-100">
+      <div class="rd-panel-h">Bid Release Status</div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasPie()" class="rd-placeholder">No bid data</div>
+        <ng-container *ngIf="hasPie()">
+          <div class="rd-donut-wrap">
+            <div class="rd-donut" [style.background]="pieSafeStyle"></div>
+            <div class="rd-donut-hole"></div>
+          </div>
+          <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between rd-pie-legend mb-1">
+            <span><span class="rd-pie-swatch" [ngClass]="'s' + i"></span>{{ lb }}</span>
+            <strong>₹ {{ n(pieData[i]) | number:'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- Today's tasks -->
+  <div class="col-lg-4 mb-3">
+    <div class="rd-panel h-100">
+      <div class="rd-panel-h">Today's Branch Tasks</div>
+      <div class="rd-panel-b">
+        <div class="ba-task" (click)="openDetail.emit('followups')" style="cursor:pointer">
+          <span>Follow-ups due</span>
+          <span class="ba-badge" [class.warn]="n(s().today_followup_count) > 0">{{ n(s().today_followup_count) }}</span>
+        </div>
+        <div class="ba-task">
+          <span>Auctions scheduled</span>
+          <span class="ba-badge">{{ auctions().length }}</span>
+        </div>
+        <div class="ba-task" (click)="openDetail.emit('collections')" style="cursor:pointer">
+          <span>Receipts today</span>
+          <span class="ba-badge">{{ collections().length }}</span>
+        </div>
+        <div class="ba-task" (click)="openDetail.emit('payments')" style="cursor:pointer">
+          <span>Payments today</span>
+          <span class="ba-badge">{{ payments().length }}</span>
+        </div>
+        <div class="ba-task">
+          <span>Overdue members</span>
+          <span class="ba-badge danger">{{ outstanding().length }}</span>
+        </div>
+        <div class="ba-task">
+          <span>Running / vacant groups</span>
+          <span class="ba-badge">{{ n(s().running_groups) }} / {{ n(s().vacant_groups) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7 mb-3">
+    <div class="rd-panel">
+      <div class="rd-panel-h d-flex justify-content-between align-items-center">
+        <span>Recent Branch Collections</span>
+        <a href="javascript:;" class="small font-weight-bold text-success" (click)="openDetail.emit('collections')">View all</a>
+      </div>
+      <div class="rd-panel-b table-responsive">
+        <table class="rd-table" *ngIf="collections().length; else emptyC">
+          <thead><tr><th>Receipt</th><th>Member</th><th>Mode</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of collections() | slice:0:12">
+              <td>{{ r.receipt_no || '—' }}</td>
+              <td>{{ r.customer || r.customer_name || r.name || '—' }}</td>
+              <td>{{ r.mode || '—' }}</td>
+              <td>₹ {{ n(r.amount || r.total_paid || r.received_amount) | number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #emptyC><div class="rd-placeholder">No collections today for this branch</div></ng-template>
+      </div>
+    </div>
+
+    <div class="rd-panel">
+      <div class="rd-panel-h">Today's Auctions</div>
+      <div class="rd-panel-b table-responsive">
+        <table class="rd-table" *ngIf="auctions().length; else noAuc">
+          <thead><tr><th>Group</th><th>Branch</th><th>Chit value</th><th>Time</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let a of auctions() | slice:0:8">
+              <td>{{ a.group_name || '—' }}</td>
+              <td>{{ a.branch || '—' }}</td>
+              <td>₹ {{ n(a.chit_value) | number:'1.0-0' }}</td>
+              <td>{{ a.auction_time || '—' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noAuc><div class="rd-placeholder">No auctions scheduled today</div></ng-template>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-5 mb-3">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Overdue / Outstanding Members</div>
+      <div class="rd-panel-b">
+        <div class="mb-2" *ngFor="let o of outstanding() | slice:0:8">
+          <strong>{{ o.customer_name || o.name || 'Member' }}</strong>
+          <span class="float-right font-weight-bold text-danger">₹ {{ n(o.pending_amount || o.amount || o.outstanding) | number:'1.0-0' }}</span>
+          <div class="small text-muted">{{ o.mobile || '' }}</div>
+        </div>
+        <div *ngIf="!outstanding().length" class="rd-placeholder">No overdue members</div>
+      </div>
+    </div>
+
+    <div class="rd-panel">
+      <div class="rd-panel-h">Follow-ups Due Today</div>
+      <div class="rd-panel-b">
+        <div class="mb-2" *ngFor="let f of followups() | slice:0:6">
+          • {{ f.lead_name || f.customer_name || f.name || 'Follow-up' }}
+          <div class="small text-muted ml-2">{{ f.mobile || f.remarks || '' }}</div>
+        </div>
+        <div *ngIf="!followups().length" class="rd-placeholder">No follow-ups today</div>
+      </div>
+    </div>
+
+    <div class="rd-panel">
+      <div class="rd-panel-h">Quick Actions</div>
+      <div class="rd-panel-b rd-quick">
+        <a routerLink="/admin-panel/view-customer">Add / View Members</a>
+        <a routerLink="/admin-panel/add-commitment-receipt">Record Collection</a>
+        <a routerLink="/admin-panel/view-feed-back">Add Follow-up</a>
+        <a routerLink="/admin-panel/view-group">View Groups</a>
+        <a routerLink="/admin-panel/receipt-report">Receipt Report</a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,45 @@
+<div
+  #rootEl
+  class="chs-wrap"
+  [class.compact]="compact"
+  [class.navbar-chs]="variant === 'navbar'"
+>
+  <label class="chs-label" *ngIf="variant === 'dashboard'">Customer History Search</label>
+  <div class="chs-input-wrap">
+    <i class="fas fa-search search-ico"></i>
+    <input
+      type="text"
+      class="chs-input"
+      [placeholder]="variant === 'navbar' ? 'Search customer…' : 'Name / Mobile / Code / AR No'"
+      [value]="query"
+      (input)="onInput($event.target.value)"
+      (keydown)="onKeydown($event)"
+      (focus)="results.length && (open = true)"
+      autocomplete="off"
+    />
+    <button type="button" class="chs-clear" *ngIf="query" (click)="clear()" title="Clear">&times;</button>
+  </div>
+  <div class="chs-hint" *ngIf="variant === 'dashboard'">Opens full customer ledger / history</div>
+
+  <div class="chs-dropdown" *ngIf="open">
+    <div class="chs-loading" *ngIf="loading">Searching…</div>
+    <div class="chs-empty" *ngIf="!loading && query.trim().length >= 2 && !results.length">
+      No customers found
+    </div>
+    <button
+      type="button"
+      class="chs-item"
+      *ngFor="let row of results; let i = index"
+      [class.active]="i === activeIndex"
+      (click)="selectCustomer(row)"
+      (mouseenter)="activeIndex = i"
+    >
+      <div class="chs-item-title">{{ row.display_name }}</div>
+      <div class="chs-item-meta">
+        {{ row.branch_name || '-' }}
+        <span *ngIf="row.mobile_no"> · {{ row.mobile_no }}</span>
+        <span *ngIf="row.matched_ar_no"> · AR {{ row.matched_ar_no }}</span>
+      </div>
+    </button>
+  </div>
+</div>

@@ -189,7 +189,7 @@ export class CommitmentPendingReportComponent implements OnInit {
           this.totalPendingAmt=response.grand_pending;
           this.totalReleasedAmt=response.grand_released;
           this.totaltobepay=response.grand_to_be_pay;
-          this.dataList = response.data;
+          this.dataList = this.rowData || response.data;
 		  if((response.data.length)>0) {
 			this.hideDataList = false; 
 			this.nodataFoundMessage = true;

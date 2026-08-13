@@ -38,6 +38,7 @@ export const MENU = {
   LOAN: 85,
   SECURITY: 53,
   SPN_ELIGIBILITY: 152,
+  SPN_COLLECTION_REPORT: 168,
 };
 
 export const ROUTE_MENU: { [route: string]: RouteMenuConfig } = {
@@ -159,6 +160,10 @@ export const ROUTE_MENU: { [route: string]: RouteMenuConfig } = {
   'pledge-customer-report': { menuId: 132, parentMenuId: MENU.ENROLLMENT_REPORT, permType: 'view_perm' },
   'historical-performance-report': { menuId: 51, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
   'business-forecast-report': { menuId: 51, parentMenuId: MENU.TXN_REPORT, permType: 'view_perm' },
+  'scheme-wise-payable-pending-report': { menuId: 164, parentMenuId: MENU.SPN_COLLECTION_REPORT, permType: 'view_perm' },
+  'next-month-collection-report': { menuId: 165, parentMenuId: MENU.SPN_COLLECTION_REPORT, permType: 'view_perm' },
+  'this-month-unpaid-report': { menuId: 166, parentMenuId: MENU.SPN_COLLECTION_REPORT, permType: 'view_perm' },
+  'due-no-customer-report': { menuId: 167, parentMenuId: MENU.SPN_COLLECTION_REPORT, permType: 'view_perm' },
 };
 
 export interface HeaderMenuItem {

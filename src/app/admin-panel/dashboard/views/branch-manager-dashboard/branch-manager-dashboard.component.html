@@ -1,0 +1,110 @@
+<div class="rd-kpi-grid">
+  <div class="rd-kpi" (click)="openDetail.emit('collections')">
+    <div class="rd-kpi-label">Today's Collection</div>
+    <div class="rd-kpi-value">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+  </div>
+  <div class="rd-kpi accent-teal">
+    <div class="rd-kpi-label">Monthly Collection</div>
+    <div class="rd-kpi-value">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
+  </div>
+  <div class="rd-kpi accent-gold">
+    <div class="rd-kpi-label">Monthly Target</div>
+    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-note">82% placeholder</div>
+  </div>
+  <div class="rd-kpi accent-purple">
+    <div class="rd-kpi-label">Total Customers</div>
+    <div class="rd-kpi-value">{{ n(s().customers) | number:'1.0-0' }}</div>
+  </div>
+  <div class="rd-kpi accent-orange">
+    <div class="rd-kpi-label">Running Groups</div>
+    <div class="rd-kpi-value">{{ n(s().running_groups) }}</div>
+  </div>
+  <div class="rd-kpi accent-red">
+    <div class="rd-kpi-label">Overdue Members</div>
+    <div class="rd-kpi-value">{{ outstanding().length }}</div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">
+        Collection by Mode
+        <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'today' : 'month' }})</small>
+      </div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasBars()" class="rd-placeholder">No data</div>
+        <div *ngFor="let label of barLabels; let i = index" class="mb-2">
+          <div class="d-flex justify-content-between small mb-1"><span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong></div>
+          <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Bid Release Mix</div>
+      <div class="rd-panel-b">
+        <div *ngIf="!hasPie()" class="rd-placeholder">No bid data</div>
+        <ng-container *ngIf="hasPie()">
+          <div class="rd-donut-wrap">
+            <div class="rd-donut" [style.background]="pieSafeStyle"></div>
+            <div class="rd-donut-hole"></div>
+          </div>
+          <div *ngFor="let lb of pieLabels; let i = index" class="d-flex justify-content-between rd-pie-legend mb-1">
+            <span><span class="rd-pie-swatch" [ngClass]="'s' + i"></span>{{ lb }}</span>
+            <strong>₹ {{ n(pieData[i]) | number:'1.0-0' }}</strong>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Collection by Chit Plan</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Plan donut — API pending</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-6">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Chit Plan Performance</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Plan performance table — API pending</div></div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Team Performance</div>
+      <div class="rd-panel-b"><div class="rd-placeholder">Employee collection ranking — placeholder</div></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="rd-panel">
+      <div class="rd-panel-h">Top Overdue Members</div>
+      <div class="rd-panel-b">
+        <div class="mb-2" *ngFor="let o of outstanding() | slice:0:8">
+          <strong>{{ o.customer_name || o.name || 'Member' }}</strong>
+          <span class="rd-chip ml-1">Overdue</span>
+          <div class="small">₹ {{ n(o.outstanding || o.amount || o.pending_amount) | number:'1.0-0' }}</div>
+        </div>
+        <div *ngIf="!outstanding().length" class="rd-placeholder">No overdue members</div>
+      </div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Today's Tasks / Follow-ups</div>
+      <div class="rd-panel-b">
+        <div class="mb-1" *ngFor="let f of followups() | slice:0:6">• {{ f.lead_name || f.customer_name || f.name || f.remarks || 'Follow-up' }}</div>
+        <div *ngIf="!followups().length" class="rd-placeholder">No follow-ups today</div>
+      </div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Quick Actions</div>
+      <div class="rd-panel-b rd-quick">
+        <a routerLink="/admin-panel/view-customer">Add New Customer</a>
+        <a routerLink="/admin-panel/add-commitment-receipt">Record Collection</a>
+        <a routerLink="/admin-panel/view-feed-back">Add Follow-up</a>
+      </div>
+    </div>
+  </div>
+</div>

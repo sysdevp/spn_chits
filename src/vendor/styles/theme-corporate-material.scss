@@ -3,8 +3,11 @@
 @import "./_theme/libs";
 @import "./_theme/uikit";
 
-$primary-color: #16a34a;
-$body-bg: #f8f8f8;
+/* SPN brand — deep forest green + gold (from logo) */
+$primary-color: #025E2D;
+$spn-shell-green: #013618;
+$spn-gold: #FEEB2D;
+$body-bg: #f3f7f4;
 
 body {
   background: $body-bg;
@@ -15,17 +18,14 @@ body {
 @include appwork-uikit-theme($primary-color);
 
 // Navbar
-
-@include appwork-navbar-variant('.bg-navbar-theme', #fff, $color: $text-muted, $active-color: $body-color);
+@include appwork-navbar-variant('.bg-navbar-theme', $spn-shell-green, $color: #fff, $active-color: $spn-gold);
 
 .layout-navbar {
   box-shadow: 0 0 20px 0 rgba($black, .2);
 }
 
 // Sidenav
-
-@include appwork-sidenav-variant('.bg-sidenav-theme', #2e323a, $color: #838790);
+@include appwork-sidenav-variant('.bg-sidenav-theme', $spn-shell-green, $color: rgba(255, 255, 255, 0.9), $active-color: $spn-gold);
 
 // Footer
-
-@include appwork-footer-variant('.bg-footer-theme', #fff, $color: $text-muted, $active-color: $body-color);
+@include appwork-footer-variant('.bg-footer-theme', $spn-shell-green, $color: #fff, $active-color: $spn-gold);

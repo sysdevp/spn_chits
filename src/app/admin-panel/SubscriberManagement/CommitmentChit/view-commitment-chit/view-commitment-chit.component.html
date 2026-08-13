@@ -138,7 +138,7 @@
         <td>{{ row.sno }}</td>
         <td>{{ row.branch_info?.branch_name }}</td>
         <td>{{ row.customer_info?.name }}</td>
-        <td>{{ row.slab_info?.slab_name }}</td>
+        <td>{{ row | slabAr }}</td>
         <td>{{ row.customer_info?.mobile_no }}</td>
         <td>
           <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)">
