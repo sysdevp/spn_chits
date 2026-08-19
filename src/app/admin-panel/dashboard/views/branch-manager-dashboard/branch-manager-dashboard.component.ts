@@ -29,6 +29,7 @@ export class BranchManagerDashboardComponent {
   collections() { return dashList(this.bundle, 'today_collections'); }
   outstanding() { return dashList(this.bundle, 'outstanding_customers'); }
   followups() { return dashList(this.bundle, 'today_followups'); }
+  auctions() { return dashList(this.bundle, 'today_auctions'); }
   hasBars() { return dashHasBarData(this.barData); }
   barWidth(i: number) { return dashBarWidth(this.barData, i); }
   hasPie() { return (this.pieData || []).some((x) => dashNum(x) > 0); }

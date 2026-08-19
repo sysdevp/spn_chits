@@ -29,6 +29,7 @@ export class SalesManagerDashboardComponent {
   collections() { return dashList(this.bundle, 'today_collections'); }
   outstanding() { return dashList(this.bundle, 'outstanding_customers'); }
   followups() { return dashList(this.bundle, 'today_followups'); }
+  branchRows() { return dashList(this.bundle, 'branch_collections'); }
   hasBars() { return dashHasBarData(this.barData); }
   barWidth(i: number) { return dashBarWidth(this.barData, i); }
   hasPie() { return (this.pieData || []).some((x) => dashNum(x) > 0); }

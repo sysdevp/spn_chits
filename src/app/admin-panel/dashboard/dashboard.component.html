@@ -18,7 +18,7 @@
         <div class="form-group mb-0" *ngIf="isSuperAdmin">
           <label class="small text-muted d-block mb-1">Company</label>
           <select class="form-control form-control-sm" formControlName="tenant_id" (change)="companyChg($event)">
-            <option *ngFor="let c of companyList" [value]="c.id">{{ c.company_name || c.tenant_name || c.name }}</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name || c.tenant_name || c.name }}</option>
           </select>
         </div>
         <div class="form-group mb-0">

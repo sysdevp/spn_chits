@@ -75,8 +75,27 @@
       <div class="rd-panel-b"><div class="rd-placeholder">Plan performance table — API pending</div></div>
     </div>
     <div class="rd-panel">
-      <div class="rd-panel-h">Team Performance</div>
-      <div class="rd-panel-b"><div class="rd-placeholder">Employee collection ranking — placeholder</div></div>
+      <div class="rd-panel-h">Today's Collections</div>
+      <div class="rd-panel-b table-responsive">
+        <table class="rd-table" *ngIf="collections().length; else emptyBmCol">
+          <thead><tr><th>Receipt</th><th>Member</th><th>Amount</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let r of collections() | slice:0:8">
+              <td>{{ r.receipt_no || '—' }}</td>
+              <td>{{ r.customer || r.customer_name || r.name || '—' }}</td>
+              <td>₹ {{ n(r.amount || r.total_paid || r.received_amount) | number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #emptyBmCol><div class="rd-placeholder">No collections today</div></ng-template>
+      </div>
+    </div>
+    <div class="rd-panel">
+      <div class="rd-panel-h">Today's Auctions</div>
+      <div class="rd-panel-b">
+        <div class="mb-1" *ngFor="let a of auctions() | slice:0:6">• {{ a.group_name || 'Group' }} — {{ a.auction_time || '' }}</div>
+        <div *ngIf="!auctions().length" class="rd-placeholder">No auctions scheduled today</div>
+      </div>
     </div>
   </div>
   <div class="col-lg-6">

@@ -71,8 +71,28 @@
 </div>
 
 <div class="rd-panel">
-  <div class="rd-panel-h">Branch Performance Overview</div>
-  <div class="rd-panel-b"><div class="rd-placeholder">Multi-branch leads / target table — API pending</div></div>
+  <div class="rd-panel-h">Branch Performance Overview <small class="text-muted font-weight-normal">(This Month)</small></div>
+  <div class="rd-panel-b table-responsive p-0">
+    <table class="rd-table mb-0" *ngIf="branchRows().length; else noSalesBranch">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Branch</th>
+          <th>Collection (₹)</th>
+          <th>%</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of branchRows()">
+          <td>{{ b.rank }}</td>
+          <td>{{ b.branch_name }}</td>
+          <td>{{ n(b.amount) | number:'1.0-0' }}</td>
+          <td>{{ b.pct }}%</td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noSalesBranch><div class="rd-placeholder">No branch collections this month</div></ng-template>
+  </div>
 </div>
 
 <div class="rd-kpi-grid">
