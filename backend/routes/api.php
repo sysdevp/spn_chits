@@ -914,4 +914,7 @@ Route::get('mobile-get-collection-area-customers-new','MobileApiController@mobil
 	Route::post('forget-password-reset','MobileApiController@forget_password_reset'); 
 	Route::post('mobile-employee-dashboard','MobileApiController@mobile_employee_dashboard'); 
 	Route::post('mobile-app-version','MobileApiController@mobile_app_version'); 
+	Route::post('mobile-punch-attendance','MobileApiController@mobile_punch_attendance');
+	Route::post('mobile-get-today-attendance','MobileApiController@mobile_get_today_attendance');
+	Route::post('mobile-get-collection-area-customers-new','MobileApiController@mobile_get_collection_area_customers_new');
 	Route::post('get-unenrollment-mobile','CustomerController@get_unenrollment_mobile'); 

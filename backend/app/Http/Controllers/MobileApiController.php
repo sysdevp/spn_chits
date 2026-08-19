@@ -61,6 +61,7 @@ use DateTime;
 Use Crypt;
 use Config;
 use Lang;
+use Illuminate\Support\Facades\Schema;
 
 class MobileApiController extends Controller
 {
@@ -12231,6 +12232,84 @@ public function mobile_employee_dashboard(Request $request)
         }
 
         /* ================================
+           7️⃣ TARGETS & LEADS (Phase 1 dashboard)
+        ================================= */
+        $monthlyTarget = 0;
+        $dailyTarget = 0;
+        $monthlyAchievement = 0;
+        $achievementPercent = 0;
+        $dailyAchievementPercent = 0;
+        $leadsCount = 0;
+        $employeeName = '';
+        $todayCheckIn = null;
+        $todayCheckOut = null;
+        $punchStatus = 'none';
+
+        $dashboardEmpId = (count($scopedEmployeeIds) === 1) ? $scopedEmployeeIds[0] : $loggedEmpId;
+
+        if ($dashboardEmpId > 0) {
+            $empRow = Employee::where('tenant_id', $tenantId)->where('id', $dashboardEmpId)->first();
+            if ($empRow) {
+                $employeeName = trim(($empRow->first_name ?? '') . ' ' . ($empRow->last_name ?? ''));
+                $monthlyTarget = (float) ($empRow->target ?? 0);
+            }
+
+            $daysInMonth = (int) date('t');
+            $dayOfMonth = max(1, (int) date('j'));
+            if ($monthlyTarget > 0) {
+                $dailyTarget = round($monthlyTarget / $daysInMonth);
+            }
+
+            $monthReceiptAmt = Receipt::query()
+                ->whereBetween('receipt_date', [$monthStart, $today])
+                ->where($dashboardScope)
+                ->selectRaw('SUM(received_amount + penalty) as total')
+                ->value('total') ?? 0;
+
+            $monthAdvanceAmt = AdvanceReceipt::query()
+                ->whereBetween('receipt_date', [$monthStart, $today])
+                ->where($dashboardScope)
+                ->sum('receipt_amount');
+
+            $monthOtherAmt = OtherCharge::query()
+                ->whereBetween('received_date', [$monthStart, $today])
+                ->where($dashboardScope)
+                ->sum('amount');
+
+            $monthBeforeAmt = BeforeEnrolReceipt::query()
+                ->whereBetween('received_date', [$monthStart, $today])
+                ->where($dashboardScope)
+                ->sum('amount');
+
+            $monthlyAchievement = $monthReceiptAmt + $monthAdvanceAmt + $monthOtherAmt + $monthBeforeAmt;
+
+            if ($monthlyTarget > 0) {
+                $achievementPercent = min(100, round(($monthlyAchievement / $monthlyTarget) * 100));
+            }
+            if ($dailyTarget > 0) {
+                $dailyAchievementPercent = min(100, round(($todaysCollection / $dailyTarget) * 100));
+            }
+
+            $leadsCount = LeadManagement::where('tenant_id', $tenantId)
+                ->where('employee_id', $dashboardEmpId)
+                ->count();
+
+            $todayAtt = EmployeeAttendance::where('tenant_id', $tenantId)
+                ->where('employee_id', $dashboardEmpId)
+                ->whereDate('att_date', $today)
+                ->first();
+
+            if ($todayAtt) {
+                $todayCheckIn = $todayAtt->check_in_time ?? null;
+                $todayCheckOut = $todayAtt->check_out_time ?? null;
+                $punchStatus = $todayAtt->punch_status ?? 'none';
+                if ($punchStatus === 'none' && !empty($todayAtt->att_date)) {
+                    $punchStatus = 'present';
+                }
+            }
+        }
+
+        /* ================================
            FINAL RESPONSE
         ================================= */
         return response()->json([
@@ -12238,6 +12317,16 @@ public function mobile_employee_dashboard(Request $request)
             'message' => 'Dashboard fetched successfully!',
             'data' => [
                 [
+                    'employeeName' => $employeeName,
+                    'todayTarget' => (string) round($dailyTarget),
+                    'monthlyTarget' => (string) round($monthlyTarget),
+                    'monthlyAchievement' => (string) round($monthlyAchievement),
+                    'achievementPercent' => (string) $achievementPercent,
+                    'dailyAchievementPercent' => (string) $dailyAchievementPercent,
+                    'leadsCount' => (string) $leadsCount,
+                    'todayCheckIn' => $todayCheckIn,
+                    'todayCheckOut' => $todayCheckOut,
+                    'punchStatus' => $punchStatus,
                     'incomeCardsData' => [
                         ['id' => 1, 'title' => 'Todays Collections', 'amount' => '₹ ' . number_format($todaysCollection)],
                         ['id' => 2, 'title' => 'Receipts Generated', 'amount' => (string)$receiptsGenerated],
@@ -12277,6 +12366,187 @@ public function mobile_app_version()
         'latest_version' => $latest_version,
         'critical_version' => $critical_version
     ]);
+}
+
+public function mobile_get_today_attendance(Request $request)
+{
+    try {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+
+        $validator = Validator::make($request->all(), [
+            'tenant_id' => 'required',
+            'branch_id' => 'required',
+            'employee_id' => 'required',
+            'db' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => $validator->errors()->first(),
+            ], 200);
+        }
+
+        $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
+        $attendance = EmployeeAttendance::where([
+            'tenant_id' => $request->tenant_id,
+            'branch_id' => $request->branch_id,
+            'employee_id' => $request->employee_id,
+            'att_date' => $attDate,
+        ])->first();
+
+        $punchStatus = 'none';
+        $checkIn = null;
+        $checkOut = null;
+        $workingHours = '';
+
+        if ($attendance) {
+            $punchStatus = $attendance->punch_status ?? 'none';
+            if (Schema::hasColumn('employee_attendances', 'check_in_time')) {
+                $checkIn = $attendance->check_in_time;
+                $checkOut = $attendance->check_out_time;
+            }
+            if ($checkIn && $checkOut) {
+                $start = strtotime($attDate . ' ' . $checkIn);
+                $end = strtotime($attDate . ' ' . $checkOut);
+                if ($end >= $start) {
+                    $hours = round(($end - $start) / 3600, 1);
+                    $workingHours = (string) $hours;
+                }
+            }
+        }
+
+        return response()->json([
+            'status' => 'Success',
+            'msg' => 'Attendance fetched',
+            'data' => [
+                'att_date' => $attDate,
+                'punch_status' => $punchStatus,
+                'check_in_time' => $checkIn,
+                'check_out_time' => $checkOut,
+                'working_hours' => $workingHours,
+                'latitude' => $attendance->latitude ?? '',
+                'longitude' => $attendance->longitude ?? '',
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => \Lang::get('api.global_error'),
+            'error' => $e->getMessage(),
+        ], 401);
+    }
+}
+
+public function mobile_punch_attendance(Request $request)
+{
+    DB::purge('mysql');
+    Config::set('database.connections.mysql.database', $request->db);
+    DB::reconnect('mysql');
+
+    $validator = Validator::make($request->all(), [
+        'tenant_id' => 'required',
+        'branch_id' => 'required',
+        'employee_id' => 'required',
+        'punch_type' => 'required|in:check_in,check_out',
+        'db' => 'required',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => $validator->errors()->first(),
+        ], 200);
+    }
+
+    try {
+        $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
+        $punchType = $request->punch_type;
+        $nowTime = date('H:i:s');
+        $latitude = isset($request->latitude) ? $request->latitude : '';
+        $longitude = isset($request->longitude) ? $request->longitude : '';
+
+        $attendance = EmployeeAttendance::where([
+            'tenant_id' => $request->tenant_id,
+            'branch_id' => $request->branch_id,
+            'employee_id' => $request->employee_id,
+            'att_date' => $attDate,
+        ])->first();
+
+        if ($punchType === 'check_in') {
+            if ($attendance && Schema::hasColumn('employee_attendances', 'check_in_time') && !empty($attendance->check_in_time)) {
+                return response()->json([
+                    'status' => 'Error',
+                    'msg' => 'Already checked in for today',
+                ], 200);
+            }
+
+            if (!$attendance) {
+                $attendance = new EmployeeAttendance();
+                $attendance->tenant_id = $request->tenant_id;
+                $attendance->branch_id = $request->branch_id;
+                $attendance->employee_id = $request->employee_id;
+                $attendance->att_date = $attDate;
+                $attendance->attendance_type = 1;
+                $attendance->created_by = $request->created_by ?? 0;
+                $attendance->status = 1;
+            }
+
+            if (Schema::hasColumn('employee_attendances', 'check_in_time')) {
+                $attendance->check_in_time = $nowTime;
+                $attendance->check_in_latitude = $latitude;
+                $attendance->check_in_longitude = $longitude;
+                $attendance->punch_status = 'checked_in';
+            }
+            $attendance->latitude = $latitude;
+            $attendance->longitude = $longitude;
+            $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch in';
+            $attendance->save();
+
+            return response()->json([
+                'status' => 'Success',
+                'msg' => 'Checked in successfully',
+                'data' => $attendance,
+            ], 200);
+        }
+
+        if (!$attendance) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Please check in first',
+            ], 200);
+        }
+
+        if (Schema::hasColumn('employee_attendances', 'check_out_time') && !empty($attendance->check_out_time)) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Already checked out for today',
+            ], 200);
+        }
+
+        if (Schema::hasColumn('employee_attendances', 'check_out_time')) {
+            $attendance->check_out_time = $nowTime;
+            $attendance->check_out_latitude = $latitude;
+            $attendance->check_out_longitude = $longitude;
+            $attendance->punch_status = 'checked_out';
+        }
+        $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch out';
+        $attendance->save();
+
+        return response()->json([
+            'status' => 'Success',
+            'msg' => 'Checked out successfully',
+            'data' => $attendance,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => \Lang::get('api.global_error'),
+            'error' => $e->getMessage(),
+        ], 401);
+    }
 }
 
 function formatDate($date, $format = 'd-m-Y')
