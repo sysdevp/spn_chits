@@ -9761,23 +9761,14 @@ public function mobile_get_collection_area_customers_new(Request $request)
         }
         $areaIds = array_values(array_unique(array_filter($areaIds)));
 
-        // Resolve role type for the logged-in user (admin/superadmin see all customers)
-        $isAdmin = false;
-        if ($user) {
-            $roleDet = optional(optional($user->role_det)->role_type_det);
-            $roleTypeName = '';
-            if ($user->role_det && $user->role_det->role_type_det) {
-                $roleTypeName = strtolower($user->role_det->role_type_det->role_type_name ?? '');
-            }
-            $isAdmin = in_array($roleTypeName, ['admin', 'superadmin', 'super admin', 'manager']);
-        }
-
+        // If empId is 0 (admin/non-employee login), show all customers
+        // If empId > 0 but no areas mapped, return empty
         $chitQuery = ChitDetail::where('customer_id', '!=', 1);
         if (!empty($request->tenant_id)) {
             $chitQuery->where('tenant_id', $request->tenant_id);
         }
-        // Non-admin employees: filter by mapped areas only
-        if (!$isAdmin) {
+        if ($empId > 0) {
+            // Field employee — restrict to mapped areas
             if (empty($areaIds)) {
                 return response()->json([
                     'cash_in_hand' => $cashInHand,
@@ -9787,6 +9778,7 @@ public function mobile_get_collection_area_customers_new(Request $request)
             }
             $chitQuery->whereIn('collection_area_id', $areaIds);
         }
+        // empId == 0 → admin/manager login → no area filter, show all
 
         $customerIds = $chitQuery->pluck('customer_id')->unique()->values();
 
