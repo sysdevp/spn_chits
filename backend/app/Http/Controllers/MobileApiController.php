@@ -9761,19 +9761,33 @@ public function mobile_get_collection_area_customers_new(Request $request)
         }
         $areaIds = array_values(array_unique(array_filter($areaIds)));
 
-        if (empty($areaIds)) {
-            return response()->json([
-                'cash_in_hand' => $cashInHand,
-                'overall_to_be_collected' => "0",
-                'customers' => []
-            ], 200);
+        // Resolve role type for the logged-in user (admin/superadmin see all customers)
+        $isAdmin = false;
+        if ($user) {
+            $roleDet = optional(optional($user->role_det)->role_type_det);
+            $roleTypeName = '';
+            if ($user->role_det && $user->role_det->role_type_det) {
+                $roleTypeName = strtolower($user->role_det->role_type_det->role_type_name ?? '');
+            }
+            $isAdmin = in_array($roleTypeName, ['admin', 'superadmin', 'super admin', 'manager']);
         }
 
-        $chitQuery = ChitDetail::whereIn('collection_area_id', $areaIds)
-            ->where('customer_id', '!=', 1);
+        $chitQuery = ChitDetail::where('customer_id', '!=', 1);
         if (!empty($request->tenant_id)) {
             $chitQuery->where('tenant_id', $request->tenant_id);
         }
+        // Non-admin employees: filter by mapped areas only
+        if (!$isAdmin) {
+            if (empty($areaIds)) {
+                return response()->json([
+                    'cash_in_hand' => $cashInHand,
+                    'overall_to_be_collected' => "0",
+                    'customers' => []
+                ], 200);
+            }
+            $chitQuery->whereIn('collection_area_id', $areaIds);
+        }
+
         $customerIds = $chitQuery->pluck('customer_id')->unique()->values();
 
         if ($customerIds->isEmpty()) {
