@@ -12301,22 +12301,12 @@ public function mobile_employee_dashboard(Request $request)
                 ->where('employee_id', $dashboardEmpId)
                 ->count();
 
-            $todayAtt = EmployeeAttendance::where('tenant_id', $tenantId)
-                ->where('employee_id', $punchEmpId)
-                ->whereDate('att_date', $today)
-                ->first();
+            $todayAtt = $this->findMobilePunchRecord($request, $today);
 
             if ($todayAtt) {
                 $todayCheckIn = $todayAtt->check_in_time ?? null;
                 $todayCheckOut = $todayAtt->check_out_time ?? null;
-                $punchStatus = $todayAtt->punch_status ?? 'none';
-                if (empty($punchStatus) || $punchStatus === 'none') {
-                    if (!empty($todayCheckIn) && !empty($todayCheckOut)) {
-                        $punchStatus = 'checked_out';
-                    } elseif (!empty($todayCheckIn) || !empty($todayAtt->att_date)) {
-                        $punchStatus = !empty($todayCheckIn) ? 'checked_in' : 'present';
-                    }
-                }
+                $punchStatus = $this->normalizePunchStatus($todayAtt);
             }
         }
 
@@ -12401,12 +12391,7 @@ public function mobile_get_today_attendance(Request $request)
         }
 
         $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
-        $attendance = EmployeeAttendance::where([
-            'tenant_id' => $request->tenant_id,
-            'branch_id' => $request->branch_id,
-            'employee_id' => $request->employee_id,
-            'att_date' => $attDate,
-        ])->first();
+        $attendance = $this->findMobilePunchRecord($request, $attDate);
 
         $punchStatus = 'none';
         $checkIn = null;
@@ -12414,11 +12399,9 @@ public function mobile_get_today_attendance(Request $request)
         $workingHours = '';
 
         if ($attendance) {
-            $punchStatus = $attendance->punch_status ?? 'none';
-            if (Schema::hasColumn('employee_attendances', 'check_in_time')) {
-                $checkIn = $attendance->check_in_time;
-                $checkOut = $attendance->check_out_time;
-            }
+            $checkIn = $attendance->check_in_time ?? null;
+            $checkOut = $attendance->check_out_time ?? null;
+            $punchStatus = $this->normalizePunchStatus($attendance);
             if ($checkIn && $checkOut) {
                 $start = strtotime($attDate . ' ' . $checkIn);
                 $end = strtotime($attDate . ' ' . $checkOut);
@@ -12479,15 +12462,10 @@ public function mobile_punch_attendance(Request $request)
         $latitude = isset($request->latitude) ? $request->latitude : '';
         $longitude = isset($request->longitude) ? $request->longitude : '';
 
-        $attendance = EmployeeAttendance::where([
-            'tenant_id' => $request->tenant_id,
-            'branch_id' => $request->branch_id,
-            'employee_id' => $request->employee_id,
-            'att_date' => $attDate,
-        ])->first();
+        $attendance = $this->findMobilePunchRecord($request, $attDate);
 
         if ($punchType === 'check_in') {
-            if ($attendance && Schema::hasColumn('employee_attendances', 'check_in_time') && !empty($attendance->check_in_time)) {
+            if ($attendance && !empty($attendance->check_in_time)) {
                 return response()->json([
                     'status' => 'Error',
                     'msg' => 'Already checked in for today',
@@ -12501,16 +12479,14 @@ public function mobile_punch_attendance(Request $request)
                 $attendance->employee_id = $request->employee_id;
                 $attendance->att_date = $attDate;
                 $attendance->attendance_type = 1;
-                $attendance->created_by = $request->created_by ?? 0;
+                $attendance->created_by = $request->created_by ?? $request->user_id ?? 0;
                 $attendance->status = 1;
             }
 
-            if (Schema::hasColumn('employee_attendances', 'check_in_time')) {
-                $attendance->check_in_time = $nowTime;
-                $attendance->check_in_latitude = $latitude;
-                $attendance->check_in_longitude = $longitude;
-                $attendance->punch_status = 'checked_in';
-            }
+            $attendance->check_in_time = $nowTime;
+            $attendance->check_in_latitude = $latitude;
+            $attendance->check_in_longitude = $longitude;
+            $attendance->punch_status = 'checked_in';
             $attendance->latitude = $latitude;
             $attendance->longitude = $longitude;
             $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch in';
@@ -12530,19 +12506,17 @@ public function mobile_punch_attendance(Request $request)
             ], 200);
         }
 
-        if (Schema::hasColumn('employee_attendances', 'check_out_time') && !empty($attendance->check_out_time)) {
+        if (!empty($attendance->check_out_time)) {
             return response()->json([
                 'status' => 'Error',
                 'msg' => 'Already checked out for today',
             ], 200);
         }
 
-        if (Schema::hasColumn('employee_attendances', 'check_out_time')) {
-            $attendance->check_out_time = $nowTime;
-            $attendance->check_out_latitude = $latitude;
-            $attendance->check_out_longitude = $longitude;
-            $attendance->punch_status = 'checked_out';
-        }
+        $attendance->check_out_time = $nowTime;
+        $attendance->check_out_latitude = $latitude;
+        $attendance->check_out_longitude = $longitude;
+        $attendance->punch_status = 'checked_out';
         $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch out';
         $attendance->save();
 
@@ -12558,6 +12532,41 @@ public function mobile_punch_attendance(Request $request)
             'error' => $e->getMessage(),
         ], 401);
     }
+}
+
+private function findMobilePunchRecord(Request $request, $attDate)
+{
+    $empId = (int) $request->employee_id;
+    $userId = (int) ($request->user_id ?? $request->created_by ?? 0);
+
+    return EmployeeAttendance::where('tenant_id', $request->tenant_id)
+        ->whereDate('att_date', $attDate)
+        ->where(function ($q) use ($empId, $userId) {
+            $q->where('employee_id', $empId);
+            if ($userId > 0) {
+                $q->orWhere('created_by', $userId);
+            }
+        })
+        ->orderByDesc('id')
+        ->first();
+}
+
+private function normalizePunchStatus($attendance)
+{
+    $status = $attendance->punch_status ?? 'none';
+    $checkIn = $attendance->check_in_time ?? null;
+    $checkOut = $attendance->check_out_time ?? null;
+
+    if (!empty($status) && $status !== 'none') {
+        return $status;
+    }
+    if (!empty($checkIn) && !empty($checkOut)) {
+        return 'checked_out';
+    }
+    if (!empty($checkIn) || !empty($attendance->att_date) || !empty($attendance->latitude)) {
+        return 'checked_in';
+    }
+    return 'none';
 }
 
 function formatDate($date, $format = 'd-m-Y')
