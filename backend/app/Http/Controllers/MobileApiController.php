@@ -12252,8 +12252,9 @@ public function mobile_employee_dashboard(Request $request)
         $punchStatus = 'none';
 
         $dashboardEmpId = (count($scopedEmployeeIds) === 1) ? $scopedEmployeeIds[0] : $loggedEmpId;
+        $punchEmpId = $reqEmployeeId > 0 ? $reqEmployeeId : $loggedEmpId;
 
-        if ($dashboardEmpId > 0) {
+        if ($dashboardEmpId > 0 || $punchEmpId >= 0) {
             $empRow = Employee::where('tenant_id', $tenantId)->where('id', $dashboardEmpId)->first();
             if ($empRow) {
                 $employeeName = trim(($empRow->first_name ?? '') . ' ' . ($empRow->last_name ?? ''));
@@ -12301,7 +12302,7 @@ public function mobile_employee_dashboard(Request $request)
                 ->count();
 
             $todayAtt = EmployeeAttendance::where('tenant_id', $tenantId)
-                ->where('employee_id', $dashboardEmpId)
+                ->where('employee_id', $punchEmpId)
                 ->whereDate('att_date', $today)
                 ->first();
 
@@ -12309,8 +12310,12 @@ public function mobile_employee_dashboard(Request $request)
                 $todayCheckIn = $todayAtt->check_in_time ?? null;
                 $todayCheckOut = $todayAtt->check_out_time ?? null;
                 $punchStatus = $todayAtt->punch_status ?? 'none';
-                if ($punchStatus === 'none' && !empty($todayAtt->att_date)) {
-                    $punchStatus = 'present';
+                if (empty($punchStatus) || $punchStatus === 'none') {
+                    if (!empty($todayCheckIn) && !empty($todayCheckOut)) {
+                        $punchStatus = 'checked_out';
+                    } elseif (!empty($todayCheckIn) || !empty($todayAtt->att_date)) {
+                        $punchStatus = !empty($todayCheckIn) ? 'checked_in' : 'present';
+                    }
                 }
             }
         }
