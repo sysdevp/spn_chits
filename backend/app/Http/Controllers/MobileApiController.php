@@ -10423,12 +10423,19 @@ public function mobile_today_followup_leads(Request $request)
 
                     if($paid_due != $current_installment_amount) {
 
+                        $auctionDate = $install_detail->auction_date ?? '';
+                        // Mobile receipt: overdue + current month due only (skip future auction dates)
+                        if (!empty($auctionDate) && $auctionDate > $cr_date) {
+                            continue;
+                        }
+
                         $pending_due_count++; // ✅ count pending
 
                         $cust_det = [];
                         $cust_det['entrollment_id'] = strval($entrol->id);
                         $cust_det['auction_no'] = strval($install_detail->installment_no);
                         $cust_det['bidding_id'] = strval($install_detail->id);
+                        $cust_det['auction_date'] = strval($auctionDate);
                         $cust_det['pending_due'] = strval(round($pending_due));
                         $cust_det['discount_on_due'] = "";
                         $cust_det['discount_on_penalty'] = "";
@@ -10446,9 +10453,11 @@ public function mobile_today_followup_leads(Request $request)
                             ? $install_detail->auction_date
                             : optional(($receipts[$entrol->id] ?? collect())->where('auction_id',$install_detail->id)->last())->receipt_date;
 
-                        if($fromDate) {
+                        if($fromDate && $fromDate <= $cr_date) {
                             $cust_det['instal_pending_day'] =
-                                strval((new DateTime($fromDate))->diff(new DateTime())->format('%a'));
+                                strval((new DateTime($fromDate))->diff(new DateTime($cr_date))->days);
+                        } else {
+                            $cust_det['instal_pending_day'] = "0";
                         }
 
                         // Penalty calculation
@@ -10527,12 +10536,18 @@ public function mobile_today_followup_leads(Request $request)
 
                     if($paid_due != $current_instal_amt1) {
 
+                        $auctionDate = $install_detail->auction_date ?? '';
+                        if (!empty($auctionDate) && $auctionDate > $cr_date) {
+                            continue;
+                        }
+
                         $pending_due_count++; // ✅ count pending
 
                         $cust_det = [];
                         $cust_det['entrollment_id'] = strval($entrol->id);
                         $cust_det['auction_no'] = strval($install_detail->installment_no);
                         $cust_det['bidding_id'] = strval($install_detail->id);
+                        $cust_det['auction_date'] = strval($auctionDate);
                         $cust_det['pending_due'] = strval(round($pending_due));
                         $cust_det['discount_on_due'] = "";
                         $cust_det['discount_on_penalty'] = "";
@@ -10549,9 +10564,11 @@ public function mobile_today_followup_leads(Request $request)
                             ? $install_detail->auction_date
                             : optional(($receipts[$entrol->id] ?? collect())->where('auction_id',$install_detail->id)->last())->receipt_date;
 
-                        if($fromDate) {
+                        if($fromDate && $fromDate <= $cr_date) {
                             $cust_det['instal_pending_day'] =
-                                strval((new DateTime($fromDate))->diff(new DateTime())->format('%a'));
+                                strval((new DateTime($fromDate))->diff(new DateTime($cr_date))->days);
+                        } else {
+                            $cust_det['instal_pending_day'] = "0";
                         }
 
                         $cust_det['penalty_amounts'] = "0"; // commitment no penalty
