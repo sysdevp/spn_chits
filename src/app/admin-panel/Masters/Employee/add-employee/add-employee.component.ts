@@ -109,6 +109,9 @@ export class AddEmployeeComponent implements OnInit {
   APIUrl:string;
   auth_token = "Bearer "+localStorage.getItem('token');
   employee_photo : any;
+  photoPreviewUrl: any = '';
+  photoUploading = false;
+  photoUploadError = '';
   mantFieldAlertMsg: any;
   minDate = undefined;
   maxDate= undefined;
@@ -349,22 +352,60 @@ export class AddEmployeeComponent implements OnInit {
     let fileList: any = event;
     if (fileList.length > 0) {
       let f: File = fileList[0]._file;
-      let headers = new HttpHeaders();
-      headers.append('Content-Type', 'multipart/form-data');
-      headers.append('Accept', 'application/json');
-      const formData: FormData = new FormData();
-      formData.append("photo", f, f.name);
-      this.employee_photo = f.name;
-      this.http.post(this.APIUrl+ 'employee-file-upload', formData, {headers: headers})
-      .subscribe(
-        (response) => { 
-          this.AddEmployee.get('photo').setValue(response['file_name']);
-          this.triggerFalseClick();
-        },
-        (error) => { 
-        }                   
-      );
+      this.uploadEmployeePhoto(f);
     }
+  }
+
+  onEmployeePhotoSelected(event: any) {
+    const input = event.target;
+    const file = input && input.files && input.files[0] ? input.files[0] : null;
+    if (!file) {
+      return;
+    }
+    this.photoUploadError = '';
+    this.employee_photo = file.name;
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.photoPreviewUrl = reader.result;
+    };
+    reader.readAsDataURL(file);
+    this.uploadEmployeePhoto(file);
+    input.value = '';
+  }
+
+  uploadEmployeePhoto(file: File) {
+    if (!file) {
+      return;
+    }
+    this.photoUploading = true;
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const formData: FormData = new FormData();
+    formData.append('photo', file, file.name);
+    this.http.post(this.APIUrl + 'employee-file-upload', formData, { headers: headers }).subscribe(
+      (response: any) => {
+        this.photoUploading = false;
+        const fileName = response && response.file_name ? response.file_name : '';
+        if (fileName) {
+          this.AddEmployee.get('photo').setValue(fileName);
+          this.employee_photo = file.name;
+          this.appService.showAlert('Photo', 'Photo uploaded successfully', 'success');
+        } else {
+          this.photoPreviewUrl = '';
+          this.photoUploadError = (response && response.msg) || 'Upload failed';
+          this.appService.showAlert('Photo', this.photoUploadError, 'error');
+        }
+      },
+      (error) => {
+        this.photoUploading = false;
+        this.photoPreviewUrl = '';
+        this.photoUploadError = (error && error.error && error.error.msg) || 'Photo upload failed. Please login again and retry.';
+        this.appService.showAlert('Photo', this.photoUploadError, 'error');
+      }
+    );
   }
 
   triggerFalseClick() {  

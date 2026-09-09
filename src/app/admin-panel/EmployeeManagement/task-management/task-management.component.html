@@ -1,82 +1,109 @@
-<div class="card">
-  <div class="card-header">
-    <div class="row">
-      <div class="col-6 my-auto font-weight-bold">Add Employee Task</div>
-      <div class="col-6 text-right">
-        <a [routerLink]="['/admin-panel/task-report']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i> View Employee Task</a>
-      </div>
+<div class="hr-panel">
+  <div class="hr-panel-head">
+    <div>
+      <h3>Assign Employee Task</h3>
+      <p>Create daily tasks and track completion status</p>
+    </div>
+    <div class="hr-actions">
+      <a [routerLink]="['/admin-panel/view-daily-tasks-targets']" class="btn btn-light btn-sm">
+        <i class="fas fa-eye pr-1"></i> View Status
+      </a>
+      <a [routerLink]="['/admin-panel/set-employee-target']" class="btn btn-warning btn-sm">
+        <i class="fas fa-bullseye pr-1"></i> Set Targets
+      </a>
     </div>
   </div>
-  <div class="card-body add-maze">
-    <form class="bs-example form-horizontal" [formGroup]="AddEmployeeSalary" (ngSubmit)="onSubmit()">
-      <div class="form-group row" [hidden]="!isSuperAdmin">
-        <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
-        <div class="col-sm-10">
-          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
-            <option value="">Select Company</option>
-            <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
-          </select>
-          <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
-            <label *ngIf="f.tenant_id.errors.required">Company is required</label>
-          </div>
-        </div>
+
+  <form class="hr-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="form-row" *ngIf="isSuperAdmin">
+      <div class="form-group col-md-4">
+        <label>Company <span class="error">*</span></label>
+        <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+          <option value="">Select Company</option>
+          <option *ngFor="let data of companyList" [value]="data.id">{{data.chit_fund_name}}</option>
+        </select>
       </div>
-      <div class="row">
-        <div class="col-md-6">
-          <div class="form-group row">
-            <label class="col-sm-4 col-form-label">Branch <span class="error">*</span></label>
-            <div class="col-sm-8">  
-              <select #branch_id formControlName="branch_id" (change)="branchChg($event)">
-                <option value="">Select Branch</option>
-                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
-              </select>
-              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
-                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="form-group row">
-            <label class="col-sm-4">Task Date <span class="error">*</span> </label>
-            <div class="col-sm-8">
-              <input #month_year type="text" class="form-control col-sm-12" placeholder="Month & Year" formControlName="month_year"  (click)="d1.toggle()" ngbDatepicker #d1="ngbDatepicker" onkeydown="return false" disabled>
-              <div class="col-md-12" *ngIf="submitted && f.month_year.errors" class="invalid-feedback">
-                <label *ngIf="f.month_year.errors.required">Task Date is required</label>
-              </div>
-            </div>
-          </div>
-        </div>
-        
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Branch <span class="error">*</span></label>
+        <select class="form-control" formControlName="branch_id" (change)="branchChg($event)">
+          <option value="">Select Branch</option>
+          <option *ngFor="let data of branchList" [value]="data.id">{{data.branch_name}}</option>
+        </select>
       </div>
-      <div class="row">&nbsp;</div>
-      <div class="row border emp_hrm">
-        <h5 class="col-md-10 py-2">Task Details</h5>
-        <table class="table table-striped" >
-          <thead>
-            <tr>
-              <th scope="col">Employee Name</th>
-              <th scope="col">Task / Target</th>
-            </tr>
-          </thead>
-          <tbody formArrayName="Employees">
-            <tr *ngFor="let emp of Employees['controls']; let i=index;" formGroupName="{{i}}">
-              <td>
-                <input type="text" class="form-control" formControlName="emp_name" readonly>
-              </td>
-              <td>
-                <input  type="text" class="form-control" formControlName="task" (change)="salaryChg(i)">
-                
-              </td>
-            </tr>
-          </tbody>
-        </table> 
-      </div> 
-      <div class="row">&nbsp;</div>
-      <div class="form-group row d-flex justify-content-center">
-        <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
-        <a [routerLink]="['/admin-panel/view-employee-salary']" class="btn btn-danger mr-1">Cancel</a>
+      <div class="form-group col-md-4">
+        <label>Employee <span class="error">*</span></label>
+        <select class="form-control" formControlName="employee_id" (change)="loadTasks()">
+          <option value="">Select Employee</option>
+          <option *ngFor="let emp of employeeList" [value]="emp.id">{{emp.first_name}} {{emp.last_name}}</option>
+        </select>
       </div>
-    </form>
+      <div class="form-group col-md-4">
+        <label>Priority</label>
+        <select class="form-control" formControlName="priority">
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Task Date <span class="error">*</span></label>
+        <input type="date" class="form-control" formControlName="task_date">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Due Date</label>
+        <input type="date" class="form-control" formControlName="due_date">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Title <span class="error">*</span></label>
+        <input type="text" class="form-control" formControlName="title" placeholder="Task title">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea class="form-control" rows="3" formControlName="description" placeholder="Task details"></textarea>
+    </div>
+    <div class="hr-form-actions">
+      <button type="submit" class="btn btn-success" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="loadTasks()">Refresh List</button>
+    </div>
+  </form>
+
+  <div class="hr-table-wrap" [hidden]="TableHidden">
+    <h5 class="mb-2">Assigned Tasks</h5>
+    <div class="table-responsive">
+      <table class="table hr-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of taskList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.title}}</td>
+            <td>{{row.task_date}}</td>
+            <td><span class="hr-chip">{{row.priority}}</span></td>
+            <td><span class="hr-chip status">{{row.task_status}}</span></td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteTask(row)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="!taskList.length">
+            <td colspan="7" class="text-center text-muted py-4">No tasks found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

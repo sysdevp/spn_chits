@@ -1,87 +1,75 @@
 <ng-template #uploadModal let-c="close" let-d="dismiss">
   <div class="modal-header without-text">
-    <h5 class="float-left px-2 py-2 text-white mb-0">Loan Customer Document Details</h5>
-    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+    <h5 class="float-left px-2 py-2 text-white mb-0">Employee Document Details</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
   </div>
   <div class="modal-body">
     <div class="card-body">
       <div class="row">
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">Branch name: </label>
+            <label class="form-label">Branch: </label>
             <b class="px-1">{{BranchInfo.branch_name}}</b>
           </div>
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">customer Name: </label>
-            <b class="px-1">{{CustomerInfo.name}} </b>
-          </div>
-        </div>	
-     <!--    <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">Group Name : </label>
-            <b class="px-1">{{GroupInfo}} </b>
-          </div>
-        </div> -->
-        <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">Collected Date: </label>
-            <b class="px-1">{{ViewDocumentInfo.collect_date}}  </b>
+            <label class="form-label">Employee: </label>
+            <b class="px-1">{{ViewDocumentInfo.collected_employee_name || ViewDocumentInfo.customer_name || (CollectedEmpInfo.first_name + ' ' + CollectedEmpInfo.last_name)}}</b>
           </div>
         </div>
-       <!--  <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">Customer Name: </label>
-            <b class="px-1">{{GuarantorInfo.name}}  </b>
-          </div>
-        </div> -->
         <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Collect Date: </label>
+            <b class="px-1">{{ViewDocumentInfo.collect_date}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Source: </label>
+            <b class="px-1">{{ViewDocumentInfo.source || ViewDocumentInfo.collected_from || 'Web'}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">Group / Note: </label>
+            <b class="px-1">{{GroupInfo || '-'}}</b>
+          </div>
+        </div>
+        <div class="col-md-12">
           <div class="form-group">
             <label class="form-label">Remarks: </label>
-            <b class="px-1">{{ViewDocumentInfo.remark}}  </b>
+            <b class="px-1">{{ViewDocumentInfo.remark || '-'}}</b>
           </div>
         </div>
-      <!--   <div class="col-md-6">
-          <div class="form-group">
-            <label class="form-label">Collected From: </label>
-            <b class="px-1" *ngIf="ViewDocumentInfo.collected_from==1">Customer</b>
-            <b class="px-1" *ngIf="ViewDocumentInfo.collected_from==2">Guarantor</b>
-          </div>
-        </div> -->
       </div>
       <div class="row border emp_hrm mz-add-cus" [hidden]="hideDocuments">
-        <h5 class="col-md-12 py-3 text-center">Documents Details</h5>
+        <h5 class="col-md-12 py-3 text-center">Documents</h5>
         <div class="col-md-12">
           <table class="table table-responsive">
             <thead class="thead-light">
               <tr>
                 <th>Sno</th>
-                <th>Document Name</th>
+                <th>Document Type</th>
                 <th>Document No</th>
-                <th>Return Date</th>
                 <th>Status</th>
                 <th>Download</th>
               </tr>
             </thead>
             <tr *ngFor="let document of DocumentInfo; let i = index;">
               <td>{{i+1}}</td>
-              <td>
-                <span *ngIf="document.document_type==1">Pan Card</span>
-                <span *ngIf="document.document_type==2">Aadhaar Card</span>
-                <span *ngIf="document.document_type==3">Ration Card</span>
-              </td>
-              <td>{{DocumentInfo[i].document_no}}</td>
-              <td>{{DocumentInfo[i].return_date}}</td>
+              <td>{{docTypeLabel(document.document_type)}}</td>
+              <td>{{document.document_no || '-'}}</td>
               <td>
                 <span *ngIf="document.status==1">Received</span>
                 <span *ngIf="document.status==2">Returned</span>
                 <span *ngIf="document.status==3">Canceled</span>
+                <span *ngIf="document.status!=1 && document.status!=2 && document.status!=3">-</span>
               </td>
               <td>
-                <span class="px-1" *ngIf="document.download_url==''">-</span>
-                <span class="px-1" *ngIf="document.download_url!=''">
-                  <a href="{{document.download_url}}" download>
+                <span class="px-1" *ngIf="!document.download_url">-</span>
+                <span class="px-1" *ngIf="document.download_url">
+                  <a href="{{document.download_url}}" target="_blank" download>
                     <i class="fa fa-cloud-download text-info"></i>
                   </a>
                 </span>
@@ -91,7 +79,7 @@
         </div>
       </div>
       <div class="row border emp_hrm mz-add-cus" [hidden]="hideAssets">
-        <h5 class="col-md-12 py-3 text-center">Asset Details</h5>
+        <h5 class="col-md-12 py-3 text-center">Assets</h5>
         <div class="col-md-12">
           <table class="table table-responsive">
             <thead class="thead-light">
@@ -99,28 +87,18 @@
                 <th>Sno</th>
                 <th>Asset Name</th>
                 <th>Asset Value</th>
-                <th>Return Date</th>
-                <th>Status</th>
                 <th>Download</th>
               </tr>
             </thead>
             <tr *ngFor="let asset of AssetInfo; let i = index;">
               <td>{{i+1}}</td>
-              <td>{{AssetInfo[i].asset_name}}</td>
-              <td>{{AssetInfo[i].asset_value}}</td>
-              <td>{{AssetInfo[i].return_date}}</td>
+              <td>{{asset.asset_name}}</td>
+              <td>{{asset.asset_value}}</td>
               <td>
-                <span *ngIf="asset.status==1">Received</span>
-                <span *ngIf="asset.status==2">Returned</span>
-                <span *ngIf="asset.status==3">Canceled</span>
-              </td>
-              <td>
-                <span class="px-1" *ngIf="asset.download_url==''">-</span>
-                <span class="px-1" *ngIf="asset.download_url!=''">
-                  <a href="{{asset.download_url}}" download>
-                    <i class="fa fa-cloud-download text-info"></i>
-                  </a>
-                </span>
+                <span class="px-1" *ngIf="!asset.download_url">-</span>
+                <a *ngIf="asset.download_url" href="{{asset.download_url}}" target="_blank" download>
+                  <i class="fa fa-cloud-download text-info"></i>
+                </a>
               </td>
             </tr>
           </table>
@@ -128,144 +106,119 @@
       </div>
     </div>
   </div>
-  <div class="modal-footer"></div>
 </ng-template>
+
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row">
-      <div class="col-6 my-auto font-weight-bold">Employee Documents List</div>
+      <div class="col-6 my-auto font-weight-bold">Employee Documents</div>
       <div class="col-6 text-right">
-        <a [routerLink]="['/admin-panel/add-employee-document']"  class="bg-success border-0 text-white px-3 py-2"> + Add Employee Document </a>
+        <a [routerLink]="['/admin-panel/add-employee-document']" class="bg-success border-0 text-white px-3 py-2"> + Add Employee Document </a>
       </div>
     </div>
   </div>
   <div class="card-body">
     <div [hidden]="TableHidden">
-        <form class="bs-example form-horizontal" [formGroup]="viewLoanCustomerDocument" (ngSubmit)="onSubmit()">
-            <div class="form-group row" [hidden]="!isSuperAdmin">
-              <label class="col-sm-2 col-md-2 col-3 col-form-label">Company Name <span class="error">*</span></label>
-              <div class="col-sm-10 col-md-7 col-9">
-              <select #tenant_id class="form-control form-control w-100 border-dark" formControlName="tenant_id" (change)="companyChg($event)">
-                <option value="">Select Company</option>
-                <option *ngFor="let data of companyList" value="{{data.id}}">{{data.chit_fund_name}}</option>
-              </select>
-              <div class="col-md-12" *ngIf="submitted && f.tenant_id.errors" class="invalid-feedback">
-                <label *ngIf="f.tenant_id.errors.required">Company is required</label>
-              </div>
-              </div>
-            </div>
-            <div class="form-group row">
-              <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
-              <div class="col-sm-10 col-md-7 col-9">
-              <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
-                <option value="">Select Branch</option>
-                <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
-              </select>
-              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
-                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
-              </div>
-              </div>
-            </div>
-            <div class="form-group row ">
-              <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
-              <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
-              <button type="button" class="btn btn-danger mr-1" (click)="resetFilter()">Reset</button>
-              </div>
-            </div>
-            </form>
-            <!-- <table id="dtable"  class="row-border hover">
-              <thead>
-                <tr> 
-                  <th>SNo</th>
-                  <th>Branch Name</th>
-                  <th>Customer Name</th>
-                  <th>Group Name</th>
-                  <th>Collected Employee Name</th>
-                  <th>Collected From</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of dataList;">
-                  <td>{{row.sno}}</td>
-                  <td>{{row.branch_info.branch_name}}</td>
-                  <td>{{row.customer_info.name}}</td>
-                  <td>{{row.group_name}}</td>
-                  <td>{{row.collected_emp_info.first_name}}</td>
-                  <td>
-                    <span *ngIf="row.collected_from==1">Customer</span>
-                    <span *ngIf="row.collected_from!=1">Guarantor</span>
-                  </td>
-                  <td>  
-                    <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
-                    <a [routerLink]="['/admin-panel/update-document/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>
-                    <a [routerLink]="['/admin-panel/delete-document/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table> -->
-            <div class="dataTables_wrapper no-footer">
-              <div class="dataTables_length">
-                <label>
-                  Show 
-                  <select name="dtable_length" aria-controls="dtable" class="" (change)="pageSizeChg($event)">
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                  </select> 
-                  entries
-                </label>
-              </div>
-              <div class="dataTables_filter">
-                <label>
-                  Search:<input type="search" class="" placeholder="" aria-controls="dtable" (keyup)="filterChg($event.target.value)">
-                  <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
-                </label>
-              </div>
-              <table class="row-border hover dataTable no-footer" role="grid" aria-describedby="dtable_info">
-                <thead>
-                  <tr role="row">
-                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
-                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('branch_name')">Branch Name</th>
-                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Employee Name</th>
-                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('collected_from')">Collected Date</th>
-                    <th rowspan="1" colspan="1" style="width: 0px;">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr role="row" *ngFor="let row of pagedItems; let i = index">
-                    <td class="sorting_1">{{row.sno}}</td>
-                    <td>{{row.branch_name}}</td>
-                    <td>{{row.name}}</td>
-                    <td>
-                     {{row.collect_date}}
-                    </td>
-                    <td>  
-                      <a [routerLink]="" (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
-                    
-                      <a [routerLink]="['/admin-panel/delete-loan-customer-document/'+row.id]"><i class="fas fa-trash-alt text-danger"></i></a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="dataTables_info" role="status" aria-live="polite">
-                {{dtableInfo}}
-              </div>
-              <div class="dataTables_paginate paging_simple_numbers">
-                <a *ngIf="pager.currentPage == 1" class="paginate_button previous disabled" aria-controls="dtable" tabindex="0" id="dtable_previous">Previous</a>
-                <a *ngIf="pager.currentPage != 1" class="paginate_button previous" aria-controls="dtable" tabindex="0" id="dtable_previous" (click)="setPage(pager.currentPage - 1)">Previous</a>
-                <span *ngFor="let page of pager.pages">
-                  <a *ngIf="pager.currentPage == page" class="paginate_button current" aria-controls="dtable" tabindex="0">{{page}}</a>
-                  <a *ngIf="pager.currentPage != page" class="paginate_button " aria-controls="dtable" tabindex="0" (click)="setPage(page)">{{page}}</a>
-                </span>
-                <a *ngIf="pager.currentPage == pager.totalPages" class="paginate_button next disabled" aria-controls="dtable" tabindex="0" id="dtable_next">Next</a>
-                <a *ngIf="pager.currentPage != pager.totalPages" class="paginate_button next" aria-controls="dtable" tabindex="0" id="dtable_next" (click)="setPage(pager.currentPage + 1)">Next</a>
-              </div>
-            </div>
-    </div>
-    <div *ngIf="TableHidden==true" class="table-loader" > 
-      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+      <form class="bs-example form-horizontal" [formGroup]="viewLoanCustomerDocument" (ngSubmit)="onSubmit()">
+        <div class="form-group row" [hidden]="!isSuperAdmin">
+          <label class="col-sm-2 col-form-label">Company Name <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7">
+            <select #tenant_id class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+              <option value="">Select Company</option>
+              <option *ngFor="let data of companyList" [value]="data.id">{{data.chit_fund_name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Branch <span class="error">*</span></label>
+          <div class="col-sm-10 col-md-7">
+            <select #branch_id class="form-control" formControlName="branch_id" (change)="branchChg($event)">
+              <option value="">Select Branch</option>
+              <option *ngFor="let data of branchList" [value]="data.id">{{data.branch_name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-2 col-form-label">Employee</label>
+          <div class="col-sm-10 col-md-7">
+            <select class="form-control" formControlName="collected_employee_id">
+              <option value="">All Employees</option>
+              <option *ngFor="let emp of employeeList" [value]="emp.id">{{emp.first_name}} {{emp.last_name}}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group row">
+          <div class="offset-md-2 col-md-7">
+            <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+            <button type="button" class="btn btn-danger mr-1" (click)="resetFilter()">Reset</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="dataTables_wrapper no-footer">
+        <div class="dataTables_length">
+          <label>
+            Show
+            <select (change)="pageSizeChg($event)">
+              <option value="10">10</option>
+              <option value="25">25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+            entries
+          </label>
+        </div>
+        <div class="dataTables_filter">
+          <label>
+            Search:<input type="search" (keyup)="filterChg($event.target.value)">
+          </label>
+        </div>
+        <table class="row-border hover dataTable no-footer">
+          <thead>
+            <tr>
+              <th>Sno</th>
+              <th>Branch</th>
+              <th>Employee</th>
+              <th>Collect Date</th>
+              <th>Source</th>
+              <th>Docs</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of pagedItems">
+              <td>{{row.sno}}</td>
+              <td>{{row.branch_name}}</td>
+              <td>{{row.collected_employee_name || row.customer_name || row.name || '-'}}</td>
+              <td>{{row.collect_date || '-'}}</td>
+              <td>{{row.source || row.collected_from || 'Web'}}</td>
+              <td>{{(row.document_info && row.document_info.length) ? row.document_info.length : 0}}</td>
+              <td>
+                <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" style="cursor:pointer" title="View">
+                  <i class="fas fa-eye text-success mx-1"></i>
+                </a>
+                <a [routerLink]="['/admin-panel/update-employee-document', row.id]" style="cursor:pointer" title="Edit">
+                  <i class="fas fa-edit text-primary mx-1"></i>
+                </a>
+                <a (click)="deleteDocument(row)" style="cursor:pointer" title="Delete">
+                  <i class="fas fa-trash-alt text-danger mx-1"></i>
+                </a>
+              </td>
+            </tr>
+            <tr *ngIf="!pagedItems?.length">
+              <td colspan="7" class="text-center">No employee documents found. Click Filter after selecting branch.</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="dataTables_info">{{dtableInfo}}</div>
+        <div class="dataTables_paginate paging_simple_numbers" *ngIf="pager.pages?.length">
+          <a class="paginate_button previous" [class.disabled]="pager.currentPage == 1" (click)="pager.currentPage > 1 && setPage(pager.currentPage - 1)">Previous</a>
+          <span *ngFor="let page of pager.pages">
+            <a class="paginate_button" [class.current]="pager.currentPage == page" (click)="setPage(page)">{{page}}</a>
+          </span>
+          <a class="paginate_button next" [class.disabled]="pager.currentPage == pager.totalPages" (click)="pager.currentPage < pager.totalPages && setPage(pager.currentPage + 1)">Next</a>
+        </div>
+      </div>
     </div>
   </div>
 </div>

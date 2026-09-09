@@ -63,6 +63,7 @@ export class AddCommitmentPaymentComponent implements OnInit {
   customerId: any;
   list: any;
   id: any;
+  paymentMonthOptions: any[] = [];
 
   dropdownList = [];
   selectedItems = [];
@@ -218,6 +219,7 @@ export class AddCommitmentPaymentComponent implements OnInit {
       try { 
         if (response.status == 'Success') { 
           this.EnrollList = response.data;
+          this.paymentMonthOptions = response.data.payment_months || [];
           this.pendingRelease = response.data.pending_release;
           this.AddCommitmentPayment.get('total_payment_release').setValue(response.data.slab_payment);
           this.AddCommitmentPayment.get('given_amount').setValue(response.data.bid_payment_given);
@@ -226,9 +228,33 @@ export class AddCommitmentPaymentComponent implements OnInit {
           this.AddCommitmentPayment.get('enrollment_id').setValue(response.data.id);
         } else {
           this.EnrollList = [];
+          this.paymentMonthOptions = [];
         }
       }  catch (err) { }
     }, (err: any) => { });
+  }
+
+  paymentMonthChg(event) {
+    const month = Number(event.target.value);
+    if (!month || !this.paymentMonthOptions || !this.paymentMonthOptions.length) {
+      return;
+    }
+    let selected: any = null;
+    for (let i = 0; i < this.paymentMonthOptions.length; i++) {
+      if (Number(this.paymentMonthOptions[i].month) === month) {
+        selected = this.paymentMonthOptions[i];
+        break;
+      }
+    }
+    const amt = selected ? Number(selected.amount) : 0;
+    const given = Number(this.AddCommitmentPayment.get('given_amount').value) || 0;
+    const pending = amt - given;
+    this.AddCommitmentPayment.get('payment_month').setValue(month);
+    this.AddCommitmentPayment.get('total_payment_release').setValue(amt);
+    this.AddCommitmentPayment.get('pending_release').setValue(pending);
+    this.pendingRelease = pending;
+    this.AddCommitmentPayment.get('total_amount').setValue('');
+    this.releaseAmtAlertMsg = false;
   }
   
   bankChg(event)

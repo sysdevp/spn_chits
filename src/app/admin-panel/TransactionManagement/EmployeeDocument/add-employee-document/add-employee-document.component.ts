@@ -1,472 +1,404 @@
-import { Component, OnInit ,ElementRef,ViewChild} from '@angular/core';
-import { FormGroup, FormArray, FormBuilder, Validators, FormControl } from '@angular/forms';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { AppService } from '../../../../app.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserService } from '../../../../Services/user.service';
-import { FileUploader } from 'ng2-file-upload';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-import { HttpClient, HttpHeaders} from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
 
 @Component({
-  
   selector: 'app-add-employee-document',
   templateUrl: './add-employee-document.component.html',
-  styles: []
+  styles: [`
+    .doc-upload-box {
+      border: 1px dashed #c8ddd0;
+      border-radius: 10px;
+      padding: 12px;
+      background: #f8faf9;
+      min-height: 120px;
+    }
+    .doc-upload-box img {
+      max-width: 100%;
+      max-height: 110px;
+      border-radius: 8px;
+      display: block;
+      margin: 0 auto 8px;
+    }
+    .doc-upload-empty {
+      text-align: center;
+      color: #6b7280;
+      padding: 18px 8px;
+    }
+    .doc-row {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    .existing-doc {
+      border: 1px solid #dbeafe;
+      background: #f8fbff;
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+  `]
 })
 export class AddEmployeeDocumentComponent implements OnInit {
+  @ViewChild('tenant_id') focus1: ElementRef;
+  @ViewChild('branch_id') focus2: ElementRef;
 
-  @ViewChild('tenant_id') focus1:ElementRef;
-  @ViewChild('branch_id') focus2:ElementRef;
-  //@ViewChild('customer_id') focus3:ElementRef;
-  @ViewChild('documentcount') focus4:ElementRef;
-  
-
-  form_message = true;
   submitted = false;
-  disableBtn = true;
-  SubmitbuttonName: string;
-  AddLoanCustomerDocument:  FormGroup;
-  isSuperAdmin:boolean;
-  branchList: any[];
-  customerList: any[];
-  employeeList: any[];
-  companyList: any[];
-  enrollmentList: any[];
-  guarantorList: any[];
-  hideChitDetail:boolean=true;
-  hideDocuments: boolean=true;
-  hideAssets: boolean=true;
-  hideGuarantorDetail:boolean=true;
-  isChitSelected: boolean=true;
+  disableBtn = false;
+  SubmitbuttonName = 'Submit';
+  form: FormGroup;
+  isSuperAdmin = false;
+  branchList: any[] = [];
+  employeeList: any[] = [];
+  companyList: any[] = [];
   currentDate: any;
-  numOnlyPattern = "^[0-9]*$";
-  uploadType: any;
-  uploadIndex: any;
+  APIUrl: string;
+  editId: any = null;
+  isEditMode = false;
+  existingDocs: any[] = [];
+  removedDetailIds: any[] = [];
+  pageTitle = 'Add Employee Document';
 
-  dropdownList = [];
-  selectedItems = [];
-  dropdownSettings = {};
-  custname: any;
-  custid: any;
-
-  APIUrl:string;
-  auth_token = "Bearer "+localStorage.getItem('token');
-  uploader = new FileUploader({
-    url: '',
-    headers: [{
-      name: 'Content-Type',
-      value: 'application/x-www-form-urlencoded'
-    },
-    {
-      name: 'Authorization',
-      value: this.auth_token
-    },
-    {
-      name: 'Accept',
-      value: 'multipart/form-data'
-    }]
-  });
-  hasBaseDropZoneOver = false;
-  overallupload: number;
-  upload_document: string;
-  //dcount: any;
-  //mantFieldAlertMsg: any;
-  //acount: any;
-
-  fileOver(e: any) { 
-    this.hasBaseDropZoneOver = e;
-  }
-
-  fileDrop(eve){}
-
-  constructor(private http: HttpClient,private modalService: NgbModal,private appService: AppService, private formBuilder: FormBuilder, private userservice: UserService, private router: Router) 
-  { 
-    this.overallupload = 0;  
-    this.APIUrl = environment.API;  
-    this.SubmitbuttonName = "Submit";
-    let today_date = new Date();
-     this.currentDate = {
-       year: today_date.getFullYear(),
-       month: today_date.getMonth()+1,
-       day: today_date.getDate()
-     };
-  }
-
-  companyChg(event) {
-    let tenant_id = event.target.value;
-    this.setBranchList(tenant_id);
-  }
-
-  setBranchList(tenant_id) { 
-    let cond = {
-      "conditions[tenant_id]" : tenant_id,
-      "conditions[status]" : 1
-    }
-    this.userservice.getData(cond, "get-branches", "POST").subscribe((response: any) => {
-      try { 
-        if (response.status == 'Success') {
-          this.branchList = response.data;
-        } else {
-          this.branchList = [];
-        }
-      }  catch (err) { }
-    }, (err: any) => { });
-  }
-
-  branchChg(event)
-  {
-    let tenant_id = this.AddLoanCustomerDocument.get('tenant_id').value;
-    let cond = {
-      "conditions[tenant_id]" : tenant_id,
-      "conditions[branch_id]" : event.target.value
-    }
-    this.userservice.getData(cond ,"get-customers", "POST").subscribe((response: any) => {
-      try {
-        if (response.status == 'Success') {
-          this.customerList = response.data;
-          this.dropdownList = [];
-          for(let i=0; i<((this.customerList).length); i++) {
-              var obj = {};
-              obj["customer_id"] = response.data[i].id;
-              obj["name"] = response.data[i].full_name;
-              this.dropdownList.push(obj);
-            }
-        } else {
-          this.customerList = [];
-        }
-      } catch (err) {}
-    }, (err: any) => { });
-
-    let cond1 = {
-      "conditions[tenant_id]" : tenant_id,
-      "conditions[branch_id]" : event.target.value
-    }
-    this.userservice.getData(cond1 ,"get-employees", "POST").subscribe((response: any) => {
-      try {
-        if (response.status == 'Success') {
-          this.employeeList = response.data;
-        } else {
-          this.employeeList = [];
-        }
-      } catch (err) {}
-    }, (err: any) => { });
-    this.hideChitDetail=true;
-  }
-
-  collectedFromChg(event) {
-    let selected = event.target.value;
-    if(selected==1) {
-      this.hideGuarantorDetail = true;
-    }
-    else if(selected==2) {
-      this.hideGuarantorDetail = false;
-    }
-  }
-
-  customerChg(item: any)
-  {
-    let custname = item;
-    this.custid = custname.customer_id;
-    this.isChitSelected=false;
-    this.disableBtn = false;
-    this.hideChitDetail=false;
-    this.hideDocuments=true;
-    this.hideAssets=true;
-    this.hideGuarantorDetail=true;
-    let tenant_id = this.AddLoanCustomerDocument.get('tenant_id').value;
-    let branch_id = this.AddLoanCustomerDocument.get('branch_id').value;
-    let cond = {
-      "conditions[tenant_id]" : tenant_id,
-      "conditions[branch_id]" : branch_id,
-      "conditions[customer_id]" : this.custid
-    }
-    this.userservice.getData(cond, "get-customer-enrollments", "POST").subscribe((response: any) => {
-      try { 
-        if (response.status == 'Success') {
-          this.enrollmentList = response.data;
-        } else {
-          this.enrollmentList = [];
-        }
-      }  catch (err) { }
-    }, (err: any) => { });
-    let cond1 = {
-      "customer_id" : this.custid
-    }
-    this.userservice.getData(cond1, "get-guarantor-details", "POST").subscribe((response: any) => {
-      try { 
-        if (response.status == 'Success') {
-          this.guarantorList = response.data;
-        } else {
-          this.guarantorList = [];
-        }
-      }  catch (err) { }
-    }, (err: any) => { });
-  }
-
-  noOfDocChg(event)
-  { 
-    let documentCount=event.target.value;
-    //this.dcount=documentCount;
-    const documentArray = < FormArray > this.AddLoanCustomerDocument.get('DocumentDetails');
-    documentArray.controls = [];
-    for(let i=0;i<parseInt(documentCount); i++) {
-      this.addDocumentDetail();
-    }
-    if(parseInt(documentCount)>0) {
-      this.hideDocuments = false;
-    }
-    else {
-      this.hideDocuments = true;
-    }
-  }
-
-  noOfAssetChg(event)
-  {
-    let assetCount=event.target.value;
-    //this.acount=assetCount;
-    const assetArray = < FormArray > this.AddLoanCustomerDocument.get('AssetDetails');
-    assetArray.controls = [];
-    for(let i=0;i<parseInt(assetCount); i++) {
-      this.addAssetDetail();
-    }
-    if(parseInt(assetCount)>0) {
-      this.hideAssets = false;
-    }
-    else {
-      this.hideAssets = true;
-    }
+  constructor(
+    private http: HttpClient,
+    private appService: AppService,
+    private formBuilder: FormBuilder,
+    private userservice: UserService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.APIUrl = environment.API;
+    const today_date = new Date();
+    this.currentDate = {
+      year: today_date.getFullYear(),
+      month: today_date.getMonth() + 1,
+      day: today_date.getDate()
+    };
   }
 
   get f() {
-    return this.AddLoanCustomerDocument.controls;
+    return this.form.controls;
   }
 
-  addDocumentDetail() { 
-    const control = <FormArray>this.AddLoanCustomerDocument.controls['DocumentDetails'];
-    control.push(this.initDocumentDetail());
+  get DocumentDetails(): FormArray {
+    return this.form.get('DocumentDetails') as FormArray;
+  }
+
+  companyChg(event) {
+    this.setBranchList(event.target.value);
+  }
+
+  setBranchList(tenant_id) {
+    const cond = {
+      'conditions[tenant_id]': tenant_id,
+      'conditions[status]': 1,
+      log_id: localStorage.getItem('logged_employee_id')
+    };
+    this.userservice.getData(cond, 'get-branches', 'POST').subscribe((response: any) => {
+      this.branchList = response && response.status === 'Success' ? response.data : [];
+    });
+  }
+
+  branchChg(event) {
+    const tenant_id = this.form.get('tenant_id').value;
+    const branch_id = event.target.value;
+    if (!this.isEditMode) {
+      this.form.get('employee_id').setValue('');
+    }
+    this.loadEmployees(tenant_id, branch_id);
+  }
+
+  loadEmployees(tenant_id, branch_id) {
+    this.userservice.getData({
+      'conditions[tenant_id]': tenant_id,
+      'conditions[branch_id]': branch_id
+    }, 'get-employees', 'POST').subscribe((response: any) => {
+      this.employeeList = response && response.status === 'Success' ? response.data : [];
+    });
+  }
+
+  addDocumentRow() {
+    this.DocumentDetails.push(this.initDocumentDetail());
   }
 
   initDocumentDetail() {
     return this.formBuilder.group({
-      'document_name': [''],
-      'document_no': ['', Validators.required],
-      'document_path':['', Validators.required],
-      'document_type':['', Validators.required]
-    }); 
-  }
-
-  removeDocumentDetail(i: number) {
-    const control = <FormArray>this.AddLoanCustomerDocument.controls['DocumentDetails'];
-    control.removeAt(i);
-  }
-
-  get DocumentDetails() {
-    return <FormArray>this.AddLoanCustomerDocument.get('DocumentDetails');
-  }
-
-  addAssetDetail() {
-    const control = <FormArray>this.AddLoanCustomerDocument.controls['AssetDetails'];
-    control.push(this.initAssetDetail());
-  }
-
-  initAssetDetail() {
-    return this.formBuilder.group({
-      'asset_name': ['', Validators.required],
-      'asset_value': ['', [Validators.required,Validators.pattern(this.numOnlyPattern)]],
-      'asset_path': ['', Validators.required],
+      document_type: ['Aadhar', Validators.required],
+      document_no: [''],
+      document_path: ['', Validators.required],
+      preview_url: [''],
+      upload_name: [''],
+      upload_error: [''],
+      uploading: [false]
     });
   }
 
-  removeAssetDetail(i: number) {
-    const control = <FormArray>this.AddLoanCustomerDocument.controls['AssetDetails'];
-    control.removeAt(i);
+  removeDocumentRow(i: number) {
+    this.DocumentDetails.removeAt(i);
   }
 
-  get AssetDetails() {
-    return <FormArray>this.AddLoanCustomerDocument.get('AssetDetails');
-  }
-
-  open(content, options = {},index,uploadType) {
-    this.uploadIndex = index;
-    this.uploadType = uploadType;
-    this.modalService.open(content, options).result.then((result) => {
-      
-    }, (reason) => {
-      
-    });
-  }
-
-  private getDismissReason(reason: any): string {
-    if (reason === ModalDismissReasons.ESC) {
-      return 'by pressing ESC';
-    } else if (reason === ModalDismissReasons.BACKDROP_CLICK) {
-      return 'by clicking on a backdrop';
-    } else {
-      return `with: ${reason}`;
+  removeExistingDoc(doc: any) {
+    if (!doc || !doc.id) {
+      return;
     }
+    if (!confirm('Remove this document from the employee pack?')) {
+      return;
+    }
+    this.removedDetailIds.push(doc.id);
+    this.existingDocs = this.existingDocs.filter((d) => d.id !== doc.id);
   }
 
-  uploadAssetDetails(event) { 
-    this.overallupload = 0;
-    let fileList: any = event;
-    if (fileList.length > 0) 
-    {
-      let f: File = fileList[0]._file;
-      let headers = new HttpHeaders();
-      headers.append('Content-Type', 'multipart/form-data');
-      headers.append('Accept', 'application/json');
-      const formData: FormData = new FormData();
-      formData.append("asset_path", f, f.name);
-      formData.append("upload_type",this.uploadType);
-      this.upload_document = f.name;
-      this.http.post(this.APIUrl+ 'asset-document-upload', formData, {headers: headers}).subscribe((response) => { 
-        if(this.uploadType=="document") {
-          const pfArray = < FormArray > this.AddLoanCustomerDocument.get('DocumentDetails'); 
-          pfArray.controls[this.uploadIndex].get('document_path').setValue(response['file_name']);
+  onFileSelected(event: any, index: number) {
+    const input = event.target;
+    const file = input && input.files && input.files[0] ? input.files[0] : null;
+    if (!file) {
+      return;
+    }
+    const row = this.DocumentDetails.at(index);
+    row.get('upload_error').setValue('');
+    row.get('upload_name').setValue(file.name);
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      row.get('preview_url').setValue(reader.result);
+    };
+    reader.readAsDataURL(file);
+
+    this.uploadDocumentFile(file, index);
+    input.value = '';
+  }
+
+  uploadDocumentFile(file: File, index: number) {
+    const row = this.DocumentDetails.at(index);
+    row.get('uploading').setValue(true);
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+
+    const formData = new FormData();
+    formData.append('asset_path', file, file.name);
+    formData.append('upload_type', 'document');
+
+    this.http.post(this.APIUrl + 'asset-document-upload', formData, { headers: headers }).subscribe(
+      (response: any) => {
+        row.get('uploading').setValue(false);
+        const fileName = response && response.file_name ? response.file_name : '';
+        if (fileName) {
+          row.get('document_path').setValue(fileName);
+          row.get('document_path').updateValueAndValidity();
+          row.get('upload_error').setValue('');
+          this.appService.showAlert('Document', 'File uploaded successfully', 'success');
+        } else {
+          row.get('document_path').setValue('');
+          row.get('preview_url').setValue('');
+          row.get('upload_error').setValue((response && response.msg) || 'Upload failed');
+          this.appService.showAlert('Document', (response && response.msg) || 'Upload failed', 'error');
         }
-        else if(this.uploadType=="asset") {
-          const pfArray = < FormArray > this.AddLoanCustomerDocument.get('AssetDetails');
-          pfArray.controls[this.uploadIndex].get('asset_path').setValue(response['file_name']);
-        }
-        this.triggerFalseClick();
       },
-      (error) => { });
-    }
+      (error) => {
+        row.get('uploading').setValue(false);
+        row.get('document_path').setValue('');
+        row.get('preview_url').setValue('');
+        const msg = (error && error.error && error.error.msg) || 'Upload failed. Please login again and retry.';
+        row.get('upload_error').setValue(msg);
+        this.appService.showAlert('Document', msg, 'error');
+      }
+    );
   }
 
-  triggerFalseClick() {  
-    let element: HTMLElement = document.getElementById("myDiv") as HTMLElement;
-    if(element!=null)
-    {
-      element.click();
-    }
-    element = document.getElementById("myDivDocuments") as HTMLElement;
-    if(element!=null)
-    {
-      element.click();
-    }
+  clearFile(index: number) {
+    const row = this.DocumentDetails.at(index);
+    row.get('document_path').setValue('');
+    row.get('preview_url').setValue('');
+    row.get('upload_name').setValue('');
+    row.get('upload_error').setValue('');
   }
 
-  uploadChg() {
-      this.isChitSelected=false;
-      this.disableBtn = false;
+  onMultiFilesSelected(event: any) {
+    const files = event && event.target && event.target.files ? event.target.files : [];
+    if (!files.length) {
+      return;
+    }
+    for (let i = 0; i < files.length; i++) {
+      let index = -1;
+      for (let r = 0; r < this.DocumentDetails.length; r++) {
+        if (!this.DocumentDetails.at(r).get('document_path').value && !this.DocumentDetails.at(r).get('upload_name').value) {
+          index = r;
+          break;
+        }
+      }
+      if (index < 0) {
+        this.addDocumentRow();
+        index = this.DocumentDetails.length - 1;
+      }
+      const file = files[i];
+      const row = this.DocumentDetails.at(index);
+      row.get('upload_name').setValue(file.name);
+      const reader = new FileReader();
+      reader.onload = ((idx, fr) => {
+        return () => {
+          this.DocumentDetails.at(idx).get('preview_url').setValue(fr.result);
+        };
+      })(index, reader);
+      reader.readAsDataURL(file);
+      this.uploadDocumentFile(file, index);
+    }
+    event.target.value = '';
+  }
+
+  loadEditRecord(id) {
+    this.userservice.getData({ 'conditions[id]': id }, 'get-documents', 'POST').subscribe((response: any) => {
+      if (!(response && response.status === 'Success' && response.data && response.data[0])) {
+        this.appService.showAlert('Employee Document', 'Record not found', 'error');
+        return;
+      }
+      const row = response.data[0];
+      this.form.get('tenant_id').setValue(row.tenant_id);
+      this.form.get('branch_id').setValue(row.branch_id);
+      this.setBranchList(row.tenant_id);
+      this.loadEmployees(row.tenant_id, row.branch_id);
+      this.form.get('employee_id').setValue(row.collected_employee_id);
+      this.form.get('remark').setValue(row.remark || '');
+      if (row.collect_date && String(row.collect_date).indexOf('/') !== -1) {
+        const parts = String(row.collect_date).split('/');
+        this.form.get('collect_date').setValue({
+          day: Number(parts[0]),
+          month: Number(parts[1]),
+          year: Number(parts[2])
+        });
+      }
+      this.existingDocs = row.document_info || [];
+      while (this.DocumentDetails.length) {
+        this.DocumentDetails.removeAt(0);
+      }
+    });
   }
 
   onSubmit() {
-    this.SubmitbuttonName = "Loading...";
+    this.SubmitbuttonName = 'Loading...';
     this.submitted = true;
     this.disableBtn = true;
-    const result = Object.assign({}, this.AddLoanCustomerDocument.value);
-    if (this.AddLoanCustomerDocument.invalid) {
-      this.SubmitbuttonName = "Submit";
+
+    const hasNewUploads = this.DocumentDetails.length > 0;
+    const remainingExisting = this.existingDocs.length;
+
+    if (this.form.invalid) {
+      this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
       this.disableBtn = false;
-      if(this.f.tenant_id.errors) {
-        this.focus1.nativeElement.focus();
-      }
-      else if(this.f.branch_id.errors) {
-        this.focus2.nativeElement.focus();
-      }
-      
-      else if(this.f.documentcount.errors) {
-        this.focus4.nativeElement.focus();
-      }
-      
       return;
     }
 
-   /*  if((this.dcount=='')&&(this.acount==''))
-    {
-      this.focus4.nativeElement.focus();
-      this.mantFieldAlertMsg = "Anyone of document  is required";
+    if (!this.isEditMode && !hasNewUploads) {
+      this.SubmitbuttonName = 'Submit';
       this.disableBtn = false;
-      this.SubmitbuttonName = "Submit";
+      this.appService.showAlert('Employee Document', 'Please upload at least one document', 'error');
       return;
     }
-    else {
-      this.mantFieldAlertMsg = '';
-    } */
 
-    this.userservice.getData(result, "store-loan-document", "JSON").subscribe((response: any) => {
-      this.SubmitbuttonName = "Submit";
-      try {
-        if (response.status == 'Success') {
-          this.appService.showAlert("Loan Customer Document",response.msg, "success");
-          setTimeout(() => {
-            this.router.navigate(['/admin-panel/view-loan-customer-document']);
-          }, 300);
-        } else {
-          this.appService.showAlert("Loan Customer Document", response.msg, "error");
-          this.disableBtn = false;
-        }
-      } catch (err) { 
-        this.appService.showAlert("Loan Customer Document", "Sorry!! Something went wrong!", "error");
+    if (this.isEditMode && !remainingExisting && !hasNewUploads) {
+      this.SubmitbuttonName = 'Update';
+      this.disableBtn = false;
+      this.appService.showAlert('Employee Document', 'Keep at least one document or add a new one', 'error');
+      return;
+    }
+
+    for (let i = 0; i < this.DocumentDetails.length; i++) {
+      if (this.DocumentDetails.at(i).get('uploading').value) {
+        this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
         this.disableBtn = false;
+        this.appService.showAlert('Employee Document', 'Please wait for all files to finish uploading', 'error');
+        return;
       }
-    }, (err: any) => {
+      if (!this.DocumentDetails.at(i).get('document_path').value) {
+        this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
+        this.disableBtn = false;
+        this.appService.showAlert('Employee Document', 'Please upload all new document files', 'error');
+        return;
+      }
+    }
+
+    const result: any = Object.assign({}, this.form.value);
+    result.collected_employee_id = result.employee_id;
+    result.customer_id = [{ customer_id: 0 }];
+    result.collected_from = 'Employee Documents';
+    result.remark = result.remark || 'Employee HR documents';
+    result.updated_by = localStorage.getItem('logged_user_id');
+    result.DocumentDetails = (result.DocumentDetails || []).map((d: any) => {
+      return {
+        document_type: d.document_type,
+        document_no: d.document_no || '',
+        document_path: d.document_path
+      };
+    });
+    delete result.employee_id;
+
+    let api = 'store-document';
+    if (this.isEditMode) {
+      api = 'update-document';
+      result.id = this.editId;
+      result.removed_document_detail_ids = this.removedDetailIds;
+    }
+
+    this.userservice.getData(result, api, 'JSON').subscribe((response: any) => {
+      this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
       this.disableBtn = false;
-      this.SubmitbuttonName = "Submit";
-      if (err.status == 401) {
-        this.appService.showAlert("Loan Customer Document", "Sorry!! Something went wrong!", "error");
+      if (response && response.status === 'Success') {
+        this.appService.showAlert('Employee Document', response.msg || 'Saved successfully', 'success');
+        setTimeout(() => {
+          this.router.navigate(['/admin-panel/view-employee-document']);
+        }, 300);
+      } else {
+        this.appService.showAlert('Employee Document', (response && response.msg) || 'Save failed', 'error');
       }
-      else {
-        this.appService.showAlert("Loan Customer Document", "Sorry!! Something went wrong!", "error");
-      }
+    }, () => {
+      this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
+      this.disableBtn = false;
+      this.appService.showAlert('Employee Document', 'Sorry!! Something went wrong!', 'error');
     });
   }
 
   ngOnInit() {
-    this.AddLoanCustomerDocument = this.formBuilder.group({
+    this.form = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
-      //customer_id: ['', Validators.required],
-      //enrollment_id: [''],
-      collected_employee_id: ['', Validators.required],
-      //collected_from: ['', Validators.required],
+      employee_id: ['', Validators.required],
       collect_date: [this.currentDate, Validators.required],
-      guarantor_id: [''],
       remark: [''],
-      created_by: [''],
-      'DocumentDetails': this.formBuilder.array([
-        this.formBuilder.group({
-          'document_name': [''],
-          'document_no': ['', Validators.required],
-          'document_path': ['', Validators.required],
-          'document_type': ['', Validators.required]
-        })
-      ]),
-      'AssetDetails': this.formBuilder.array([
-        this.formBuilder.group({
-          'asset_name': ['', Validators.required],
-          'asset_value': ['', [Validators.required,Validators.pattern(this.numOnlyPattern)]],
-          'asset_path': ['', Validators.required],
-        })
-      ]),
+      created_by: [localStorage.getItem('logged_user_id')],
+      DocumentDetails: this.formBuilder.array([])
     });
-    const assetArray = < FormArray > this.AddLoanCustomerDocument.get('AssetDetails');
-    assetArray.controls = [];
-    const documentArray = < FormArray > this.AddLoanCustomerDocument.get('DocumentDetails');
-    documentArray.controls = [];
-    let tenant_id = localStorage.getItem('tenant_id');
-    if(tenant_id) {
-      this.AddLoanCustomerDocument.get('tenant_id').setValue(tenant_id);
+
+    this.editId = this.route.snapshot.paramMap.get('id');
+    this.isEditMode = !!this.editId;
+    this.pageTitle = this.isEditMode ? 'Edit Employee Document' : 'Add Employee Document';
+    this.SubmitbuttonName = this.isEditMode ? 'Update' : 'Submit';
+
+    if (!this.isEditMode) {
+      this.addDocumentRow();
+    }
+
+    const tenant_id = localStorage.getItem('tenant_id');
+    if (tenant_id) {
+      this.form.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
       this.setBranchList(tenant_id);
-    }
-    else {
+    } else {
       this.isSuperAdmin = true;
-      this.userservice.getData('', "list-tenants", "POST").subscribe((response: any) => {
-        try { 
-          if (response.status == 'Success') {
-            this.companyList = response.data;
-          } else {
-            this.companyList = [];
-          }
-        }  catch (err) { }
-      }, (err: any) => { });
+      this.userservice.getData('', 'list-tenants', 'POST').subscribe((response: any) => {
+        this.companyList = response && response.status === 'Success' ? response.data : [];
+      });
     }
-    this.AddLoanCustomerDocument.get('created_by').setValue(localStorage.getItem('logged_user_id'));
 
-    
+    if (this.isEditMode) {
+      this.loadEditRecord(this.editId);
+    }
   }
 }

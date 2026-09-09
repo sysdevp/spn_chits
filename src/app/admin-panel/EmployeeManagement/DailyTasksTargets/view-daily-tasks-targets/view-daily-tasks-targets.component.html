@@ -1,0 +1,158 @@
+<div class="hr-panel">
+  <div class="hr-panel-head">
+    <div>
+      <h3>Daily Tasks &amp; Targets</h3>
+      <p>Track task status and target achievement by employee</p>
+    </div>
+    <div class="hr-actions">
+      <a [routerLink]="['/admin-panel/add-task']" class="btn btn-light btn-sm">
+        <i class="fas fa-plus pr-1"></i> Assign Task
+      </a>
+      <a [routerLink]="['/admin-panel/set-employee-target']" class="btn btn-warning btn-sm">
+        <i class="fas fa-bullseye pr-1"></i> Set Target
+      </a>
+    </div>
+  </div>
+
+  <div class="hr-body">
+    <div class="hr-tabs mb-3">
+      <button type="button" class="btn tab-btn" [class.active]="tab==='tasks'" (click)="setTab('tasks')">Tasks</button>
+      <button type="button" class="btn tab-btn" [class.active]="tab==='targets'" (click)="setTab('targets')">Targets</button>
+    </div>
+
+    <div class="form-row mb-3">
+      <div class="form-group col-md-3">
+        <label>Branch</label>
+        <select class="form-control" [(ngModel)]="branchId" (change)="branchChg()">
+          <option value="">All Branches</option>
+          <option *ngFor="let b of branchList" [value]="b.id">{{b.branch_name}}</option>
+        </select>
+      </div>
+      <div class="form-group col-md-3">
+        <label>Employee</label>
+        <select class="form-control" [(ngModel)]="employeeId" (change)="load()">
+          <option value="">All Employees</option>
+          <option *ngFor="let e of employeeList" [value]="e.id">{{e.first_name}} {{e.last_name}}</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2">
+        <label>Date</label>
+        <input type="date" class="form-control" [(ngModel)]="dateFilter" (change)="load()">
+      </div>
+      <div class="form-group col-md-2" *ngIf="tab==='tasks'">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="statusFilter" (change)="load()">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2" *ngIf="tab==='targets'">
+        <label>Period</label>
+        <select class="form-control" [(ngModel)]="periodFilter" (change)="load()">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+          <option value="">All</option>
+        </select>
+      </div>
+      <div class="form-group col-md-2 d-flex align-items-end">
+        <button class="btn btn-success btn-block" type="button" (click)="load()">Search</button>
+      </div>
+    </div>
+
+    <div class="table-responsive" [hidden]="TableHidden">
+      <table class="table hr-table" *ngIf="tab==='tasks'">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Branch</th>
+            <th>Title</th>
+            <th>Task Date</th>
+            <th>Due</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Remark</th>
+            <th>Update</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of taskList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.branch_name}}</td>
+            <td>
+              <strong>{{row.title}}</strong>
+              <div class="text-muted small" *ngIf="row.description">{{row.description}}</div>
+            </td>
+            <td>{{row.task_date}}</td>
+            <td>{{row.due_date || '-'}}</td>
+            <td><span class="hr-chip">{{row.priority}}</span></td>
+            <td><span [class]="statusClass(row.task_status)">{{row.task_status || 'pending'}}</span></td>
+            <td>{{row.employee_remark || '-'}}</td>
+            <td>
+              <select class="form-control form-control-sm" [ngModel]="row.task_status" (ngModelChange)="updateTaskStatus(row, $event)">
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </td>
+          </tr>
+          <tr *ngIf="!taskList.length">
+            <td colspan="10" class="text-center text-muted py-4">No tasks found for selected filters</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="table hr-table" *ngIf="tab==='targets'">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Branch</th>
+            <th>Label</th>
+            <th>Type</th>
+            <th>Period</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Target</th>
+            <th>Achieved</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of targetList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.branch_name}}</td>
+            <td>{{row.target_label || 'Target'}}</td>
+            <td><span class="hr-chip">{{ typeLabel(row.target_type) }}</span></td>
+            <td>{{row.period_type}}</td>
+            <td>{{row.period_start}}</td>
+            <td>{{row.period_end}}</td>
+            <td>₹ {{row.target_amount | number:'1.0-0'}}</td>
+            <td>₹ {{row.achieved_amount | number:'1.0-0'}}</td>
+            <td>
+              <div class="d-flex align-items-center">
+                <div class="pct-bar mr-2 flex-grow-1">
+                  <div class="pct-fill" [style.width.%]="row.completion_percent || 0"></div>
+                </div>
+                <span>{{row.completion_percent || 0}}%</span>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="!targetList.length">
+            <td colspan="11" class="text-center text-muted py-4">No targets found for selected filters</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden" class="text-center py-5">
+      <img style="width: 100px;" src="assets/img/loading.gif" alt="Loading"/>
+    </div>
+  </div>
+</div>

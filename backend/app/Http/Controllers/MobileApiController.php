@@ -195,7 +195,7 @@ class MobileApiController extends Controller
       'tenant_phone' => $tenant_phone,
       'profile_pic' => $profilephoto,
       'db' => $_SESSION['db'],
-      'employee_id' => (int)$employee_id,
+      'employee_id' => (int) ($logged_user->employee_id ?: $employee_id ?: 0),
       'device_id' => '',
       'mobile_no' =>  ''
     ]);
@@ -262,7 +262,7 @@ class MobileApiController extends Controller
         $tenantId = $request->tenant_id ?? null;
         $userId = isset($request->user_id) ? (int) $request->user_id : 0;
 
-        $scopeByUser = $userId > 0;
+        $scopeByUser = $userId > 0 && $userId !== 1;
         $allowedBranchIds = null;
         $allowedEmployeeIds = null;
 
@@ -406,7 +406,7 @@ public function mobile_list_users(Request $request)
         $tenantId = $request->tenant_id ?? null;
         $userId = isset($request->user_id) ? (int) $request->user_id : 0;
 
-        $scopeByUser = $userId > 0;
+        $scopeByUser = $userId > 0 && $userId !== 1;
         $allowedBranchIds = null;
         $allowedEmployeeIds = null;
 
@@ -676,15 +676,19 @@ public function mobile_list_users(Request $request)
         $lead_det['next_followup_date'] = '';
         $lead_det['lead_last_followupstatus'] = '';
         $lead_det['lead_entrolled'] = '';   
-        $customer_max_id = Followup::where('lead_management_id','=',$leadmanagement->id)->orderBy('created_at','asc')->get();                  
-        foreach($customer_max_id as $max_id)
-        { 
-          $lead_det['last_followup'] =isset($max_id->followup_date) ? ($max_id->followup_date) : "0000-00-00";  
-          $lead_det['next_followup_date'] =isset($max_id->next_followup_date) ? ($max_id->next_followup_date) : "0000-00-00";
+        $latestFollowup = Followup::where('lead_management_id', $leadmanagement->id)
+          ->orderBy('created_at', 'desc')
+          ->first();
+        if ($latestFollowup) {
+          $lead_det['last_followup'] = $latestFollowup->followup_date ?: '0000-00-00';
+          $lead_det['next_followup_date'] = $latestFollowup->next_followup_date ?: '0000-00-00';
+          $lead_det['next_followup_time'] = $latestFollowup->created_at
+            ? $latestFollowup->created_at->format('H:i')
+            : '';
+          $lead_det['lead_last_followupstatus'] = isset($latestFollowup->followup_status_type_det)
+            ? ($latestFollowup->followup_status_type_det->followup_status_name)
+            : '';
         }
-
-        $followup_order=Followup::where('lead_management_id',$leadmanagement->id)->orderBy('created_at','desc')->get(); 
-        $lead_det['lead_last_followupstatus'] =isset($followup_order[0]->followup_status_type_det) ? ($followup_order[0]->followup_status_type_det->followup_status_name) : "";
          
         $followup=Followup::selectRaw('*,group_concat(DATE_FORMAT(followup_date,"%M-%d")) as dates')->where('lead_management_id',$leadmanagement->id)->groupBy('lead_management_id')->get();
         if(count($followup)>0) 
@@ -1383,12 +1387,7 @@ public function otp_verified(Request $request)
         Config::set('database.connections.mysql.database', $request->db);
         DB::reconnect('mysql');
 
-        if ($request->filled('tenant_id')) {
-            $states = State::orderBy('id', 'desc')
-                           ->get();
-        } else {
-            $states = State::orderBy('id', 'asc')->get();
-        }
+        $states = State::orderBy('state_name', 'asc')->get();
 
         $response_data = [];
         $i = 1;
@@ -1411,7 +1410,7 @@ public function otp_verified(Request $request)
 
         return response()->json([
             'status' => 'Error',
-            'msg'    => $e->getMessage()   // helpful during debugging
+            'msg'    => $e->getMessage()
         ], 500);
     }
 }
@@ -1422,31 +1421,34 @@ public function otp_verified(Request $request)
       DB::purge('mysql');
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
-      if(isset($request->tenant_id)) {
-        $districts = District::orderBy('id','desc')->get();
+
+      $query = District::orderBy('district_name', 'asc');
+      if (!empty($request->state_id)) {
+        $query->where('state_id', (int) $request->state_id);
       }
-      else {
-        $districts = District::orderBy('id')->get();
-      }
-      $i=1; 
+      $districts = $query->get();
+
       $response_data = [];
-      foreach($districts as $district) {
-        $district_det = [];
-        $district_det['sno'] = $i;
-        $district_det['district_id'] = $district->id;
-        $district_det['state_id'] = $district->state_id;
-        $district_det['district_name'] = $district->district_name;
-        array_push($response_data,$district_det);        
-        $i++;
+      $i = 1;
+      foreach ($districts as $district) {
+        $response_data[] = [
+          'sno' => $i++,
+          'district_id' => $district->id,
+          'state_id' => $district->state_id,
+          'district_name' => $district->district_name,
+        ];
       }
-      if($district) {          
-        return response()->json($response_data,200);
-      }
+
+      return response()->json([
+        'status' => 'Success',
+        'data' => $response_data,
+      ], 200);
     }
     catch(\Exception $e) {
-      $response['status'] = 'Error';
-      $response['msg'] = \Lang::get('api.global_error');
-      return response()->json($response, 401);
+      return response()->json([
+        'status' => 'Error',
+        'msg' => \Lang::get('api.global_error'),
+      ], 401);
     }
   }
 
@@ -1456,32 +1458,42 @@ public function otp_verified(Request $request)
       DB::purge('mysql');
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
-      if(isset($request->tenant_id)) {
-          $cities = City::where('tenant_id',$request->tenant_id)->orderBy('id','desc')->get();
+
+      $districtId = (int) (
+        $request->district_id
+        ?? (isset($request->conditions['district_id']) ? $request->conditions['district_id'] : 0)
+        ?? 0
+      );
+
+      $query = City::orderBy('city_name', 'asc');
+      if ($districtId > 0) {
+        $query->where('district_id', $districtId);
       }
-      else {
-          $cities = City::orderBy('id')->get();
-      }
-      $i=1; 
+      $cities = $query->get();
+
       $response_data = [];
-      foreach($cities as $city) {
-        $city_det = [];
-        $city_det['sno'] = $i;
-        $city_det['state_id'] = $city->state_id;
-        $city_det['district_id'] = $city->district_id;
-        $city_det['city_id'] = $city->id;
-        $city_det['city_name'] = $city->city_name;
-        array_push($response_data,$city_det);        
-        $i++;
+      $i = 1;
+      foreach ($cities as $city) {
+        $response_data[] = [
+          'sno' => $i++,
+          'district_id' => (int) $city->district_id,
+          'city_id' => (int) $city->id,
+          'id' => (int) $city->id,
+          'city_name' => $city->city_name,
+          'pincode' => $city->pincode ?? '',
+        ];
       }
-      if($city) {          
-        return response()->json($response_data,200);
-      }
+
+      return response()->json([
+        'status' => 'Success',
+        'data' => $response_data,
+      ], 200);
     }
     catch(\Exception $e) {
-      $response['status'] = 'Error';
-      $response['msg'] = \Lang::get('api.global_error');
-      return response()->json($response, 401);
+      return response()->json([
+        'status' => 'Error',
+        'msg' => $e->getMessage(),
+      ], 401);
     }
   }
 
@@ -6066,7 +6078,7 @@ private function resolveCreatedByName($createdBy)
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
       $cond=[];
-      if(isset($request->branch_id))
+      if(isset($request->branch_id) && $request->branch_id !== '' && $request->branch_id !== '0' && (int)$request->branch_id > 0)
       {
         $cond['branch_id'] = $request->branch_id;
       }
@@ -11094,6 +11106,9 @@ public function get_followups_mobile(Request $request)
                 'followup_date'      => $followup->followup_date
                                         ? date('d-m-Y', strtotime($followup->followup_date))
                                         : '',
+                'followup_time'      => $followup->created_at
+                                        ? date('H:i', strtotime($followup->created_at))
+                                        : '',
                 'next_followup_date' => $followup->next_followup_date
                                         ? date('d-m-Y', strtotime($followup->next_followup_date))
                                         : '',
@@ -12327,6 +12342,56 @@ public function mobile_employee_dashboard(Request $request)
             }
         }
 
+        $performanceRating = 'Average';
+        $performanceScore = 0;
+        $tasksTotal = 0;
+        $tasksCompleted = 0;
+        $tasksCompletionPercent = 0;
+        $todayTargetAmount = $dailyTarget;
+        $todayTargetAchieved = $todaysCollection;
+        $todayTargetPercent = $dailyAchievementPercent;
+        $conversionRate = 0;
+
+        if ($dashboardEmpId > 0) {
+            \App\Services\EmployeeMetricsService::syncTargetProgress($tenantId, $dashboardEmpId, $today);
+            $perfRow = \App\Services\EmployeeMetricsService::computePerformance(
+                $tenantId,
+                (int) ($request->branch_id ?: 0),
+                $dashboardEmpId,
+                date('Y-m')
+            );
+            $performanceRating = $perfRow->performance_rating;
+            $performanceScore = (float) $perfRow->overall_score;
+
+            $monthStart = date('Y-m-01');
+            $leadsInMonth = \App\Services\EmployeeMetricsService::salesCount($tenantId, $dashboardEmpId, $monthStart, $today);
+            $convertedInMonth = \App\Services\EmployeeMetricsService::conversionCount($tenantId, $dashboardEmpId, $monthStart, $today);
+            $conversionRate = $leadsInMonth > 0 ? round(($convertedInMonth / $leadsInMonth) * 100, 2) : 0;
+
+            $tasks = \App\Models\EmployeeTask::where('tenant_id', $tenantId)
+                ->where('employee_id', $dashboardEmpId)
+                ->where('status', 1)
+                ->whereDate('task_date', $today)
+                ->get();
+            $tasksTotal = $tasks->count();
+            $tasksCompleted = $tasks->where('task_status', 'completed')->count();
+            $tasksCompletionPercent = $tasksTotal > 0 ? round(($tasksCompleted / $tasksTotal) * 100) : 0;
+
+            $dailyTargets = \App\Models\EmployeeTarget::where('tenant_id', $tenantId)
+                ->where('employee_id', $dashboardEmpId)
+                ->where('status', 1)
+                ->where('period_start', '<=', $today)
+                ->where('period_end', '>=', $today)
+                ->get();
+            if ($dailyTargets->count() > 0) {
+                $todayTargetAmount = (float) $dailyTargets->sum('target_amount');
+                $todayTargetAchieved = (float) $dailyTargets->sum('achieved_amount');
+                $todayTargetPercent = $todayTargetAmount > 0
+                    ? min(100, round(($todayTargetAchieved / $todayTargetAmount) * 100))
+                    : $dailyAchievementPercent;
+            }
+        }
+
         /* ================================
            FINAL RESPONSE
         ================================= */
@@ -12336,11 +12401,18 @@ public function mobile_employee_dashboard(Request $request)
             'data' => [
                 [
                     'employeeName' => $employeeName,
-                    'todayTarget' => (string) round($dailyTarget),
+                    'todayTarget' => (string) round($todayTargetAmount ?: $dailyTarget),
+                    'todayAchievement' => (string) round($todayTargetAchieved ?: $todaysCollection),
                     'monthlyTarget' => (string) round($monthlyTarget),
                     'monthlyAchievement' => (string) round($monthlyAchievement),
                     'achievementPercent' => (string) $achievementPercent,
-                    'dailyAchievementPercent' => (string) $dailyAchievementPercent,
+                    'dailyAchievementPercent' => (string) ($todayTargetPercent ?: $dailyAchievementPercent),
+                    'performanceRating' => $performanceRating,
+                    'performanceScore' => (string) $performanceScore,
+                    'tasksTotal' => (string) $tasksTotal,
+                    'tasksCompleted' => (string) $tasksCompleted,
+                    'tasksCompletionPercent' => (string) $tasksCompletionPercent,
+                    'conversionRate' => (string) $conversionRate,
                     'leadsCount' => (string) $leadsCount,
                     'todayCheckIn' => $todayCheckIn,
                     'todayCheckOut' => $todayCheckOut,
@@ -12396,7 +12468,6 @@ public function mobile_get_today_attendance(Request $request)
         $validator = Validator::make($request->all(), [
             'tenant_id' => 'required',
             'branch_id' => 'required',
-            'employee_id' => 'required',
             'db' => 'required',
         ]);
 
@@ -12406,6 +12477,15 @@ public function mobile_get_today_attendance(Request $request)
                 'msg' => $validator->errors()->first(),
             ], 200);
         }
+
+        $resolvedEmployeeId = $this->resolveMobileEmployeeId($request);
+        if ($resolvedEmployeeId <= 0) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Employee mapping not found for this login',
+            ], 200);
+        }
+        $request->merge(['employee_id' => $resolvedEmployeeId]);
 
         $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
         $attendance = $this->findMobilePunchRecord($request, $attDate);
@@ -12429,6 +12509,14 @@ public function mobile_get_today_attendance(Request $request)
             }
         }
 
+        $alerts = \App\Services\EmployeeMetricsService::attendanceAlerts(
+            (int) $request->tenant_id,
+            (int) $request->branch_id,
+            $checkIn,
+            $checkOut,
+            $attDate
+        );
+
         return response()->json([
             'status' => 'Success',
             'msg' => 'Attendance fetched',
@@ -12440,6 +12528,13 @@ public function mobile_get_today_attendance(Request $request)
                 'working_hours' => $workingHours,
                 'latitude' => $attendance->latitude ?? '',
                 'longitude' => $attendance->longitude ?? '',
+                'is_late' => $alerts['is_late'],
+                'is_early' => $alerts['is_early'],
+                'late_minutes' => $alerts['late_minutes'],
+                'early_minutes' => $alerts['early_minutes'],
+                'alert_message' => $alerts['alert_message'],
+                'shift_start' => $alerts['shift_start'] ?? null,
+                'shift_end' => $alerts['shift_end'] ?? null,
             ],
         ], 200);
     } catch (\Exception $e) {
@@ -12460,7 +12555,6 @@ public function mobile_punch_attendance(Request $request)
     $validator = Validator::make($request->all(), [
         'tenant_id' => 'required',
         'branch_id' => 'required',
-        'employee_id' => 'required',
         'punch_type' => 'required|in:check_in,check_out',
         'db' => 'required',
     ]);
@@ -12471,6 +12565,15 @@ public function mobile_punch_attendance(Request $request)
             'msg' => $validator->errors()->first(),
         ], 200);
     }
+
+    $resolvedEmployeeId = $this->resolveMobileEmployeeId($request);
+    if ($resolvedEmployeeId <= 0) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => 'Employee mapping not found for this login',
+        ], 200);
+    }
+    $request->merge(['employee_id' => $resolvedEmployeeId]);
 
     try {
         $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
@@ -12549,6 +12652,94 @@ public function mobile_punch_attendance(Request $request)
             'error' => $e->getMessage(),
         ], 401);
     }
+}
+
+public function mobile_register_push_token(Request $request)
+{
+    try {
+        if (!empty($request->db)) {
+            DB::purge('mysql');
+            Config::set('database.connections.mysql.database', $request->db);
+            DB::reconnect('mysql');
+        }
+        \App\Services\MobilePushService::registerToken(
+            (int) $request->tenant_id,
+            (int) ($request->user_id ?: $request->logged_user_id),
+            (int) ($request->employee_id ?: 0),
+            $request->push_token,
+            $request->platform ?: 'android'
+        );
+        return response()->json(array('status' => 'Success', 'msg' => 'Token registered'), 200);
+    } catch (\Exception $e) {
+        return response()->json(array('status' => 'Error', 'msg' => $e->getMessage()), 200);
+    }
+}
+
+public function mobile_receipt_file_upload(Request $request)
+{
+    try {
+        if (!empty($request->db)) {
+            DB::purge('mysql');
+            Config::set('database.connections.mysql.database', $request->db);
+            DB::reconnect('mysql');
+        }
+        if (!$request->hasFile('receipt_photo')) {
+            return response()->json(array('status' => 'Error', 'msg' => 'No file uploaded'), 200);
+        }
+        $file = $request->file('receipt_photo');
+        $name = 'receipt_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/receipt_photos', $name);
+        return response()->json(array(
+            'status' => 'Success',
+            'msg' => 'Uploaded',
+            'file_name' => $name,
+            'file_path' => $path,
+        ), 200);
+    } catch (\Exception $e) {
+        return response()->json(array('status' => 'Error', 'msg' => $e->getMessage()), 200);
+    }
+}
+
+public function mobile_list_banks(Request $request)
+{
+    try {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+        $cond = array('tenant_id' => $request->tenant_id);
+        if ($request->branch_id) {
+            $cond['branch_id'] = $request->branch_id;
+        }
+        $banks = \App\Models\BankDetail::where($cond)->orderBy('id', 'desc')->get();
+        $data = array();
+        foreach ($banks as $bank) {
+            $data[] = array(
+                'id' => (int) $bank->id,
+                'bank_name' => $bank->bank_name ?? '',
+                'account_number' => $bank->account_number ?? '',
+                'branch_name' => $bank->branch_name ?? '',
+            );
+        }
+        return response()->json(array('status' => 'Success', 'data' => $data), 200);
+    } catch (\Exception $e) {
+        return response()->json(array('status' => 'Error', 'msg' => $e->getMessage()), 200);
+    }
+}
+
+private function resolveMobileEmployeeId(Request $request)
+{
+    $employeeId = (int) ($request->employee_id ?? 0);
+    if ($employeeId > 0) {
+        return $employeeId;
+    }
+
+    $userId = (int) ($request->user_id ?? $request->created_by ?? 0);
+    if ($userId <= 0) {
+        return 0;
+    }
+
+    $user = User::select('employee_id')->where('id', $userId)->first();
+    return $user && $user->employee_id ? (int) $user->employee_id : 0;
 }
 
 private function findMobilePunchRecord(Request $request, $attDate)

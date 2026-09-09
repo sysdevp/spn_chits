@@ -1,3 +1,64 @@
-<p>
-  task-report works!
-</p>
+<div class="card">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Employee Task Report</div>
+      <div class="col-6 text-right">
+        <a [routerLink]="['/admin-panel/add-task']" class="bg-primary border-0 text-white px-3 py-2">
+          <i class="fas fa-plus pr-2"></i> Assign Task
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label>Date</label>
+        <input type="date" class="form-control" [(ngModel)]="dateFilter" (change)="load()">
+      </div>
+      <div class="col-md-3">
+        <label>Status</label>
+        <select class="form-control" [(ngModel)]="statusFilter" (change)="load()">
+          <option value="">All</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button class="btn btn-info" type="button" (click)="load()">Search</button>
+      </div>
+    </div>
+    <div class="table-responsive" [hidden]="TableHidden">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Branch</th>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Remark</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.branch_name}}</td>
+            <td>{{row.title}}</td>
+            <td>{{row.task_date}}</td>
+            <td>{{row.priority}}</td>
+            <td>{{row.task_status}}</td>
+            <td>{{row.employee_remark || '-'}}</td>
+          </tr>
+          <tr *ngIf="!dataList.length">
+            <td colspan="8" class="text-center">No tasks found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,63 @@
+<ng-template #mapModal let-c="close">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Punch Location</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body" *ngIf="selected">
+    <p class="mb-2">
+      <strong>{{selected.employee_name}}</strong> · {{selected.att_view_date}}<br>
+      Check In: {{selected.check_in_time || '-'}} &nbsp; Check Out: {{selected.check_out_time || '-'}}
+    </p>
+    <div *ngIf="mapUrl">
+      <iframe [src]="mapUrl" width="100%" height="360" frameborder="0" style="border:0" allowfullscreen></iframe>
+    </div>
+    <div *ngIf="!mapUrl" class="text-center py-4">No GPS location recorded for this punch.</div>
+  </div>
+</ng-template>
+
+<div class="card maz-vh">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-6 my-auto font-weight-bold">Attendance Login Time & Map</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div [hidden]="TableHidden">
+      <table class="table table-striped table-bordered">
+        <thead>
+          <tr>
+            <th>SNo</th>
+            <th>Date</th>
+            <th>Employee</th>
+            <th>Branch</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Status</th>
+            <th>Map</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.att_view_date}}</td>
+            <td>{{row.employee_name}}</td>
+            <td>{{row.branch_name}}</td>
+            <td>{{row.check_in_time || '-'}}</td>
+            <td>{{row.check_out_time || '-'}}</td>
+            <td>{{row.punch_status}}</td>
+            <td>
+              <a *ngIf="row.map_url" (click)="openMap(mapModal, row)" title="View map"><i class="fas fa-map-marker-alt text-success"></i></a>
+              <span *ngIf="!row.map_url">-</span>
+            </td>
+          </tr>
+          <tr *ngIf="dataList.length==0">
+            <td colspan="8" class="text-center">No punch records found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden==true" class="table-loader">
+      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    </div>
+  </div>
+</div>

@@ -20,6 +20,8 @@
                             <th>Attendance Type</th>
                             <th>Leave Type</th>
                             <th>Sessions</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -37,6 +39,8 @@
                               <span *ngIf="row.forenoon_session==1">Forenoon - </span> 
                               <span *ngIf="row.afternoon_session==1">Afternoon</span> 
                              </td>
+                            <td>{{row.check_in_time || '-'}}</td>
+                            <td>{{row.check_out_time || '-'}}</td>
                           </tr>
                         </tbody>
                     

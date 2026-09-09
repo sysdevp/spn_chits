@@ -2,18 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use JWTAuth;
 
 /**
- * Branch / employee scope for logged-in users (matches mobile user_branch_mapping).
+ * Branch / employee scope for logged-in users (user_branch_mapping).
  */
 class UserLoginScopeService
 {
     /**
-     * @return int[]|null null = no restriction (tenant admin); [] = none allowed
+     * @return int[]|null null = no restriction (tenant-wide); [] = none allowed
      */
     public function resolveAllowedBranchIds(int $tenantId, int $userId, int $logId): ?array
     {
@@ -28,7 +30,8 @@ class UserLoginScopeService
             }
         }
 
-        if ($userId <= 0 && $logId <= 0) {
+        // Super admin (user id 1) — all branches
+        if ($userId === 1) {
             return null;
         }
 
@@ -40,12 +43,12 @@ class UserLoginScopeService
             return null;
         }
 
-        $user = User::find($userId);
-        if (!$user) {
+        if ($userId <= 0) {
             return null;
         }
 
-        if (empty($user->employee_id)) {
+        $user = User::find($userId);
+        if (!$user) {
             return null;
         }
 
@@ -60,15 +63,24 @@ class UserLoginScopeService
             $branchIds[] = (int) $bid;
         }
 
-        if (empty($branchIds) && !empty($user->branch_id)) {
-            $branchIds[] = (int) $user->branch_id;
+        if (!empty($branchIds)) {
+            return array_values(array_unique(array_filter($branchIds)));
         }
 
-        if (empty($branchIds)) {
+        if (!empty($user->branch_id)) {
+            return [(int) $user->branch_id];
+        }
+
+        if (!empty($user->employee_id)) {
+            $emp = Employee::find($user->employee_id);
+            if ($emp && !empty($emp->branch_id)) {
+                return [(int) $emp->branch_id];
+            }
             return [];
         }
 
-        return array_values(array_unique(array_filter($branchIds)));
+        // Tenant admin login with no branch mapping — all branches
+        return null;
     }
 
     public function resolveAllowedBranchIdsFromRequest(Request $request): ?array
@@ -88,12 +100,33 @@ class UserLoginScopeService
         }
 
         if ($roleTypeId === 1) {
-            // Role type 1 users should have tenant-wide dashboard scope.
             return null;
         }
 
         $userId = isset($request->user_id) ? (int) $request->user_id : 0;
         $logId = isset($request->log_id) ? (int) $request->log_id : 0;
+
+        if ($userId <= 0 || $logId <= 0) {
+            try {
+                $jwtUser = JWTAuth::parseToken()->authenticate();
+                if ($jwtUser) {
+                    if ($userId <= 0) {
+                        $userId = (int) $jwtUser->id;
+                    }
+                    if ($logId <= 0 && !empty($jwtUser->employee_id)) {
+                        $logId = (int) $jwtUser->employee_id;
+                    }
+                    if ($roleTypeId === null && !empty($jwtUser->role_id)) {
+                        $role = DB::table('roles')->where('id', (int) $jwtUser->role_id)->first();
+                        if ($role && (int) $role->role_type_id === 1) {
+                            return null;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Token not available on this request
+            }
+        }
 
         return $this->resolveAllowedBranchIds($tenantId, $userId, $logId);
     }
@@ -109,8 +142,6 @@ class UserLoginScopeService
 
         if (!empty($request->branch_id)) {
             $bid = (int) $request->branch_id;
-            // If requested branch is outside allowed scope, use full allowed set
-            // (empty set made dashboards look "all zeros" / broken).
             if ($scope !== null && !in_array($bid, $scope, true)) {
                 return $scope;
             }
@@ -121,7 +152,7 @@ class UserLoginScopeService
             return $scope;
         }
 
-        return \App\Models\Branch::where('tenant_id', $tenantId)->pluck('id')->map(function ($id) {
+        return Branch::where('tenant_id', $tenantId)->pluck('id')->map(function ($id) {
             return (int) $id;
         })->values()->all();
     }

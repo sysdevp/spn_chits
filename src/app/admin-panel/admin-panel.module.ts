@@ -256,6 +256,8 @@ import { AddEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAtt
 import { UpdateEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/update-employee-attendance/update-employee-attendance.component';
 import { ViewEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/view-employee-attendance/view-employee-attendance.component';
 import { DeleteEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/delete-employee-attendance/delete-employee-attendance.component';
+import { ViewLeaveRequestsComponent } from './EmployeeManagement/LeaveRequests/view-leave-requests/view-leave-requests.component';
+import { ViewPunchAttendanceComponent } from './EmployeeManagement/PunchAttendance/view-punch-attendance/view-punch-attendance.component';
 //Employee Login
 import { AddEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/add-employee-login/add-employee-login.component';
 import { UpdateEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/update-employee-login/update-employee-login.component';
@@ -609,8 +611,11 @@ import { CancelCustomerReportComponent } from './Reports/cancel-customer-report/
 import { TargetIncentiveComponent } from './TransactionManagement/target-incentive/target-incentive.component';
 import { AddPigmyCollectionComponent } from './SubscriberManagement/PigmyCollection/add-pigmy-collection/add-pigmy-collection.component';
 import { TaskManagementComponent } from './EmployeeManagement/task-management/task-management.component';
+import { SetEmployeeTargetComponent } from './EmployeeManagement/TargetSet/set-employee-target/set-employee-target.component';
+import { ViewEmployeeMobileModulesComponent } from './EmployeeManagement/MobileModules/view-employee-mobile-modules/view-employee-mobile-modules.component';
 import { PigmyReportComponent } from './Reports/pigmy-report/pigmy-report.component';
 import { TaskReportComponent } from './Reports/task-report/task-report.component';
+import { ViewDailyTasksTargetsComponent } from './EmployeeManagement/DailyTasksTargets/view-daily-tasks-targets/view-daily-tasks-targets.component';
 import { CommitmentReceiptPrintComponent } from './TransactionManagement/commitment-receipt-print/commitment-receipt-print.component';
 import { BeforeDeleteReceiptComponent } from './SubscriberManagement/before-delete-receipt/before-delete-receipt.component';
 import { RefundTransferReportComponent } from './Reports/refund-transfer-report/refund-transfer-report.component';
@@ -859,6 +864,8 @@ export class DemoMaterialModule {}
     UpdateEmployeeAttendanceComponent, 
     ViewEmployeeAttendanceComponent, 
     DeleteEmployeeAttendanceComponent,
+    ViewLeaveRequestsComponent,
+    ViewPunchAttendanceComponent,
     //Employee Login
     AddEmployeeLoginComponent, 
     UpdateEmployeeLoginComponent, 
@@ -1231,8 +1238,11 @@ export class DemoMaterialModule {}
     TargetIncentiveComponent,
     AddPigmyCollectionComponent,
     TaskManagementComponent,
+    SetEmployeeTargetComponent,
+    ViewEmployeeMobileModulesComponent,
     PigmyReportComponent, 
     TaskReportComponent,
+    ViewDailyTasksTargetsComponent,
     CommitmentReceiptPrintComponent,
     BeforeDeleteReceiptComponent,
     RefundTransferReportComponent,

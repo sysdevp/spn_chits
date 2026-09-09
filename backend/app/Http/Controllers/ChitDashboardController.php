@@ -12,11 +12,14 @@ use App\Models\Group;
 use App\Models\Payment;
 use App\Models\PaymentType;
 use App\Models\Receipt;
+use App\Models\CashSettlement;
+use App\Models\Employee;
 use Carbon\Carbon;
 use App\Services\UserLoginScopeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Unified web dashboard: charts, today follow-ups, collections, payments,
@@ -491,6 +494,76 @@ class ChitDashboardController extends Controller
                 Log::warning('Dashboard branch collections failed: ' . $brEx->getMessage());
             }
 
+            // ---------- Cash settlements (Settlement Report snapshot) ----------
+            $settlementPendingCount = 0;
+            $settlementApprovedCount = 0;
+            $settlementTodayAmount = 0.0;
+            $settlementMonthAmount = 0.0;
+            $recentSettlements = [];
+            try {
+                $dateCol = Schema::hasColumn('cash_settlements', 'settlement_date')
+                    ? 'settlement_date'
+                    : 'date';
+                $hasApproval = Schema::hasColumn('cash_settlements', 'is_approved');
+
+                $settleBase = function () use ($branchIds, $tenantId) {
+                    return CashSettlement::whereIn('branch_id', $branchIds)
+                        ->where('tenant_id', $tenantId);
+                };
+
+                $settlementTodayAmount = (float) $settleBase()
+                    ->whereDate($dateCol, $today)
+                    ->sum('received_amount');
+                $settlementMonthAmount = (float) $settleBase()
+                    ->whereBetween($dateCol, [$firstDay, $lastDay])
+                    ->sum('received_amount');
+
+                if ($hasApproval) {
+                    $settlementPendingCount = (int) $settleBase()
+                        ->where(function ($q) {
+                            $q->whereNull('is_approved')->orWhere('is_approved', 0);
+                        })
+                        ->count();
+                    $settlementApprovedCount = (int) $settleBase()
+                        ->where('is_approved', 1)
+                        ->whereBetween($dateCol, [$firstDay, $lastDay])
+                        ->count();
+                } else {
+                    $settlementPendingCount = 0;
+                    $settlementApprovedCount = (int) $settleBase()
+                        ->whereBetween($dateCol, [$firstDay, $lastDay])
+                        ->count();
+                }
+
+                $rows = $settleBase()
+                    ->orderBy($dateCol, 'desc')
+                    ->orderBy('id', 'desc')
+                    ->limit(10)
+                    ->get();
+
+                foreach ($rows as $row) {
+                    $emp = Employee::find($row->employee_id);
+                    $empName = $emp ? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')) : '';
+                    $br = Branch::find($row->branch_id);
+                    $sDate = $row->{$dateCol} ?? null;
+                    $isApproved = $hasApproval ? (int) ($row->is_approved ?? 0) : 0;
+                    $recentSettlements[] = [
+                        'id' => $row->id,
+                        'branch' => $br ? $br->branch_name : '',
+                        'employee' => $empName,
+                        'amount' => round((float) $row->received_amount, 2),
+                        'settlement_date' => ($sDate && $sDate != '0000-00-00')
+                            ? date('d-m-Y', strtotime($sDate))
+                            : '',
+                        'approval_status' => $isApproved === 1 ? 'Approved' : 'Pending',
+                        'is_approved' => $isApproved,
+                        'mode' => $row->settlement_mode ?? '',
+                    ];
+                }
+            } catch (\Exception $sEx) {
+                Log::warning('Dashboard settlements failed: ' . $sEx->getMessage());
+            }
+
             $payload = [
                 'as_of' => $today,
                 'summary' => [
@@ -503,6 +576,10 @@ class ChitDashboardController extends Controller
                     'today_collection_total' => round($todayCollectionTotal, 2),
                     'today_payment_total' => round($todayPaymentTotal, 2),
                     'today_followup_count' => count($todayFollowupsList),
+                    'settlement_pending_count' => $settlementPendingCount,
+                    'settlement_approved_count' => $settlementApprovedCount,
+                    'settlement_today_amount' => round($settlementTodayAmount, 2),
+                    'settlement_month_amount' => round($settlementMonthAmount, 2),
                 ],
                 'charts' => [
                     'collection_by_mode' => [
@@ -521,6 +598,7 @@ class ChitDashboardController extends Controller
                 'today_followups' => $todayFollowupsList,
                 'today_collections' => $todayCollectionsList,
                 'today_payments' => $todayPaymentsList,
+                'recent_settlements' => $recentSettlements,
             ];
 
             return response()->json([
@@ -555,6 +633,10 @@ class ChitDashboardController extends Controller
                 'today_collection_total' => 0,
                 'today_payment_total' => 0,
                 'today_followup_count' => 0,
+                'settlement_pending_count' => 0,
+                'settlement_approved_count' => 0,
+                'settlement_today_amount' => 0,
+                'settlement_month_amount' => 0,
             ],
             'charts' => [
                 'collection_by_mode' => ['labels' => [], 'data' => [], 'scope' => 'month'],
@@ -569,6 +651,7 @@ class ChitDashboardController extends Controller
             'today_followups' => [],
             'today_collections' => [],
             'today_payments' => [],
+            'recent_settlements' => [],
         ];
     }
 }

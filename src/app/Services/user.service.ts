@@ -36,6 +36,9 @@ export class UserService {
             'database_name': '',
           };
         } 
+        if (url !== 'login') {
+          model = this.attachLoginScopeParams(model);
+        }
         model.database_name = localStorage.getItem('database_name');
         let body = this.serializeObj(model);
         return this.http.post(this.APIUrl + url, body, httpOptions);
@@ -49,6 +52,7 @@ export class UserService {
               'database_name': '',
             };
           }
+          model = this.attachLoginScopeParams(model);
           model.database_name = localStorage.getItem('database_name');
           return this.http.post(this.APIUrl + url, JSON.stringify(model), {headers: new HttpHeaders({ 'Content-Type': 'application/json', 'Authorization': auth_token})});
         }
@@ -174,6 +178,22 @@ export class UserService {
         words_string = words_string.split("  ").join(" ");
     }
     return words_string;
+  }
+
+  private attachLoginScopeParams(model: any): any {
+    const logId = localStorage.getItem('logged_employee_id');
+    const userId = localStorage.getItem('logged_user_id');
+    const roleTypeId = localStorage.getItem('role_type_id');
+    if (logId && logId !== '0' && logId !== 'null' && model.log_id === undefined) {
+      model.log_id = logId;
+    }
+    if (userId && userId !== '0' && userId !== 'null' && model.user_id === undefined) {
+      model.user_id = userId;
+    }
+    if (roleTypeId && roleTypeId !== 'null' && model.role_type_id === undefined) {
+      model.role_type_id = roleTypeId;
+    }
+    return model;
   }
 
   private serializeObj(obj) {

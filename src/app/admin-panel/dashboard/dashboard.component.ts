@@ -539,6 +539,16 @@ export class DashboardComponent implements OnInit {
         { key: 'payment_date', label: 'Date' },
       ];
       this.modalRows = this.bundle.today_payments || [];
+    } else if (kind === 'settlements') {
+      this.modalDetailTitle = 'Cash settlements (recent)';
+      this.modalColumns = [
+        { key: 'settlement_date', label: 'Date' },
+        { key: 'branch', label: 'Branch' },
+        { key: 'employee', label: 'Employee' },
+        { key: 'amount', label: 'Amount' },
+        { key: 'approval_status', label: 'Status' },
+      ];
+      this.modalRows = this.bundle.recent_settlements || [];
     } else {
       return;
     }

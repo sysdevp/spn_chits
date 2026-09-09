@@ -1,0 +1,139 @@
+<div class="hr-panel">
+  <div class="hr-panel-head">
+    <div>
+      <h3>Set Employee Target</h3>
+      <p>Daily / weekly / monthly targets for collection and new business</p>
+    </div>
+    <div class="hr-actions">
+      <a [routerLink]="['/admin-panel/add-task']" class="btn btn-outline-primary btn-sm">
+        <i class="fas fa-tasks pr-1"></i> Assign Tasks
+      </a>
+      <a [routerLink]="['/admin-panel/view-daily-tasks-targets']" class="btn btn-success btn-sm">
+        <i class="fas fa-eye pr-1"></i> View Status
+      </a>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="hr-form">
+    <div class="form-row" *ngIf="isSuperAdmin">
+      <div class="form-group col-md-4">
+        <label>Company <span class="error">*</span></label>
+        <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+          <option value="">Select Company</option>
+          <option *ngFor="let data of companyList" [value]="data.id">{{data.chit_fund_name}}</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Branch <span class="error">*</span></label>
+        <select class="form-control" formControlName="branch_id" (change)="branchChg($event)">
+          <option value="">Select Branch</option>
+          <option *ngFor="let data of branchList" [value]="data.id">{{data.branch_name}}</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label>Employee <span class="error">*</span></label>
+        <select class="form-control" formControlName="employee_id" (change)="loadTargets()">
+          <option value="">Select Employee</option>
+          <option *ngFor="let emp of employeeList" [value]="emp.id">{{emp.first_name}} {{emp.last_name}}</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label>Period <span class="error">*</span></label>
+        <select class="form-control" formControlName="period_type" (change)="onTargetTypeChg(); loadTargets()">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Start Date <span class="error">*</span></label>
+        <input type="date" class="form-control" formControlName="period_start">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Target Type <span class="error">*</span></label>
+        <select class="form-control" formControlName="target_type" (change)="onTargetTypeChg()">
+          <option value="existing_client_collection">Existing Client Collection Target</option>
+          <option value="new_client_collection">New Client Collection Target</option>
+          <option value="new_business">New Business Target</option>
+          <option value="activity">Activity Target</option>
+        </select>
+      </div>
+      <div class="form-group col-md-4">
+        <label>Amount <span class="error">*</span></label>
+        <input type="number" class="form-control" formControlName="target_amount" min="0" step="0.01" placeholder="0.00">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label>Label</label>
+        <input type="text" class="form-control" formControlName="target_label">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Achieved</label>
+        <input type="number" class="form-control" formControlName="achieved_amount" min="0" step="0.01">
+      </div>
+      <div class="form-group col-md-4">
+        <label>Notes</label>
+        <input type="text" class="form-control" formControlName="notes" placeholder="Optional note">
+      </div>
+    </div>
+
+    <div class="hr-form-actions">
+      <button type="submit" class="btn btn-success" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+      <button type="button" class="btn btn-outline-secondary" (click)="loadTargets()">Refresh</button>
+    </div>
+  </form>
+
+  <div class="hr-table-wrap" [hidden]="TableHidden">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="mb-0">Saved Targets</h5>
+    </div>
+    <div class="table-responsive">
+      <table class="table hr-table mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Employee</th>
+            <th>Type</th>
+            <th>Period</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Target</th>
+            <th>Achieved</th>
+            <th>%</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of targetList; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{row.employee_name}}</td>
+            <td><span class="hr-chip">{{ typeLabel(row.target_type) }}</span></td>
+            <td>{{row.period_type}}</td>
+            <td>{{row.period_start}}</td>
+            <td>{{row.period_end}}</td>
+            <td>{{row.target_amount}}</td>
+            <td>{{row.achieved_amount}}</td>
+            <td>
+              <div class="hr-progress"><span [style.width.%]="row.completion_percent || 0"></span></div>
+              {{row.completion_percent || 0}}%
+            </td>
+            <td>
+              <button type="button" class="btn btn-sm btn-outline-danger" (click)="deleteTarget(row)">Delete</button>
+            </td>
+          </tr>
+          <tr *ngIf="!targetList.length">
+            <td colspan="10" class="text-center text-muted py-4">No targets found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -329,26 +329,20 @@
           <div class="col-md-6">
             <div class="form-group row">
               <label class="col-sm-4 col-form-label">Profile Photo</label>
-              <div class="col-sm-8 custom-file">
-                <input
-                  type="hidden"
-                  class="form-control"
-                  id="photo"
-                  name="photo"
-                  formControlName="photo"
-                />
-                <a
-                  (click)="
-                    open(uploadModal, { windowClass: 'modal-lg animate' })
-                  "
-                  for="inputGroupFile01"
-                  class="white_btn logobtn p-2 text-dark rounded w-100 btn"
-                >
-                  <b>Choose File</b>
-                </a>
+              <div class="col-sm-8">
+                <input type="hidden" formControlName="photo" />
+                <div class="border rounded p-2 text-center" style="background:#f8faf9;min-height:110px;">
+                  <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="preview" style="max-height:90px;max-width:100%;border-radius:6px;" />
+                  <div *ngIf="!photoPreviewUrl" class="text-muted small py-3">Choose employee photo from laptop</div>
+                  <label class="btn btn-primary btn-sm mb-0 mt-2">
+                    {{ photoUploading ? 'Uploading...' : 'Choose Photo' }}
+                    <input type="file" accept="image/*" (change)="onEmployeePhotoSelected($event)" [disabled]="photoUploading" hidden />
+                  </label>
+                </div>
+                <div class="small text-primary mt-1" *ngIf="employee_photo">{{ employee_photo }}</div>
+                <div class="error small" *ngIf="photoUploadError">{{ photoUploadError }}</div>
               </div>
             </div>
-            <!-- <span style="color: blue">{{ employee_photo }}</span> -->
           </div>
 
           <div class="col-md-6">

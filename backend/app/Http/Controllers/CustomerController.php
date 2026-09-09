@@ -17,6 +17,8 @@ use App\Models\CommitmentAuction;
 use App\Models\Branch;
 use App\Models\City;
 use App\Models\AuctionOnHoliday;
+use App\Models\Document;
+use App\Models\DocumentDetail;
 use Illuminate\Http\Request;
 use Validator;
 use Storage;
@@ -2443,36 +2445,57 @@ $grandchitstotal=0;
                 $customer->scheme_id = isset($request->scheme_id) ? ($request->scheme_id) : 0;
     
                 $customer->name = isset($request->name) ? ($request->name) : '';
-                $customer->dob = $request->dob; 
-            
+                $customer->last_name = isset($request->last_name) ? ($request->last_name) : '';
+                $customer->photo = isset($request->photo) ? ($request->photo) : '';
+                $customer->dob = isset($request->dob) ? $request->dob : '0000-00-00';
                 $customer->gender = isset($request->gender) ? ($request->gender) : 0;
                 $customer->mobile_no = isset($request->mobile_no) ? ($request->mobile_no) : '0';
-                
+                $customer->mobile_no_1 = isset($request->mobile_no_1) ? ($request->mobile_no_1) : '';
+                $customer->phone_no = isset($request->phone_no) ? ($request->phone_no) : '';
                 $customer->email_id = isset($request->email_id) ? ($request->email_id) : '';
-              
+                $customer->adhar_no = isset($request->adhar_no) ? ($request->adhar_no) : '';
+                $customer->pan_no = isset($request->pan_no) ? ($request->pan_no) : '';
+                $customer->license_no = isset($request->license_no) ? ($request->license_no) : '';
+                $customer->ration_card_no = isset($request->ration_card_no) ? ($request->ration_card_no) : '';
                 $customer->is_enrolled = '0';
-               
-                $customer->doj = isset($request->doj) ? ($request->doj) : 0;
-              
-                
-             
-                $customer->address_line_1 = isset($request->address_line_1) ? ($request->address_line_1) : '0';
-            
+                $customer->doj = isset($request->doj) ? ($request->doj) : date('Y-m-d');
+                $customer->father_name = isset($request->father_name) ? ($request->father_name) : '';
+                $customer->spouse_name = isset($request->spouse_name) ? ($request->spouse_name) : '';
+                $customer->door_no = isset($request->door_no) ? ($request->door_no) : '';
+                $customer->buildling_name = isset($request->buildling_name) ? ($request->buildling_name) : '';
+                $customer->address_line_1 = isset($request->address_line_1) ? ($request->address_line_1) : '';
+                $customer->address_line_2 = isset($request->address_line_2) ? ($request->address_line_2) : '';
+                $customer->landmark = isset($request->landmark) ? ($request->landmark) : '';
                 $customer->state_id = isset($request->state_id) ? ($request->state_id) : 0;
                 $customer->district_id = isset($request->district_id) ? ($request->district_id) : 0;
                 $customer->city_id = isset($request->city_id) ? ($request->city_id) : 0;
-                $customer->pincode = isset($request->pincode) ? ($request->pincode) : '0';
-               
+                $customer->pincode = isset($request->pincode) ? ($request->pincode) : '';
+                $customer->communication_door_no = isset($request->communication_door_no) ? ($request->communication_door_no) : ($request->door_no ?? '');
+                $customer->communication_building_name = isset($request->communication_building_name) ? ($request->communication_building_name) : ($request->buildling_name ?? '');
+                $customer->communication_address_line_1 = isset($request->communication_address_line_1) ? ($request->communication_address_line_1) : ($request->address_line_1 ?? '');
+                $customer->communication_address_line_2 = isset($request->communication_address_line_2) ? ($request->communication_address_line_2) : ($request->address_line_2 ?? '');
+                $customer->communication_land_mark = isset($request->communication_land_mark) ? ($request->communication_land_mark) : ($request->landmark ?? '');
+                $customer->communication_state_id = isset($request->communication_state_id) ? ($request->communication_state_id) : ($request->state_id ?? 0);
+                $customer->communication_district_id = isset($request->communication_district_id) ? ($request->communication_district_id) : ($request->district_id ?? 0);
+                $customer->communication_city_id = isset($request->communication_city_id) ? ($request->communication_city_id) : ($request->city_id ?? 0);
+                $customer->communication_pincode = isset($request->communication_pincode) ? ($request->communication_pincode) : ($request->pincode ?? '');
+                $customer->permanent_door_no = isset($request->permanent_door_no) ? ($request->permanent_door_no) : ($request->door_no ?? '');
+                $customer->permanent_building_name = isset($request->permanent_building_name) ? ($request->permanent_building_name) : ($request->buildling_name ?? '');
+                $customer->permanent_address_line_1 = isset($request->permanent_address_line_1) ? ($request->permanent_address_line_1) : ($request->address_line_1 ?? '');
+                $customer->permanent_address_line_2 = isset($request->permanent_address_line_2) ? ($request->permanent_address_line_2) : ($request->address_line_2 ?? '');
+                $customer->permanent_land_mark = isset($request->permanent_land_mark) ? ($request->permanent_land_mark) : ($request->landmark ?? '');
+                $customer->permanent_state_id = isset($request->permanent_state_id) ? ($request->permanent_state_id) : ($request->state_id ?? 0);
+                $customer->permanent_district_id = isset($request->permanent_district_id) ? ($request->permanent_district_id) : ($request->district_id ?? 0);
+                $customer->permanent_city_id = isset($request->permanent_city_id) ? ($request->permanent_city_id) : ($request->city_id ?? 0);
+                $customer->permanent_pincode = isset($request->permanent_pincode) ? ($request->permanent_pincode) : ($request->pincode ?? '');
+                $customer->occupation = isset($request->occupation) ? ($request->occupation) : 0;
+                $customer->income = isset($request->income) ? ($request->income) : 0;
+                $customer->gst_no = isset($request->gst_no) ? ($request->gst_no) : '';
                 $customer->is_customer = '1';
-              
                 $customer->created_by = isset($request->created_by) ? ($request->created_by) : 0;
-                $customer->status = isset($request->status) ? ($request->status) : 1; 
-
+                $customer->status = isset($request->status) ? ($request->status) : 1;
                 $customer->reference_type = 2;
-
-                // $customer->reference_type = 3;
-
-                $customer->introducer_id = isset($request->agent_id) ? ($request->agent_id) : '0';
+                $customer->introducer_id = isset($request->agent_id) ? ($request->agent_id) : (isset($request->introducer_id) ? $request->introducer_id : '0');
 
 
 
@@ -2489,6 +2512,7 @@ $grandchitstotal=0;
                     $customer->customer_code = $customer_code;
                     if($customer->save())
                     {
+                        $this->mobileSaveCustomerDocuments($request, $customer->id);
 
                         $update_customer = new UpdateCustomer();                
                         $update_customer->tenant_id = isset($customer->tenant_id) ? ($customer->tenant_id) : 0;
@@ -2561,6 +2585,7 @@ $grandchitstotal=0;
                          
                             $response['status'] = 'Success';
                             $response['msg'] = \Lang::get('api.success_customer_added');
+                            $response['customer_code'] = $customer->customer_code;
                             $response['data'] = $customer;
                             return response()->json($response,200);
                         }
@@ -2856,6 +2881,54 @@ $grandchitstotal=0;
         }
 
         return $prefix . sprintf('%04d', $maxSeq + 1);
+    }
+
+    public function mobile_customer_file_upload(Request $request)
+    {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+        return $this->fileUpload($request);
+    }
+
+    private function mobileSaveCustomerDocuments(Request $request, $customerId)
+    {
+        $docs = $request->input('document_details', []);
+        if (!is_array($docs) || empty($docs)) {
+            return;
+        }
+
+        $validDocs = array_values(array_filter($docs, function ($doc) {
+            return is_array($doc) && !empty($doc['document_path']);
+        }));
+        if (empty($validDocs)) {
+            return;
+        }
+
+        $document = new Document();
+        $document->tenant_id = $request->tenant_id ?? 0;
+        $document->branch_id = $request->branch_id ?? 0;
+        $document->customer_id = $customerId;
+        $document->collected_employee_id = $request->employee_id ?? ($request->agent_id ?? 0);
+        $document->collect_date = date('Y-m-d');
+        $document->collected_from = 'Mobile App';
+        $document->remark = 'Uploaded from mobile customer form';
+        $document->created_by = $request->created_by ?? 0;
+        $document->status = 1;
+        if (!$document->save()) {
+            return;
+        }
+
+        foreach ($validDocs as $doc) {
+            $detail = new DocumentDetail();
+            $detail->document_id = $document->id;
+            $detail->customer_id = $customerId;
+            $detail->document_no = $doc['document_no'] ?? '';
+            $detail->document_path = $doc['document_path'] ?? '';
+            $detail->document_type = $doc['document_type'] ?? ($doc['document_name'] ?? 'Document');
+            $detail->status = 1;
+            $detail->save();
+        }
     }
     
 }

@@ -893,12 +893,16 @@ $response['amount_in_words'] = $result;
                 {                    
     				if($payment->save()) {
     					$enrol_update = ChitDetail::find($request->enrollment_id);
-    					$enrol_update->payment_month = isset($request->payment_month) ? $request->payment_month : '';
-    					$enrol_update->total_payment_release = isset($request->total_payment_release) ? $request->total_payment_release : '';
-    					$customer_released = $enrol_update->payment_released;
-    					$enrol_update->payment_released = $request->total_amount + $customer_released;
-    					$enrol_update->pending_released = $request->total_payment_release - $enrol_update->payment_released;
-    					$enrol_update->save();
+                        if ($enrol_update) {
+    					    $enrol_update->payment_month = isset($request->payment_month) ? $request->payment_month : '';
+    					    $enrol_update->total_payment_release = isset($request->total_payment_release) ? $request->total_payment_release : '';
+    					    $customer_released = $enrol_update->payment_released;
+    					    $enrol_update->payment_released = $request->total_amount + $customer_released;
+    					    $enrol_update->pending_released = $request->total_payment_release - $enrol_update->payment_released;
+                            // Commitment payment marks customer as prized in chit_details
+                            $enrol_update->prized_status = 1;
+    					    $enrol_update->save();
+                        }
     					$response['status'] = 'Success';
     					$response['msg'] = \Lang::get('api.success_payment_added');
     					$response['data'] = $payment;
@@ -1003,6 +1007,13 @@ $response['amount_in_words'] = $result;
                     $payment->status = isset($request->status) ? ($request->status) : 1;
                     $payment->updated_by = isset($request->updated_by) ? ($request->updated_by) : 0;
                     if($payment->save()) {
+                        if (!empty($payment->enrollment_id)) {
+                            $enrol_update = ChitDetail::find($payment->enrollment_id);
+                            if ($enrol_update) {
+                                $enrol_update->prized_status = 1;
+                                $enrol_update->save();
+                            }
+                        }
                         $response['status'] = "Success";
                         $response['msg'] = \Lang::get('api.success_payment_updated');
                         $response['data'] = $payment;
@@ -1865,7 +1876,14 @@ $response['amount_in_words'] = $result;
                 $payment->cheque_debit_to = isset($request->cheque_debit_to) ? ($request->cheque_debit_to) : 0; 
                 $payment->status = isset($request->status) ? ($request->status) : 1;
                 if($payment->save()) {
-
+                    // Cleared commitment cheque → mark enrollment prized
+                    if ((int) $payment->status === 1 && !empty($payment->enrollment_id) && (string) $payment->payment_for === '7') {
+                        $enrol_update = ChitDetail::find($payment->enrollment_id);
+                        if ($enrol_update) {
+                            $enrol_update->prized_status = 1;
+                            $enrol_update->save();
+                        }
+                    }
                     $response['status'] = 'Success';
                     $response['msg'] = \Lang::get('api.success_cheque_cleared');
                     $response['data'] = $payment;

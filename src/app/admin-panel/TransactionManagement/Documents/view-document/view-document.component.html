@@ -76,6 +76,10 @@
                 <span *ngIf="document.document_type==1">Pan Card</span>
                 <span *ngIf="document.document_type==2">Aadhaar Card</span>
                 <span *ngIf="document.document_type==3">Ration Card</span>
+                <span *ngIf="document.document_type=='PAN' || document.document_type=='Pan' || document.document_type=='Pan Card'">Pan Card</span>
+                <span *ngIf="document.document_type=='Aadhar' || document.document_type=='Aadhaar'">Aadhaar Card</span>
+                <span *ngIf="document.document_type=='Application' || document.document_type=='Application Form'">Application Form</span>
+                <span *ngIf="document.document_type!=1 && document.document_type!=2 && document.document_type!=3 && document.document_type!='PAN' && document.document_type!='Pan' && document.document_type!='Pan Card' && document.document_type!='Aadhar' && document.document_type!='Aadhaar' && document.document_type!='Application' && document.document_type!='Application Form'">{{document.document_type}}</span>
               </td>
               <td>{{DocumentInfo[i].document_no}}</td>
               <td>{{DocumentInfo[i].return_date}}</td>

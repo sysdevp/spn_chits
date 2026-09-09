@@ -1,0 +1,96 @@
+<div class="card">
+  <div class="card-header font-weight-bold">Employee Mobile Modules (Skills, Performance, Achievements)</div>
+  <div class="card-body">
+    <ul class="nav nav-tabs mb-3">
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='skills'" (click)="tab='skills'">Skills</a></li>
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='badges'" (click)="tab='badges'">Badges</a></li>
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='performance'" (click)="tab='performance'">Performance</a></li>
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='attendance'" (click)="tab='attendance'">Shift / Late Rules</a></li>
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='plans'" (click)="tab='plans'">Work Plans</a></li>
+      <li class="nav-item"><a class="nav-link" [class.active]="tab==='visits'" (click)="tab='visits'">Customer Visits</a></li>
+    </ul>
+
+    <div *ngIf="tab==='skills'">
+      <form [formGroup]="skillForm" (ngSubmit)="saveSkill()" class="row mb-3">
+        <div class="col-md-3"><input class="form-control" formControlName="skill_name" placeholder="Skill name"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="category" placeholder="Category"></div>
+        <div class="col-md-4"><input class="form-control" formControlName="description" placeholder="Description"></div>
+        <div class="col-md-2"><button class="btn btn-primary" type="submit">Add Skill</button></div>
+      </form>
+      <table class="table table-bordered table-sm">
+        <tr><th>Name</th><th>Category</th><th>Action</th></tr>
+        <tr *ngFor="let s of skills"><td>{{s.skill_name}}</td><td>{{s.category}}</td><td><button class="btn btn-sm btn-danger" (click)="deleteSkill(s)">Delete</button></td></tr>
+      </table>
+      <hr>
+      <h6>Skill Assessment</h6>
+      <form [formGroup]="assessForm" (ngSubmit)="saveAssessment()" class="row">
+        <div class="col-md-2"><select class="form-control" formControlName="branch_id" (change)="branchChg($event)"><option value="">Branch</option><option *ngFor="let b of branchList" [value]="b.id">{{b.branch_name}}</option></select></div>
+        <div class="col-md-2"><select class="form-control" formControlName="employee_id"><option value="">Employee</option><option *ngFor="let e of employeeList" [value]="e.id">{{e.first_name}} {{e.last_name}}</option></select></div>
+        <div class="col-md-2"><select class="form-control" formControlName="skill_id"><option value="">Skill</option><option *ngFor="let s of skills" [value]="s.id">{{s.skill_name}}</option></select></div>
+        <div class="col-md-1"><input class="form-control" formControlName="score" placeholder="Score"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="strength_notes" placeholder="Strength"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="weakness_notes" placeholder="Weakness"></div>
+        <div class="col-md-1"><button class="btn btn-success" type="submit">Assess</button></div>
+      </form>
+    </div>
+
+    <div *ngIf="tab==='badges'">
+      <form [formGroup]="badgeForm" (ngSubmit)="saveBadge()" class="row mb-3">
+        <div class="col-md-2"><input class="form-control" formControlName="badge_name" placeholder="Badge name"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="badge_code" placeholder="Code"></div>
+        <div class="col-md-2"><select class="form-control" formControlName="criteria_type"><option value="overall_score">Overall Score</option><option value="collection_percent">Collection %</option><option value="task_percent">Task %</option></select></div>
+        <div class="col-md-2"><input class="form-control" formControlName="criteria_value" placeholder="Min value"></div>
+        <div class="col-md-2"><button class="btn btn-primary" type="submit">Add Badge</button></div>
+      </form>
+      <table class="table table-bordered table-sm">
+        <tr><th>Name</th><th>Code</th><th>Criteria</th><th>Value</th><th>Action</th></tr>
+        <tr *ngFor="let b of badges"><td>{{b.badge_name}}</td><td>{{b.badge_code}}</td><td>{{b.criteria_type}}</td><td>{{b.criteria_value}}</td><td><button class="btn btn-sm btn-danger" (click)="deleteBadge(b)">Delete</button></td></tr>
+      </table>
+    </div>
+
+    <div *ngIf="tab==='performance'">
+      <table class="table table-bordered table-sm">
+        <tr><th>Employee</th><th>Month</th><th>Overall</th><th>Rating</th><th>Collection</th><th>Sales</th><th>Activity</th><th>Attendance</th></tr>
+        <tr *ngFor="let p of performance">
+          <td>{{p.employee_det?.first_name}} {{p.employee_det?.last_name}}</td>
+          <td>{{p.period_month}}</td>
+          <td>{{p.overall_score}}%</td>
+          <td>{{p.performance_rating}}</td>
+          <td>{{p.collection_score}}%</td>
+          <td>{{p.sales_score}}%</td>
+          <td>{{p.activity_score}}%</td>
+          <td>{{p.attendance_score}}%</td>
+        </tr>
+      </table>
+    </div>
+
+    <div *ngIf="tab==='attendance'">
+      <form [formGroup]="attForm" (ngSubmit)="saveAttSettings()" class="row mb-3">
+        <div class="col-md-2"><select class="form-control" formControlName="branch_id"><option value="">All Branch (0)</option><option *ngFor="let b of branchList" [value]="b.id">{{b.branch_name}}</option></select></div>
+        <div class="col-md-2"><input type="time" class="form-control" formControlName="shift_start_time"></div>
+        <div class="col-md-2"><input type="time" class="form-control" formControlName="shift_end_time"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="late_grace_minutes" placeholder="Late grace min"></div>
+        <div class="col-md-2"><input class="form-control" formControlName="early_leave_grace_minutes" placeholder="Early grace min"></div>
+        <div class="col-md-2"><button class="btn btn-primary" type="submit">Save Shift</button></div>
+      </form>
+      <table class="table table-bordered table-sm">
+        <tr><th>Branch</th><th>Start</th><th>End</th><th>Late Grace</th><th>Early Grace</th></tr>
+        <tr *ngFor="let a of attSettings"><td>{{a.branch_id}}</td><td>{{a.shift_start_time}}</td><td>{{a.shift_end_time}}</td><td>{{a.late_grace_minutes}}</td><td>{{a.early_leave_grace_minutes}}</td></tr>
+      </table>
+    </div>
+
+    <div *ngIf="tab==='plans'">
+      <table class="table table-bordered table-sm">
+        <tr><th>Employee</th><th>Date</th><th>Title</th><th>Status</th></tr>
+        <tr *ngFor="let w of workPlans"><td>{{w.employee_det?.first_name}}</td><td>{{w.plan_date}}</td><td>{{w.title}}</td><td>{{w.plan_status}}</td></tr>
+      </table>
+    </div>
+
+    <div *ngIf="tab==='visits'">
+      <table class="table table-bordered table-sm">
+        <tr><th>Employee</th><th>Date</th><th>Type</th><th>Purpose</th><th>Outcome</th><th>GPS</th></tr>
+        <tr *ngFor="let v of visits"><td>{{v.employee_det?.first_name}}</td><td>{{v.visit_date}}</td><td>{{v.visit_type}}</td><td>{{v.purpose}}</td><td>{{v.outcome}}</td><td>{{v.latitude}}, {{v.longitude}}</td></tr>
+      </table>
+    </div>
+  </div>
+</div>

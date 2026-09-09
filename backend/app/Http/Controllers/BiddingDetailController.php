@@ -1715,11 +1715,58 @@ class BiddingDetailController extends Controller
 				$interval = $datetime1->diff($datetime2);
 				$payment_month_given = (($interval->format('%y') * 12) + $interval->format('%m'));
 				$payment_month = $payment_month_given + 1;
+
+                $slabPaymentRow = SlabPayment::where('slab_id', $enrol->slab_id)->first();
+                $paymentMonths = [];
+                $maxMonths = 50;
+                if ($slabPaymentRow) {
+                    // Prefer scheme months when available
+                    try {
+                        if (!empty($enrol->slab_id)) {
+                            $slabDue = SlabDue::find($enrol->slab_id);
+                            if ($slabDue && !empty($slabDue->schemes_id)) {
+                                $scheme = Scheme::find($slabDue->schemes_id);
+                                if ($scheme && (int) $scheme->no_of_months > 0) {
+                                    $maxMonths = (int) $scheme->no_of_months;
+                                }
+                            }
+                        }
+                    } catch (\Exception $e) { /* keep default */ }
+
+                    for ($m = 1; $m <= $maxMonths; $m++) {
+                        $col = 'payment_' . $m;
+                        if (isset($slabPaymentRow->$col) && $slabPaymentRow->$col !== null && $slabPaymentRow->$col !== '') {
+                            $paymentMonths[] = [
+                                'month' => $m,
+                                'amount' => (float) $slabPaymentRow->$col,
+                            ];
+                        }
+                    }
+                }
+
+                // Optional override: request conditions[payment_month]
+                if (!empty($cond['payment_month'])) {
+                    $payment_month = (int) $cond['payment_month'];
+                }
+                if ($payment_month < 1) {
+                    $payment_month = 1;
+                }
+                if ($payment_month > $maxMonths) {
+                    $payment_month = $maxMonths;
+                }
+
 				$payment = 'payment_'.$payment_month;
-				$slab_details = SlabPayment::where('slab_id',$enrol->slab_id)->pluck($payment);             
-                $slab_det = isset($slab_details[0]) ? ($slab_details[0]) : 0;
+                $slab_det = 0;
+                if ($slabPaymentRow && isset($slabPaymentRow->$payment)) {
+                    $slab_det = (float) $slabPaymentRow->$payment;
+                } else {
+                    $slab_details = SlabPayment::where('slab_id',$enrol->slab_id)->pluck($payment);
+                    $slab_det = isset($slab_details[0]) ? (float) $slab_details[0] : 0;
+                }
 				$enrol->slab_payment = $slab_det;
 				$enrol->payment_month = $payment_month;
+                $enrol->payment_months = $paymentMonths;
+                $enrol->max_payment_months = $maxMonths;
 				$bid_payment_given = Payment::where('enrollment_id' ,'=', $enrol->id)->where('payment_for','=','7')->where('status',1)->sum('total_amount');
 				$enrol->bid_payment_given = $bid_payment_given;
 				$enrol->pending_release = $enrol->slab_payment - $enrol->bid_payment_given;

@@ -236,12 +236,21 @@ public function get_branches(Request $request) {
     }
     public function list_branches(Request $request) {
         try { 
-            if(isset($request->tenant_id)) {
-                $branches = Branch::where('tenant_id',$request->tenant_id)->orderBy('id','desc')->get();
+            $query = Branch::orderBy('id', 'desc');
+            if (isset($request->tenant_id)) {
+                $query->where('tenant_id', $request->tenant_id);
             }
-            else {
-                $branches = Branch::orderBy('id','desc')->get();
+
+            $allowedBranchIds = app(UserLoginScopeService::class)->resolveAllowedBranchIdsFromRequest($request);
+            if ($allowedBranchIds !== null) {
+                if (empty($allowedBranchIds)) {
+                    $query->whereRaw('1 = 0');
+                } else {
+                    $query->whereIn('id', $allowedBranchIds);
+                }
             }
+
+            $branches = $query->get();
             $i=1;
             foreach($branches as $branch) {
                 $branch->sno = $i;

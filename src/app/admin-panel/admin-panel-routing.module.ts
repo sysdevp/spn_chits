@@ -213,6 +213,8 @@ import { AddEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAtt
 import { UpdateEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/update-employee-attendance/update-employee-attendance.component';
 import { ViewEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/view-employee-attendance/view-employee-attendance.component';
 import { DeleteEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/delete-employee-attendance/delete-employee-attendance.component';
+import { ViewLeaveRequestsComponent } from './EmployeeManagement/LeaveRequests/view-leave-requests/view-leave-requests.component';
+import { ViewPunchAttendanceComponent } from './EmployeeManagement/PunchAttendance/view-punch-attendance/view-punch-attendance.component';
 //Employee Login
 import { AddEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/add-employee-login/add-employee-login.component';
 import { UpdateEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/update-employee-login/update-employee-login.component';
@@ -573,8 +575,11 @@ import { CancelCustomerReportComponent } from './Reports/cancel-customer-report/
 import { TargetIncentiveComponent } from './TransactionManagement/target-incentive/target-incentive.component';
 import { AddPigmyCollectionComponent } from './SubscriberManagement/PigmyCollection/add-pigmy-collection/add-pigmy-collection.component';
 import { TaskManagementComponent } from './EmployeeManagement/task-management/task-management.component';
+import { SetEmployeeTargetComponent } from './EmployeeManagement/TargetSet/set-employee-target/set-employee-target.component';
+import { ViewEmployeeMobileModulesComponent } from './EmployeeManagement/MobileModules/view-employee-mobile-modules/view-employee-mobile-modules.component';
 import { PigmyReportComponent } from './Reports/pigmy-report/pigmy-report.component';
 import { TaskReportComponent } from './Reports/task-report/task-report.component';
+import { ViewDailyTasksTargetsComponent } from './EmployeeManagement/DailyTasksTargets/view-daily-tasks-targets/view-daily-tasks-targets.component';
 import { CommitmentReceiptPrintComponent } from './TransactionManagement/commitment-receipt-print/commitment-receipt-print.component';
 import { BeforeDeleteReceiptComponent } from './SubscriberManagement/before-delete-receipt/before-delete-receipt.component';
 import { RefundTransferReportComponent } from './Reports/refund-transfer-report/refund-transfer-report.component';
@@ -792,6 +797,8 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'add-employee-attendance', component: AddEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'add_perm'}},
   { path: 'update-employee-attendance/:branchId/:attYear/:attMonth/:attDate', component: UpdateEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'edit_perm'}},
   { path: 'view-employee-attendance', component: ViewEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
+  { path: 'view-leave-requests', component: ViewLeaveRequestsComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
+  { path: 'view-punch-attendance', component: ViewPunchAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
   { path: 'delete-employee-attendance/:id', component: DeleteEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'delete_perm'}},
   //Employee Login
   { path: 'add-employee-login', component: AddEmployeeLoginComponent,canActivate: [AuthGuardService],data: {menuId: 36, parentMenuId: 34, permType:'add_perm'}},
@@ -1159,8 +1166,9 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 { path: 'delete-account-expenses', component: DeleteAccountExpenseComponent},
 { path: 'closure-report', component: ClosureReportComponent},
 { path: 'draw-report', component: DrawReportComponent},
-{ path: 'add-employee-document', component: AddEmployeeDocumentComponent},
-{ path: 'view-employee-document', component: ViewEmployeeDocumentComponent},
+{ path: 'add-employee-document', component: AddEmployeeDocumentComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
+{ path: 'update-employee-document/:id', component: AddEmployeeDocumentComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
+{ path: 'view-employee-document', component: ViewEmployeeDocumentComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
 { path: 'overall-business-report', component: OverallBusinessReportComponent},
 { path: 'collection-checking-report', component: CollectionCheckingReportComponent},
 { path: 'debit-credit-edit/:voucher_no', component: DebitCreditEditComponent},
@@ -1170,9 +1178,12 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 { path: 'cancel-customer-report', component: CancelCustomerReportComponent},
 { path: 'target-incentive', component: TargetIncentiveComponent},
 { path: 'add-pigmy-collection', component: AddPigmyCollectionComponent},
-{ path: 'add-task', component: TaskManagementComponent},
+{ path: 'add-task', component: TaskManagementComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
+{ path: 'set-employee-target', component: SetEmployeeTargetComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
+{ path: 'view-employee-mobile-modules', component: ViewEmployeeMobileModulesComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
 { path: 'pigmy-report', component: PigmyReportComponent},
-{ path: 'task-report', component: TaskReportComponent},
+{ path: 'task-report', component: TaskReportComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
+{ path: 'view-daily-tasks-targets', component: ViewDailyTasksTargetsComponent, canActivate: [AuthGuardService], data: {menuId: 118, parentMenuId: 34, permType:'view_perm'}},
 { path: 'commitment-receipt-print/:receipt_no', component: CommitmentReceiptPrintComponent},
 { path: 'before-delete-receipt/:receipt_no', component: BeforeDeleteReceiptComponent},
 { path: 'refund-transfer-report', component: RefundTransferReportComponent},

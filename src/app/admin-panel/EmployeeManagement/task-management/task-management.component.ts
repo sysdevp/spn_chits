@@ -1,215 +1,190 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AppService } from '../../../app.service';
-import { Router } from '@angular/router';
 import { UserService } from '../../../Services/user.service';
 
 @Component({
-  
   selector: 'app-task-management',
   templateUrl: './task-management.component.html',
-  styles: []
+  styles: [`
+    .hr-panel {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 10px 28px rgba(1,54,24,.08);
+      overflow: hidden;
+    }
+    .hr-panel-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 1.1rem 1.25rem;
+      background: linear-gradient(135deg, #0f766e 0%, #025E2D 100%);
+      color: #fff;
+    }
+    .hr-panel-head h3 { margin: 0; font-weight: 700; font-size: 1.2rem; }
+    .hr-panel-head p { margin: .25rem 0 0; opacity: .85; font-size: .85rem; }
+    .hr-actions { display: flex; gap: .5rem; align-items: center; }
+    .hr-form { padding: 1.25rem; }
+    .hr-form-actions { display: flex; gap: .5rem; }
+    .hr-table-wrap { padding: 0 1.25rem 1.25rem; }
+    .hr-table thead th {
+      background: #f0fdf4;
+      color: #14532d;
+      border-top: 0;
+      font-size: .82rem;
+    }
+    .hr-chip {
+      display: inline-block;
+      padding: .15rem .55rem;
+      border-radius: 999px;
+      background: #dbeafe;
+      color: #1e40af;
+      font-size: .72rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .hr-chip.status { background: #fef3c7; color: #92400e; }
+  `]
 })
 export class TaskManagementComponent implements OnInit {
-  @ViewChild('tenant_id') focus1: ElementRef;
-  @ViewChild('branch_id') focus2: ElementRef;
-  @ViewChild('month_year') focus3: ElementRef;
-  @ViewChild('working_days') focus4: ElementRef;
-  
-  
-  
-  AddEmployeeSalary: FormGroup;
-  form_message = true;
+  form: FormGroup;
   submitted = false;
   disableBtn = false;
-  SubmitbuttonName: string;
-  branchList: any;
-  employeeList: any;
-  isSuperAdmin: boolean;
-  companyList: any[];
-  currentDate:any;
-  decimalPattern = "^[0-9]+(.[0-9]{0,4})?$";
+  SubmitbuttonName = 'Assign Task';
+  branchList: any[] = [];
+  employeeList: any[] = [];
+  taskList: any[] = [];
+  isSuperAdmin = false;
+  companyList: any[] = [];
+  TableHidden = true;
 
-  constructor(private appService: AppService, private formBuilder: FormBuilder, private userservice: UserService, private router: Router) {
-    this.SubmitbuttonName = "Submit";
-    let today_date = new Date();
- this.currentDate = {
-    'year': today_date.getFullYear(),
-    'month': today_date.getMonth()+1,
-    'day': today_date.getDate()
- };
- console.log(this.currentDate)
-  }
+  constructor(
+    private appService: AppService,
+    private formBuilder: FormBuilder,
+    private userservice: UserService
+  ) {}
 
   get f() {
-    return this.AddEmployeeSalary.controls;
-  }
-
-  addEmployee() {
-    const control = <FormArray>this.AddEmployeeSalary.controls['Employees'];
-    control.push(this.initEmployee());
-  }
-
-  get Employees() {
-    return <FormArray>this.AddEmployeeSalary.get('Employees');
-  }
-
-  initEmployee() {
-    return this.formBuilder.group({
-      'employee_id': [''],
-      'emp_name': [''],
-      'salary': ['', [Validators.required,Validators.pattern(this.decimalPattern)]],
-    });
-  }
-
-
-  companyChg(event) {
-    let tenant_id = event.target.value;
-    this.setBranchList(tenant_id);
-  }
-
-  setBranchList(tenant_id) {
-    let cond = {
-      "conditions[tenant_id]": tenant_id,
-      "conditions[status]": 1,
-      "log_id" : localStorage.getItem('logged_employee_id')
-    }
-    this.userservice.getData(cond, "get-branches", "POST").subscribe((response: any) => {
-      try {
-        if (response.status == 'Success') {
-          this.branchList = response.data;
-        } else {
-          this.branchList = [];
-        }
-      } catch (err) { }
-    }, (err: any) => { });
-  }
-
-  branchChg(event) {
-    let branch_id = event.target.value;
-    console.log(branch_id);
-    this.checkForemployeeList(branch_id);
-  }
-
-
-
-  checkForemployeeList(branch_id) {
-   
-    let cond = {
-      "conditions[branch_id]": branch_id,
-    }
-    console.log(cond);
-    this.userservice.getData(cond ,"get-employees", "POST").subscribe((response: any) => {
-      try {
-        if (response.status == 'Success') {
-          const EmployeeArray = < FormArray > this.AddEmployeeSalary.get('Employees');
-          EmployeeArray.controls = [];
-          for (let i = 0; i < response.data.length; i++) {
-            this.addEmployee();
-            EmployeeArray.controls[i].get('employee_id').setValue(response.data[i].id);
-            EmployeeArray.controls[i].get('emp_name').setValue(response.data[i].first_name + ' ' + response.data[i].last_name);
-          
-            //let attData = attendanceList.filter((listing: any) => listing.employee_id == (response.data[i].id));
-            //if((attData.length)>0) { 
-              //this.setAttendance(i,attData[0]);
-            //}
-          } 
-        } else { } 
-      } catch (err) {
-        //this.disableBtn = true;
-      }
-    }, (err: any) => {
-      //this.disableBtn = true;
-    });
-  }
-
-  onSubmit() { 
-    this.SubmitbuttonName = "Loading...";
-    this.submitted = true;
-    this.disableBtn = true;
-    const result = Object.assign({}, this.AddEmployeeSalary.value);
-    if (this.AddEmployeeSalary.invalid) {
-      this.SubmitbuttonName = "Submit";
-      this.disableBtn = false;
-      if (this.f.tenant_id.errors) {
-        this.focus1.nativeElement.focus();
-      }
-      else if (this.f.branch_id.errors) {
-        this.focus2.nativeElement.focus();
-      }
-      else if (this.f.month_year.errors) {
-        this.focus3.nativeElement.focus();
-      }
-      else if (this.f.working_days.errors) {
-        this.focus4.nativeElement.focus();
-      }
-      
-      return;
-    }
-    
-      this.userservice.getData(result, "store-employee-task", "JSON").subscribe((response: any) => {
-        this.SubmitbuttonName = "Submit";
-        try {
-          if (response.status == 'Success') {
-            this.appService.showAlert("Employee Salary", response.msg, "success");
-            setTimeout(() => {
-              this.router.navigate(['/admin-panel/view-employee-salary']);
-            }, 300);
-          } else {
-            this.appService.showAlert("Employee Salary", response.msg, "error");
-            this.disableBtn = false;
-          }
-        } catch (err) {
-          this.appService.showAlert("Employee Salary", "Sorry!! Something went wrong!", "error");
-          this.disableBtn = false;
-        }
-      }, (err: any) => {
-        this.disableBtn = false;
-        this.SubmitbuttonName = "Submit";
-        if (err.status == 401) {
-          this.appService.showAlert("Employee Salary", "Sorry!! Something went wrong!", "error");
-        }
-        else {
-          this.appService.showAlert("Employee Salary", "Sorry!! Something went wrong!", "error");
-        }
-      });
-    
+    return this.form.controls;
   }
 
   ngOnInit() {
-    this.AddEmployeeSalary = this.formBuilder.group({
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = ('0' + (today.getMonth() + 1)).slice(-2);
+    const d = ('0' + today.getDate()).slice(-2);
+
+    this.form = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
-      month_year: [this.currentDate,Validators.required],
-      working_days: ['', [Validators.required,Validators.pattern(this.decimalPattern)]],
-      created_by: [''],
-      'Employees': this.formBuilder.array([
-        this.formBuilder.group({
-          'employee_id': [''],
-          'emp_name': [''],
-          'task': [''],
-        })
-      ])
+      employee_id: ['', Validators.required],
+      title: ['', Validators.required],
+      description: [''],
+      task_date: [`${y}-${m}-${d}`, Validators.required],
+      due_date: [''],
+      priority: ['medium'],
+      created_by: [localStorage.getItem('logged_user_id')],
+      assigned_by: [localStorage.getItem('logged_user_id')],
     });
 
-    let tenant_id = localStorage.getItem('tenant_id');
+    const tenant_id = localStorage.getItem('tenant_id');
     if (tenant_id) {
-      this.AddEmployeeSalary.get('tenant_id').setValue(tenant_id);
+      this.form.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
       this.setBranchList(tenant_id);
-    }
-    else {
+    } else {
       this.isSuperAdmin = true;
-      this.userservice.getData('', "list-tenants", "POST").subscribe((response: any) => {
-        try {
-          if (response.status == 'Success') {
-            this.companyList = response.data;
-          } else {
-            this.companyList = [];
-          }
-        } catch (err) { }
-      }, (err: any) => { });
+      this.userservice.getData('', 'list-tenants', 'POST').subscribe((response: any) => {
+        this.companyList = response && response.status === 'Success' ? response.data : [];
+      });
     }
-    this.AddEmployeeSalary.get('created_by').setValue(localStorage.getItem('logged_user_id'));
+    this.loadTasks();
+  }
+
+  companyChg(event) {
+    this.setBranchList(event.target.value);
+  }
+
+  setBranchList(tenant_id) {
+    const cond = {
+      'conditions[tenant_id]': tenant_id,
+      'conditions[status]': 1,
+      log_id: localStorage.getItem('logged_employee_id')
+    };
+    this.userservice.getData(cond, 'get-branches', 'POST').subscribe((response: any) => {
+      this.branchList = response && response.status === 'Success' ? response.data : [];
+    });
+  }
+
+  branchChg(event) {
+    const branch_id = event.target.value;
+    this.userservice.getData({ 'conditions[branch_id]': branch_id }, 'get-employees', 'POST').subscribe((response: any) => {
+      this.employeeList = response && response.status === 'Success' ? response.data : [];
+    });
+    this.loadTasks();
+  }
+
+  loadTasks() {
+    this.TableHidden = true;
+    const payload: any = {
+      tenant_id: this.form.get('tenant_id').value || localStorage.getItem('tenant_id'),
+      for_admin: 1
+    };
+    if (this.form.get('branch_id').value) {
+      payload.branch_id = this.form.get('branch_id').value;
+    }
+    if (this.form.get('employee_id').value) {
+      payload.employee_id = this.form.get('employee_id').value;
+    }
+    this.userservice.getData(payload, 'list-employee-tasks', 'JSON').subscribe((response: any) => {
+      this.taskList = response && response.status === 'Success' ? (response.data || []) : [];
+      this.TableHidden = false;
+    }, () => {
+      this.taskList = [];
+      this.TableHidden = false;
+    });
+  }
+
+  onSubmit() {
+    this.submitted = true;
+    this.disableBtn = true;
+    this.SubmitbuttonName = 'Saving...';
+    if (this.form.invalid) {
+      this.disableBtn = false;
+      this.SubmitbuttonName = 'Assign Task';
+      return;
+    }
+    const result = Object.assign({}, this.form.value);
+    this.userservice.getData(result, 'store-employee-task', 'JSON').subscribe((response: any) => {
+      this.SubmitbuttonName = 'Assign Task';
+      this.disableBtn = false;
+      if (response && response.status === 'Success') {
+        this.appService.showAlert('Task Assignment', response.msg, 'success');
+        this.form.patchValue({ title: '', description: '', due_date: '' });
+        this.submitted = false;
+        this.loadTasks();
+      } else {
+        this.appService.showAlert('Task Assignment', (response && response.msg) || 'Failed', 'error');
+      }
+    }, () => {
+      this.disableBtn = false;
+      this.SubmitbuttonName = 'Assign Task';
+      this.appService.showAlert('Task Assignment', 'Something went wrong', 'error');
+    });
+  }
+
+  deleteTask(row) {
+    if (!confirm('Delete this task?')) {
+      return;
+    }
+    this.userservice.getData({ id: row.id }, 'delete-employee-task', 'JSON').subscribe((response: any) => {
+      if (response && response.status === 'Success') {
+        this.appService.showAlert('Task Assignment', response.msg, 'success');
+        this.loadTasks();
+      } else {
+        this.appService.showAlert('Task Assignment', (response && response.msg) || 'Delete failed', 'error');
+      }
+    });
   }
 }

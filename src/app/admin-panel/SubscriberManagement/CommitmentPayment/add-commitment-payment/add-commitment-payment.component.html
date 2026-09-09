@@ -94,9 +94,14 @@
         </div>
         <div class="col-md-6">
           <div class="form-group row">
-            <label class="col-sm-4 col-form-label">Payment Month</label>
+            <label class="col-sm-4 col-form-label">Payment Month <span class="error">*</span></label>
             <div class="col-sm-8">
-              <input #payment_month	 type="text" class="form-control" placeholder=" Enter Payment Month"  formControlName="payment_month" disabled>
+              <select #payment_month class="form-control" formControlName="payment_month" (change)="paymentMonthChg($event)">
+                <option value="">Select Payment Month</option>
+                <option *ngFor="let m of paymentMonthOptions" [value]="m.month">
+                  Month {{ m.month }} — ₹ {{ m.amount }}
+                </option>
+              </select>
             </div>
           </div>
         </div>

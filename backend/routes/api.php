@@ -427,6 +427,47 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('get-employee-attendances','EmployeeAttendanceController@get_employee_attendances');
 	Route::post('list-employee-attendances','EmployeeAttendanceController@list_employee_attendances');
 	Route::post('delete-employee-attendance','EmployeeAttendanceController@delete_employee_attendance');
+	Route::post('store-leave-request','EmployeeLeaveRequestController@store_leave_request');
+	Route::post('list-leave-requests','EmployeeLeaveRequestController@list_leave_requests');
+	Route::post('decide-leave-request','EmployeeLeaveRequestController@decide_leave_request');
+	Route::post('list-punch-attendances','EmployeeLeaveRequestController@list_punch_attendances');
+	// Employee Tasks & Targets
+	Route::post('store-employee-task','EmployeeTaskTargetController@store_employee_task');
+	Route::post('list-employee-tasks','EmployeeTaskTargetController@list_employee_tasks');
+	Route::post('update-employee-task-status','EmployeeTaskTargetController@update_employee_task_status');
+	Route::post('delete-employee-task','EmployeeTaskTargetController@delete_employee_task');
+	Route::post('store-employee-target','EmployeeTaskTargetController@store_employee_target');
+	Route::post('list-employee-targets','EmployeeTaskTargetController@list_employee_targets');
+	Route::post('update-employee-target-progress','EmployeeTaskTargetController@update_employee_target_progress');
+	Route::post('delete-employee-target','EmployeeTaskTargetController@delete_employee_target');
+	Route::post('today-task-target-summary','EmployeeTaskTargetController@today_task_target_summary');
+	// Employee Extended Modules (skills, performance, visits, achievements)
+	Route::post('store-employee-skill','EmployeeExtendedController@store_skill');
+	Route::post('list-employee-skills','EmployeeExtendedController@list_skills');
+	Route::post('update-employee-skill','EmployeeExtendedController@update_skill');
+	Route::post('delete-employee-skill','EmployeeExtendedController@delete_skill');
+	Route::post('store-skill-assessment','EmployeeExtendedController@store_skill_assessment');
+	Route::post('list-skill-assessments','EmployeeExtendedController@list_skill_assessments');
+	Route::post('delete-skill-assessment','EmployeeExtendedController@delete_skill_assessment');
+	Route::post('get-employee-performance','EmployeeExtendedController@get_employee_performance');
+	Route::post('list-performance-scores','EmployeeExtendedController@list_performance_scores');
+	Route::post('store-work-plan','EmployeeExtendedController@store_work_plan');
+	Route::post('list-work-plans','EmployeeExtendedController@list_work_plans');
+	Route::post('update-work-plan-status','EmployeeExtendedController@update_work_plan_status');
+	Route::post('delete-work-plan','EmployeeExtendedController@delete_work_plan');
+	Route::post('store-customer-visit','EmployeeExtendedController@store_customer_visit');
+	Route::post('list-customer-visits','EmployeeExtendedController@list_customer_visits');
+	Route::post('delete-customer-visit','EmployeeExtendedController@delete_customer_visit');
+	Route::post('store-employee-badge','EmployeeExtendedController@store_badge');
+	Route::post('list-employee-badges','EmployeeExtendedController@list_badges');
+	Route::post('delete-employee-badge','EmployeeExtendedController@delete_badge');
+	Route::post('get-employee-achievements','EmployeeExtendedController@get_employee_achievements');
+	Route::post('get-leaderboard','EmployeeExtendedController@get_leaderboard');
+	Route::post('store-employee-certificate','EmployeeExtendedController@store_certificate');
+	Route::post('list-employee-certificates','EmployeeExtendedController@list_certificates');
+	Route::post('store-attendance-settings','EmployeeExtendedController@store_attendance_settings');
+	Route::post('list-attendance-settings','EmployeeExtendedController@list_attendance_settings');
+	Route::post('get-conversion-stats','EmployeeExtendedController@get_conversion_stats');
 	//Employee Payrolls
 	Route::post('store-employee-payroll','EmployeePayrollController@store_employee_payroll');
 	Route::post('update-employee-payroll','EmployeePayrollController@update_employee_payroll');
@@ -888,6 +929,8 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
  
 
 Route::post('mobile-store-customer','CustomerController@mobile_store_customer');
+Route::post('mobile-customer-file-upload','CustomerController@mobile_customer_file_upload');
+Route::post('mobile-document-file-upload','DocumentController@mobile_document_file_upload');
 Route::get('mobile-get-collection-area-customers-new','MobileApiController@mobile_get_collection_area_customers_new'); 
 	Route::get('mobile-get-customer-chit-summary','MobileApiController@mobile_get_customer_chit_summary'); 
 	Route::get('mobile-today-followup-count','MobileApiController@mobile_today_followup_count'); 
@@ -917,4 +960,29 @@ Route::get('mobile-get-collection-area-customers-new','MobileApiController@mobil
 	Route::post('mobile-punch-attendance','MobileApiController@mobile_punch_attendance');
 	Route::post('mobile-get-today-attendance','MobileApiController@mobile_get_today_attendance');
 	Route::post('mobile-get-collection-area-customers-new','MobileApiController@mobile_get_collection_area_customers_new');
+	Route::post('mobile-submit-leave-request','EmployeeLeaveRequestController@store_leave_request');
+	Route::post('mobile-list-leave-requests','EmployeeLeaveRequestController@list_leave_requests');
+	Route::post('mobile-decide-leave-request','EmployeeLeaveRequestController@decide_leave_request');
+	Route::post('mobile-list-punch-attendances','EmployeeLeaveRequestController@list_punch_attendances');
+	Route::post('mobile-store-employee-task','EmployeeTaskTargetController@store_employee_task');
+	Route::post('mobile-list-employee-tasks','EmployeeTaskTargetController@list_employee_tasks');
+	Route::post('mobile-update-employee-task-status','EmployeeTaskTargetController@update_employee_task_status');
+	Route::post('mobile-delete-employee-task','EmployeeTaskTargetController@delete_employee_task');
+	Route::post('mobile-store-employee-target','EmployeeTaskTargetController@store_employee_target');
+	Route::post('mobile-list-employee-targets','EmployeeTaskTargetController@list_employee_targets');
+	Route::post('mobile-update-employee-target-progress','EmployeeTaskTargetController@update_employee_target_progress');
+	Route::post('mobile-today-task-target-summary','EmployeeTaskTargetController@today_task_target_summary');
+	Route::post('mobile-get-employee-performance','EmployeeExtendedController@get_employee_performance');
+	Route::post('mobile-list-work-plans','EmployeeExtendedController@list_work_plans');
+	Route::post('mobile-store-work-plan','EmployeeExtendedController@store_work_plan');
+	Route::post('mobile-update-work-plan-status','EmployeeExtendedController@update_work_plan_status');
+	Route::post('mobile-store-customer-visit','EmployeeExtendedController@store_customer_visit');
+	Route::post('mobile-list-customer-visits','EmployeeExtendedController@list_customer_visits');
+	Route::post('mobile-get-employee-achievements','EmployeeExtendedController@get_employee_achievements');
+	Route::post('mobile-get-leaderboard','EmployeeExtendedController@get_leaderboard');
+	Route::post('mobile-get-conversion-stats','EmployeeExtendedController@get_conversion_stats');
+	Route::post('mobile-list-skill-assessments','EmployeeExtendedController@list_skill_assessments');
+	Route::post('mobile-register-push-token','MobileApiController@mobile_register_push_token');
+	Route::post('mobile-receipt-file-upload','MobileApiController@mobile_receipt_file_upload');
+	Route::post('mobile-list-banks','MobileApiController@mobile_list_banks');
 	Route::post('get-unenrollment-mobile','CustomerController@get_unenrollment_mobile'); 

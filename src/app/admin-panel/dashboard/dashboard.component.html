@@ -34,6 +34,9 @@
         <a routerLink="/admin-panel/customer-ledger" class="btn btn-sm btn-outline-success">
           Customer Ledger
         </a>
+        <a routerLink="/admin-panel/settlement-report" class="btn btn-sm btn-outline-primary">
+          Settlement Report
+        </a>
       </form>
     </div>
   </div>
@@ -323,6 +326,78 @@
         </div>
       </div>
     </ng-container>
+
+    <!-- Settlement Report snapshot — all logins (admin / MD / BM / CM / etc.) -->
+    <div class="row mt-2">
+      <div class="col-lg-4 mb-3">
+        <div class="card metric-card card-tile-pending h-100" style="cursor:pointer" (click)="openModal(detailModal, 'settlements')">
+          <div class="card-body">
+            <div class="metric-label">Settlements pending approval</div>
+            <div class="metric-value">{{ num(bundle.summary?.settlement_pending_count) | number:'1.0-0' }}</div>
+            <div class="metric-note">Click for recent list</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-3">
+        <div class="card metric-card card-tile-collections h-100">
+          <div class="card-body">
+            <div class="metric-label">Today's settlement amount</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.settlement_today_amount) | number:'1.0-0' }}</div>
+            <div class="metric-note">Cash settlements today</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-3">
+        <div class="card metric-card card-tile-payments h-100" style="cursor:pointer" routerLink="/admin-panel/settlement-report">
+          <div class="card-body">
+            <div class="metric-label">Month settlements</div>
+            <div class="metric-value">₹ {{ num(bundle.summary?.settlement_month_amount) | number:'1.0-0' }}</div>
+            <div class="metric-note">Open full Settlement Report →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card panel-card mb-3">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Settlement Report</div>
+          <div class="card-subtitle">Recent cash settlements in your branch scope</div>
+        </div>
+        <a routerLink="/admin-panel/settlement-report" class="btn btn-sm btn-success">View full report</a>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive" style="max-height: 320px;">
+          <table class="table table-sm table-striped mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th>Date</th>
+                <th>Branch</th>
+                <th>Employee</th>
+                <th class="text-right">Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let s of bundle.recent_settlements">
+                <td>{{ s.settlement_date || '—' }}</td>
+                <td>{{ s.branch || '—' }}</td>
+                <td>{{ s.employee || '—' }}</td>
+                <td class="text-right">₹ {{ num(s.amount) | number:'1.0-0' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="s.is_approved == 1 ? 'badge-success' : 'badge-warning'">
+                    {{ s.approval_status || 'Pending' }}
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="!bundle.recent_settlements?.length">
+                <td colspan="5" class="text-center text-muted py-4">No settlements found for this branch scope.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </ng-container>
 </div>
 

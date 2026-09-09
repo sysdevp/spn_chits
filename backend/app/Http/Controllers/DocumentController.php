@@ -115,6 +115,40 @@ class DocumentController extends Controller
             try {
                 if(isset($request->id)) {
                     $document = Document::find($request->id);
+                    if (!$document) {
+                        $response['status'] = "Error";
+                        $response['msg'] = \Lang::get('api.record_not_identified');
+                        return response()->json($response, 200);
+                    }
+
+                    if (isset($request->collected_employee_id)) {
+                        $document->collected_employee_id = $request->collected_employee_id;
+                    }
+                    if (isset($request->remark)) {
+                        $document->remark = $request->remark;
+                    }
+                    if (isset($request->collected_from)) {
+                        $document->collected_from = $request->collected_from;
+                    }
+                    if (isset($request->collect_date) && is_array($request->collect_date)) {
+                        $s_date = ($request->collect_date['year']).'-'.sprintf('%02d',($request->collect_date['month'])).'-'.sprintf('%02d',($request->collect_date['day']));
+                        $document->collect_date = date('Y-m-d', strtotime($s_date));
+                    }
+                    $document->updated_by = isset($request->updated_by) ? $request->updated_by : (isset($request->created_by) ? $request->created_by : 0);
+                    $document->save();
+
+                    // Remove existing document detail rows (soft delete)
+                    if (isset($request->removed_document_detail_ids) && is_array($request->removed_document_detail_ids)) {
+                        foreach ($request->removed_document_detail_ids as $detailId) {
+                            $detail = DocumentDetail::where('id', (int)$detailId)
+                                ->where('document_id', $document->id)
+                                ->first();
+                            if ($detail) {
+                                $detail->delete();
+                            }
+                        }
+                    }
+
                     if(isset($request->DocumentDetails)) 
                     {  
                         $count = count($request->DocumentDetails);
@@ -122,10 +156,11 @@ class DocumentController extends Controller
                         {
 							if($request->DocumentDetails[$i]['document_path']!='') 
                             {
-								$document_detail_det = [];
 								$document_detail_det = new DocumentDetail();
 								$document_detail_det['document_id'] = $document->id;
-								$document_detail_det['customer_id'] = isset($request->customer_id) ? $request->customer_id : '';
+								$document_detail_det['customer_id'] = isset($request->customer_id[0]['customer_id'])
+                                    ? $request->customer_id[0]['customer_id']
+                                    : (isset($request->customer_id) ? $request->customer_id : 0);
 								$document_detail_det['document_no'] =  isset($request->DocumentDetails[$i]['document_no']) ? $request->DocumentDetails[$i]['document_no'] : '';
 								$document_detail_det['document_path'] =  isset($request->DocumentDetails[$i]['document_path']) ? $request->DocumentDetails[$i]['document_path'] : '';
 								$document_detail_det['document_type'] =  isset($request->DocumentDetails[$i]['document_type']) ? $request->DocumentDetails[$i]['document_type'] : '';
@@ -140,10 +175,9 @@ class DocumentController extends Controller
                         for($i=0; $i<$count; $i++)
                         {
 							if($request->AssetDetails[$i]['asset_path']!='') {
-								$asset_detail_det = [];
 								$asset_detail_det = new AssetDetail();
 								$asset_detail_det['document_id'] = $document->id;
-								$asset_detail_det['customer_id'] = isset($request->customer_id) ? $request->customer_id : '';
+								$asset_detail_det['customer_id'] = isset($request->customer_id) ? $request->customer_id : 0;
 								$asset_detail_det['asset_name'] = isset($request->AssetDetails[$i]['asset_name']) ? $request->AssetDetails[$i]['asset_name'] : '';
 								$asset_detail_det['asset_path'] = isset($request->AssetDetails[$i]['asset_path']) ? $request->AssetDetails[$i]['asset_path'] : '';
 								$asset_detail_det['asset_value'] = isset($request->AssetDetails[$i]['asset_value']) ? $request->AssetDetails[$i]['asset_value'] : '0';
@@ -203,25 +237,34 @@ class DocumentController extends Controller
                     $document->asset_info = $document->asset_det;
                 }
 				
-                $document->collect_date = ($document->collect_date!=0) ? date('d/m/Y',strtotime($document->collect_date)) : '';
-                $document->return_document_date = ($document->return_document_date!=0) ? date('d/m/Y',strtotime($document->return_document_date)) : '';
-                $document->group_name = [];
-                if($document->enrollment_det->chit_type != 3)
-                {
-                    if(isset($document->enrollment_det)) {
-                        $document->group_name = isset($document->enrollment_det->group_det) ? ($document->enrollment_det->group_det->group_name) : [];
-                    }                    
-                }
-				
-                if($document->enrollment_det->chit_type == 3)
-                {
-                    $slab_types = SlabDue::where('id',$document->enrollment_det->slab_id)->get();   
-                    $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
-                    $document->group_name = "Commitment Name :".$slab_name;
+                $document->collect_date = ($document->collect_date && $document->collect_date!='0000-00-00') ? date('d/m/Y',strtotime($document->collect_date)) : '';
+                $document->return_document_date = ($document->return_document_date && $document->return_document_date!='0000-00-00' && $document->return_document_date!=0) ? date('d/m/Y',strtotime($document->return_document_date)) : '';
+                $document->group_name = '';
+                $enrollment = $document->enrollment_det;
+                if ($enrollment) {
+                    if (isset($enrollment->chit_type) && (int)$enrollment->chit_type === 3) {
+                        $slab_types = SlabDue::where('id', $enrollment->slab_id)->get();
+                        $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : '';
+                        $document->group_name = $slab_name !== '' ? ('Commitment Name :' . $slab_name) : 'Commitment';
+                    } elseif (isset($enrollment->group_det) && $enrollment->group_det) {
+                        $document->group_name = $enrollment->group_det->group_name ?: '';
+                    }
+                } elseif (!empty($document->collected_from) && stripos((string)$document->collected_from, 'Mobile') !== false) {
+                    $document->group_name = 'Mobile App';
                 }
 				
                 $document->collected_emp_info = isset($document->collected_emp_det) ? ($document->collected_emp_det) : [];
-                $document->collected_employee_name = isset($document->collected_emp_det) ? ($document->collected_emp_det->first_name." ".$document->collected_emp_det->last_name) : [];
+                $document->collected_employee_name = isset($document->collected_emp_det) ? trim(($document->collected_emp_det->first_name ?? '').' '.($document->collected_emp_det->last_name ?? '')) : '';
+                // Employee HR docs have no customer — show employee as the subject
+                $isEmployeeDoc = !empty($document->collected_from) && stripos((string)$document->collected_from, 'Employee Documents') !== false;
+                if ($isEmployeeDoc) {
+                    $document->name = $document->collected_employee_name ?: '';
+                    $document->customer_name = $document->name ?: '-';
+                    $document->group_name = $document->group_name ?: 'Employee Documents';
+                } else {
+                    $document->name = is_string($document->customer_name) ? $document->customer_name : '';
+                }
+                $document->source = $document->collected_from ?: 'Web';
 				
                 $i++;
             }
@@ -233,6 +276,7 @@ class DocumentController extends Controller
         catch(\Exception $e) { 
             $response['status'] = 'Error';
             $response['msg'] = \Lang::get('api.global_error');
+            $response['error'] = $e->getMessage();
             return response()->json($response, 401);
         }
     }
@@ -304,25 +348,31 @@ class DocumentController extends Controller
     {  
         try 
         { 
-            if ($request->hasFile('asset_path')) 
+            // Accept same field names used by customer/employee photo-style uploads
+            $file = null;
+            if ($request->hasFile('asset_path')) {
+                $file = $request->file('asset_path');
+            } elseif ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+            } elseif ($request->hasFile('document')) {
+                $file = $request->file('document');
+            }
+
+            if ($file && $file->isValid())
             {
-                $asset_path = '';    
-                if ($request->file('asset_path')->isValid())
-                {  
-                    $asset_path = $request->file('asset_path')->hashName();
-                    $location1 = '';
-                    if(($request->upload_type) == 'asset') {
-                        $location1 = $request->file('asset_path')->store('uploads/customer_assets');
-                    }
-                    else {
-                        $location1 = $request->file('asset_path')->store('uploads/customer_documents');
-                    }
+                $asset_path = $file->hashName();
+                if(($request->upload_type) == 'asset') {
+                    $file->store('uploads/customer_assets');
+                }
+                else {
+                    $file->store('uploads/customer_documents');
                 }
                 $response['file_name'] = $asset_path; 
             }
             else 
             {
                 $response['file_name'] = '';
+                $response['msg'] = 'No valid file received';
             }
             $response['status'] = 'Success';
             return response()->json($response,200);
@@ -611,4 +661,17 @@ class DocumentController extends Controller
     }
 	
 	
+    public function mobile_document_file_upload(Request $request)
+    {
+        if (!empty($request->db)) {
+            \DB::purge('mysql');
+            \Config::set('database.connections.mysql.database', $request->db);
+            \DB::reconnect('mysql');
+        }
+        if (!$request->has('upload_type')) {
+            $request->merge(['upload_type' => 'document']);
+        }
+        return $this->assetFileUpload($request);
+    }
+
 }

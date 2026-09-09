@@ -33,9 +33,15 @@
       <sidenav-router-link route="employee-salary" *ngIf="isMenuHide(101,34)"><i class="fa fa-angle-double-right"></i> Employee Salary</sidenav-router-link>
       <sidenav-router-link route="view-collection-area-mapping" *ngIf="isMenuHide(55,34)"><i class="fa fa-angle-double-right"></i> Collection Area Mapping</sidenav-router-link>
       <sidenav-router-link route="view-employee-attendance" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Attendance</sidenav-router-link>
+      <sidenav-router-link route="view-leave-requests" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Leave / Permission / OD</sidenav-router-link>
+      <sidenav-router-link route="view-punch-attendance" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Login Time & Map</sidenav-router-link>
       <sidenav-router-link route="view-employee-document" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Employee Documents</sidenav-router-link>
       <sidenav-router-link route="view-auction-on-holidays" *ngIf="isMenuHide(16,2)"><i class="fa fa-angle-double-right"></i> Auction On Holidays</sidenav-router-link>
-      <sidenav-router-link route="add-task" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Task Management</sidenav-router-link>
+      <sidenav-router-link route="add-task" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Task Assignment</sidenav-router-link>
+      <sidenav-router-link route="view-daily-tasks-targets" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Daily Tasks & Targets</sidenav-router-link>
+      <sidenav-router-link route="task-report" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Task Report</sidenav-router-link>
+      <sidenav-router-link route="set-employee-target" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Target Set</sidenav-router-link>
+      <sidenav-router-link route="view-employee-mobile-modules" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Skills & Achievements</sidenav-router-link>
     </sidenav-menu>
 
     <sidenav-menu icon="fa fa-address-book" text="CRM" [active]="isMenuActive('/CustomerManagement')" [open]="isMenuOpen('/CustomerManagement')" *ngIf="isMenuHide(41,28) || isMenuHide(90,2) || isMenuHide(160,28) || isMenuHide(161,28)">
@@ -79,7 +85,7 @@
       <sidenav-router-link route="view-accounting-head" *ngIf="isMenuHide(103,2)"><i class="fa fa-angle-double-right"></i> Account Head</sidenav-router-link>
     </sidenav-menu> 
     
-    <sidenav-menu icon="fa fa-bar-chart" text="Reports" [active]="isMenuActive('/Reports')" [open]="isMenuOpen('/Reports')" *ngIf="isMenuHide(69,48) || isMenuHide(61,37) || isMenuHide(126,124) || isMenuHide(132,48) || isMenuHide(133,48) || isMenuHide(63,65) || isMenuHide(70,65) || isMenuHide(71,65) || isMenuHide(81,43) || isMenuHide(93,43) || isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124) || isMenuHide(148,67) || isMenuHide(75,67) || isMenuHide(76,67) || isMenuHide(94,67) || isMenuHide(105,67) || isMenuHide(106,67) || isMenuHide(108,67) || isMenuHide(107,67) || isMenuHide(77,68) || isMenuHide(78,68) || isMenuHide(150,68) || isMenuHide(98,68) || isMenuHide(97,68) || isMenuHide(95,68) || isMenuHide(84,83) || isMenuHide(91,83) || isMenuHide(89,88) || isMenuHide(164,168) || isMenuHide(165,168) || isMenuHide(166,168) || isMenuHide(167,168)">
+    <sidenav-menu icon="fa fa-bar-chart" text="Reports" [active]="isMenuActive('/Reports')" [open]="isMenuOpen('/Reports')" *ngIf="isMenuHide(69,48) || isMenuHide(61,37) || isMenuHide(126,124) || isMenuHide(132,48) || isMenuHide(133,48) || isMenuHide(63,65) || isMenuHide(70,65) || isMenuHide(71,65) || isMenuHide(81,43) || isMenuHide(93,43) || isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124) || isMenuHide(148,67) || isMenuHide(75,67) || isMenuHide(76,67) || isMenuHide(94,67) || isMenuHide(105,67) || isMenuHide(106,67) || isMenuHide(108,67) || isMenuHide(107,67) || isMenuHide(77,68) || isMenuHide(78,68) || isMenuHide(150,68) || isMenuHide(98,68) || isMenuHide(97,68) || isMenuHide(95,68) || isMenuHide(84,83) || isMenuHide(91,83) || isMenuHide(89,88) || isMenuHide(164,168) || isMenuHide(165,168) || isMenuHide(166,168) || isMenuHide(167,168) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)">
       <sidenav-menu icon="fa fa-angle-double-right" text="Subscribers Report" [active]="isMenuActive('/CustomerReport')" [open]="isMenuOpen('/CustomerReport')" *ngIf="isMenuHide(69,48) || isMenuHide(126,124) || isMenuHide(61,37) || isMenuHide(132,48) || isMenuHide(133,48)">
         <sidenav-router-link route="commitment-report" *ngIf="isMenuHide(69,48)"><i class="fa fa-angle-double-right"></i> Commmitment Chit - Enrolled Subscriber</sidenav-router-link>
         <sidenav-router-link route="customer-ledger" *ngIf="isMenuHide(126,124) || isMenuHide(61,37)"><i class="fa fa-angle-double-right"></i> Ledger</sidenav-router-link>
@@ -98,14 +104,14 @@
         <sidenav-router-link route="loan-customerwise-outstanding-report" *ngIf="isMenuHide(93,43)"><i class="fa fa-angle-double-right"></i> Loan Outstanding</sidenav-router-link>
       </sidenav-menu>
 
-      <sidenav-menu icon="fa fa-angle-double-right" text="Collection Report" [active]="isMenuActive('/Transactions')" [open]="isMenuOpen('/Transactions')" *ngIf="isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124)">
+      <sidenav-menu icon="fa fa-angle-double-right" text="Collection Report" [active]="isMenuActive('/Transactions')" [open]="isMenuOpen('/Transactions')" *ngIf="isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)">
         <sidenav-router-link route="commitment-receipt-report" *ngIf="isMenuHide(82,66)"><i class="fa fa-angle-double-right"></i> Commitment Receipt Report</sidenav-router-link>
         <sidenav-router-link route="historical-performance-report" *ngIf="isMenuHide(51,66)"><i class="fa fa-angle-double-right"></i> Historical performance (3 / 6 / 12 mo)</sidenav-router-link>
         <sidenav-router-link route="business-forecast-report" *ngIf="isMenuHide(51,66)"><i class="fa fa-angle-double-right"></i> Business forecast (3 mo vs YoY)</sidenav-router-link>
         <sidenav-router-link route="employee-collection-report" *ngIf="isMenuHide(145,66)"><i class="fa fa-angle-double-right"></i> Employee Collection Report</sidenav-router-link>
         <sidenav-router-link route="before-enrol-receipt-report" *ngIf="isMenuHide(146,66)"><i class="fa fa-angle-double-right"></i> Before Enrollment Receipt Report</sidenav-router-link>
         <sidenav-router-link route="other-receipt-charges-report" *ngIf="isMenuHide(74,66)"><i class="fa fa-angle-double-right"></i> Other Charges Report</sidenav-router-link>
-        <sidenav-router-link route="settlement-report" *ngIf="isMenuHide(147,66)"><i class="fa fa-angle-double-right"></i> Settlement Report</sidenav-router-link>
+        <sidenav-router-link route="settlement-report" *ngIf="isMenuHide(147,66) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)"><i class="fa fa-angle-double-right"></i> Settlement Report</sidenav-router-link>
         <sidenav-router-link route="view-feed-back" *ngIf="isMenuHide(127,124)"><i class="fa fa-angle-double-right"></i> Collection Feedback</sidenav-router-link>
       </sidenav-menu>
 
