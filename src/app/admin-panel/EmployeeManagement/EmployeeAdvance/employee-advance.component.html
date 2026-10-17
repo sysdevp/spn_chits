@@ -1,0 +1,121 @@
+<div class="ea-hero">
+  <h1>Employee Advance &amp; Loan</h1>
+  <p>Give salary advances or loans to employees, approve requests from the mobile app, and mark them disbursed or recovered.</p>
+</div>
+
+<div class="ea-kpis">
+  <div class="ea-kpi" style="background:#FFF8E8"><span>Pending requests</span><b>{{ count('pending') }}</b></div>
+  <div class="ea-kpi" style="background:#EDF6FF"><span>Approved (to pay)</span><b>{{ money(sum(['approved'])) }}</b></div>
+  <div class="ea-kpi" style="background:#E9FFF3"><span>Outstanding (disbursed)</span><b>{{ money(sum(['disbursed'])) }}</b></div>
+  <div class="ea-kpi" style="background:#F4EEFF"><span>Recovered</span><b>{{ money(sum(['recovered'])) }}</b></div>
+</div>
+
+<div class="ea-card">
+  <h5 style="margin: 0 0 10px; font-weight: 800; color: #004D2A;">New Advance / Loan</h5>
+  <div class="ea-grid">
+    <div>
+      <label>Branch *</label>
+      <select [(ngModel)]="form.branch_id" (change)="formBranchChg()">
+        <option value="">Select Branch</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Employee *</label>
+      <select [(ngModel)]="form.employee_id">
+        <option value="">Select Employee</option>
+        <option *ngFor="let e of employeeList" [value]="e.id">{{ e.first_name }} {{ e.last_name }} {{ e.employee_code ? '(' + e.employee_code + ')' : '' }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Type</label>
+      <select [(ngModel)]="form.request_type">
+        <option value="advance">Salary Advance</option>
+        <option value="loan">Loan</option>
+      </select>
+    </div>
+    <div>
+      <label>Amount *</label>
+      <input type="number" min="1" [(ngModel)]="form.amount" (input)="calcEmi()" />
+    </div>
+    <div>
+      <label>Recover in (months)</label>
+      <input type="number" min="0" [(ngModel)]="form.tenure_months" (input)="calcEmi()" placeholder="1 = next salary" />
+    </div>
+    <div>
+      <label>Monthly deduction</label>
+      <input type="number" [(ngModel)]="form.emi_amount" />
+    </div>
+    <div>
+      <label>Date</label>
+      <input type="date" [(ngModel)]="form.request_date" />
+    </div>
+    <div>
+      <label>Reason</label>
+      <input [(ngModel)]="form.reason" />
+    </div>
+    <div>
+      <button type="button" class="ea-btn" (click)="save()" [disabled]="saving">{{ saving ? 'Saving...' : 'Save Request' }}</button>
+    </div>
+  </div>
+</div>
+
+<div class="ea-card">
+  <div class="ea-grid" style="margin-bottom: 12px;">
+    <div>
+      <label>Branch</label>
+      <select [(ngModel)]="filters.branch_id" (change)="load()">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Status</label>
+      <select [(ngModel)]="filters.request_status" (change)="load()">
+        <option value="">All</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="disbursed">Disbursed</option>
+        <option value="recovered">Recovered</option>
+        <option value="rejected">Rejected</option>
+      </select>
+    </div>
+    <div>
+      <label>Type</label>
+      <select [(ngModel)]="filters.request_type" (change)="load()">
+        <option value="">All</option>
+        <option value="advance">Advance</option>
+        <option value="loan">Loan</option>
+      </select>
+    </div>
+  </div>
+  <div style="overflow-x: auto;">
+    <table class="ea-table">
+      <thead>
+        <tr><th>Date</th><th>Employee</th><th>Branch</th><th>Type</th><th>Amount</th><th>Months</th><th>Monthly</th><th>Reason</th><th>Status</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of rows">
+          <td>{{ r.request_date }}</td>
+          <td>{{ r.employee_name }}</td>
+          <td>{{ r.branch_name }}</td>
+          <td style="text-transform: capitalize;">{{ r.request_type }}</td>
+          <td><b>{{ money(r.amount) }}</b></td>
+          <td>{{ r.tenure_months || '-' }}</td>
+          <td>{{ r.emi_amount ? money(r.emi_amount) : '-' }}</td>
+          <td>{{ r.reason }}<div *ngIf="r.decision_remarks" class="text-muted small">{{ r.decision_remarks }}</div></td>
+          <td><span class="pill" [ngClass]="'s-' + r.request_status">{{ r.request_status }}</span></td>
+          <td style="white-space: nowrap;">
+            <ng-container *ngIf="r.request_status === 'pending'">
+              <button type="button" class="ea-btn sm" (click)="decide(r, 'approved')">Approve</button>
+              <button type="button" class="ea-btn sm red" (click)="decide(r, 'rejected')">Reject</button>
+            </ng-container>
+            <button *ngIf="r.request_status === 'approved'" type="button" class="ea-btn sm blue" (click)="decide(r, 'disbursed')">Mark Paid</button>
+            <button *ngIf="r.request_status === 'disbursed'" type="button" class="ea-btn sm light" (click)="decide(r, 'recovered')">Mark Recovered</button>
+          </td>
+        </tr>
+        <tr *ngIf="!rows.length && !loading"><td colspan="10" style="text-align:center; padding: 24px; color: #5c6b80;">No advance or loan records.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

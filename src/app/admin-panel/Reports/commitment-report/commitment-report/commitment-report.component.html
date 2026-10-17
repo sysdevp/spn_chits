@@ -1,7 +1,7 @@
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row" [hidden]="selectionfield">
-      <div class="col-6 my-auto font-weight-bold">Enrollment Report</div>
+      <div class="col-6 my-auto font-weight-bold">Chit Enrollment Report</div>
       <div class="col-6 text-right">&nbsp;</div>
     </div>
     <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
@@ -29,26 +29,33 @@
         <div class="row">
           <div class="col-6">
             <div class="form-group row">
-              <label class="col-sm-4">Select Branch <span class="error">*</span></label>
+              <label class="col-sm-4">Select Branch</label>
               <div class="col-sm-8">
                 <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id" (change)="branchChg($event)">
-                  <option value="">Select Branch</option>
-                  
+                  <option value="">All Branches</option>
                   <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
                 </select>
-                <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
-                  <label *ngIf="f.branch_id.errors.required">Branch is required</label>
-                </div>
               </div>
             </div>
           </div>
           <div class="col-6">
             <div class="form-group row">
-              <label class="col-sm-4">Select Group</label>
+              <label class="col-sm-4">Select Scheme</label>
               <div class="col-sm-8">
-                <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
-                  <option value="">Select Group</option>
-                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.slab_name}}</option>
+                <select #scheme_id class="form-control form-control w-100 border-dark" formControlName="scheme_id" (change)="schemeChg($event)">
+                  <option value="">All Schemes</option>
+                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.scheme_format || data.scheme_name || data.slab_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Slab</label>
+              <div class="col-sm-8">
+                <select class="form-control form-control w-100 border-dark" formControlName="slab_id">
+                  <option value="">All Slabs</option>
+                  <option *ngFor="let data of slabList" value="{{data.id}}">{{data.slab_name}}</option>
                 </select>
               </div>
             </div>

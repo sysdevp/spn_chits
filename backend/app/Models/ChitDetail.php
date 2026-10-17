@@ -121,6 +121,16 @@ class ChitDetail extends Model
       $due = SlabDue::find($this->slab_id);
       $slab = $due ? (string) ($due->slab_name ?? '') : '';
     }
-    return self::formatSlabWithArNo($slab, $this->ar_no ?? null);
+    $label = self::formatSlabWithArNo($slab, $this->ar_no ?? null);
+    return (int) ($this->prized_status ?? 0) === 1 ? self::withPrizedTag($label) : $label;
+  }
+
+  public static function withPrizedTag($label): string
+  {
+    $label = (string) $label;
+    if (strpos($label, 'SPN Prized') !== false) {
+      return $label;
+    }
+    return $label !== '' ? $label . ' · SPN Prized' : 'SPN Prized';
   }
 }

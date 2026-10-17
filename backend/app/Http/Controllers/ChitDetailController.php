@@ -33,6 +33,7 @@ use Illuminate\Http\Request;
 use Validator;
 use DateTime;
 use DB;
+use Schema;
 
 class ChitDetailController extends Controller
 {
@@ -409,13 +410,17 @@ class ChitDetailController extends Controller
 				$enrol->branch_name = isset($enrol->branch_det->branch_name) ? ($enrol->branch_det->branch_name) : '';
                 //$enrol->name = isset($enrol->customer_det->name) ? ($enrol->customer_det->name) : []; 
                 $enrol->customer_info =  isset($enrol->customer_det) ? ($enrol->customer_det) : []; 
-				$enrol->name = $enrol->customer_det->name . ' ' . $enrol->customer_det->last_name  . ' | ' . $enrol->customer_det->customer_code;
-				$enrol->customer_info->name =  $enrol->customer_det->name . ' ' . $enrol->customer_det->last_name  . ' | ' . $enrol->customer_det->customer_code;
-				$enrol->mobile_no = isset($enrol->customer_det->mobile_no) ? ($enrol->customer_det->mobile_no) : ''; 
+				if (isset($enrol->customer_det)) {
+					$enrol->name = $enrol->customer_det->name . ' ' . $enrol->customer_det->last_name  . ' | ' . $enrol->customer_det->customer_code;
+					$enrol->customer_info->name = $enrol->name;
+				} else {
+					$enrol->name = '';
+				}
+				$enrol->mobile_no = isset($enrol->customer_det->mobile_no) ? ($enrol->customer_det->mobile_no) : '';
                 $enrol->group_info = isset($enrol->group_det) ? ($enrol->group_det) : [];
                 $enrol->group_name = isset($enrol->group_det->group_name) ? ($enrol->group_det->group_name) : '';
-				$commencement_date = Group::where('id',$enrol->group_id)->pluck('starting_date');
-				$enrol->commencement_date = date('d-m-Y' ,strtotime($commencement_date[0]));
+				$commencement_date = $enrol->group_id ? Group::where('id',$enrol->group_id)->value('starting_date') : null;
+				$enrol->commencement_date = $commencement_date ? date('d-m-Y', strtotime($commencement_date)) : '';
 				//$enrol->commencement_date = isset($enrol->group_det->group_name) ? ($enrol->group_det->blaw_date) : '';
                 $enrol->is_delete=0;
                 $biddingvalue=BiddingDetail::where('enrollment_id','=',$enrol->id)->get();
@@ -468,7 +473,7 @@ class ChitDetailController extends Controller
                     $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
                     $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
-                    $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
+                    $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name; if ((int) ($enrol->prized_status ?? 0) === 1) { $enrol->enrol_name = ChitDetail::withPrizedTag($enrol->enrol_name); }
                     $enrol->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
                 }
 				 $i++;
@@ -591,7 +596,7 @@ class ChitDetailController extends Controller
                     $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                     $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
                     $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
-                    $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
+                    $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name; if ((int) ($enrol->prized_status ?? 0) === 1) { $enrol->enrol_name = ChitDetail::withPrizedTag($enrol->enrol_name); }
                     
                 }
             }
@@ -1063,24 +1068,39 @@ class ChitDetailController extends Controller
             if(isset($request->tenant_id)){
                 $cond['tenant_id'] = $request->tenant_id; 
             }        	
-        	if(isset($request->group_id)){
+        	if(!empty($request->group_id)){
         		$cond['group_id'] = $request->group_id; 
         	}
+            if(!empty($request->scheme_id)){
+                $cond['scheme_id'] = $request->scheme_id;
+            }
+            if(!empty($request->slab_id)){
+                $cond['slab_id'] = $request->slab_id;
+            }
+            // Commitment enrol report: only SPN / commitment chits
+            if (strpos((string) $request->path(), 'commitment-enrol-report') !== false || !empty($request->commitment_only)) {
+                $cond['chit_type'] = 3;
+            }
+            $enrollQuery = ChitDetail::where($cond);
             if($request->branch_id > 0){
-                $cond1['branch_id'] = $request->branch_id; 
-                $enrolls = ChitDetail::where($cond)->where($cond1)->orderBy('id','desc')->get();
+                $enrollQuery->where('branch_id', $request->branch_id);
+            } elseif (!empty($request->branch_ids) && is_array($request->branch_ids)) {
+                $enrollQuery->whereIn('branch_id', $request->branch_ids);
             }
-            if($request->branch_id == 0)
-            {
-                $enrolls = ChitDetail::where($cond)->orderBy('id','desc')->get();
+            foreach (['start_date' => '>=', 'end_date' => '<='] as $dateKey => $op) {
+                $d = $request->input($dateKey);
+                if (is_array($d) && !empty($d['year'])) {
+                    $enrollQuery->whereDate('date_introduced', $op, sprintf('%04d-%02d-%02d', $d['year'], $d['month'], $d['day']));
+                }
             }
+            $enrolls = $enrollQuery->orderBy('id','desc')->get();
             $i=1; 
 			if(count($enrolls)>0)
             {
                 $grand_chit_value = 0;
                 $tot_chit = 0;
                 foreach($enrolls as $enrol) {	
-		//print_r($enrol->id); echo '/';
+                    $enrol->scheme_name = isset($enrol->scheme_det) ? (round($enrol->scheme_det->chit_value).' ('.$enrol->scheme_det->no_of_months.' M)') : '';
                     $enrol->sno = $i;
                     $enrol->tenant_info = isset($enrol->tenant_det) ? ($enrol->tenant_det) : [];
                     $enrol->branch_name = isset($enrol->branch_det->branch_name) ? ($enrol->branch_det->branch_name) : [];
@@ -1097,7 +1117,7 @@ class ChitDetailController extends Controller
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
                         $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
-                        $group_name = "Commitment ".$slab_name;
+                        $group_name = $slab_name;
                         $chit_value = isset($enrol->scheme_det->chit_value) ? ($enrol->scheme_det->chit_value) : 0;
                     }
                     $enrol->chit_value = $chit_value;
@@ -2331,6 +2351,34 @@ class ChitDetailController extends Controller
     /**
      * Pending SPN approval: first installment paid or near complete (>= 90%).
      */
+    /** created_by on web entries is a users.id; fall back to employees.id for mobile entries. */
+    private function userOrEmployeeName($id)
+    {
+        static $cache = [];
+        $id = (int) $id;
+        if (!$id) {
+            return '';
+        }
+        if (!isset($cache[$id])) {
+            $label = '';
+            try {
+                $user = DB::table('users')->where('id', $id)->first();
+                $empId = $user && !empty($user->employee_id) ? $user->employee_id : ($user ? 0 : $id);
+                if ($empId) {
+                    $e = DB::table('employees')->where('id', $empId)->first(['first_name', 'last_name']);
+                    $label = $e ? trim(($e->first_name ?? '') . ' ' . ($e->last_name ?? '')) : '';
+                }
+                if ($label === '' && $user) {
+                    $label = $user->name ?? ($user->email ?? '');
+                }
+            } catch (\Exception $e) {
+                $label = '';
+            }
+            $cache[$id] = $label;
+        }
+        return $cache[$id];
+    }
+
     public function list_commitment_eligibility_pending(Request $request)
     {
         try {
@@ -2340,6 +2388,8 @@ class ChitDetailController extends Controller
             }
             if (!empty($request->branch_id)) {
                 $query->where('branch_id', $request->branch_id);
+            } elseif (!empty($request->branch_ids) && is_array($request->branch_ids)) {
+                $query->whereIn('branch_id', $request->branch_ids);
             }
             $enrolls = $query->orderBy('id', 'desc')->get();
             $rows = [];
@@ -2370,6 +2420,8 @@ class ChitDetailController extends Controller
                     $enrol->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($enrol->slab_info->slab_name, $enrol->ar_no ?? null);
                 }
                 $enrol->branch_info = $enrol->branch_det ?? [];
+                $enrol->requested_by_name = $this->userOrEmployeeName($enrol->created_by ?? 0);
+                $enrol->requested_at = $enrol->created_at ? (string) $enrol->created_at : '';
                 $rows[] = $enrol;
             }
             return response()->json(['status' => 'Success', 'msg' => '', 'data' => $rows], 200);
@@ -2421,6 +2473,10 @@ class ChitDetailController extends Controller
             if ($parsedDueDate) {
                 $enrol->due_date = $parsedDueDate;
             }
+            $parsedPromisedMonth = $this->parseApiDateInput($request->promised_month);
+            if ($parsedPromisedMonth) {
+                $enrol->promised_month = $parsedPromisedMonth;
+            }
             $commission = (float) $request->commission_amount;
             $enrol->total_business_agent_commission = $commission;
             $enrol->balance_business_agent_commission = $commission;
@@ -2439,6 +2495,133 @@ class ChitDetailController extends Controller
                 'status' => 'Error',
                 'msg' => $e->getMessage() ?: \Lang::get('api.global_error'),
             ], 200);
+        }
+    }
+
+    public function commitment_promise_report(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tenant_id' => 'required',
+            'month' => 'required|date_format:Y-m',
+            'report_type' => 'required|in:promised,final,all',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Error', 'msg' => $validator->errors()->first()], 200);
+        }
+
+        try {
+            $month = $request->month;
+            $query = ChitDetail::where('tenant_id', $request->tenant_id)
+                ->where('chit_type', 3)
+                ->where('eligibility_status', 1);
+            if (!empty($request->branch_id) && (int) $request->branch_id !== 0) {
+                $query->where('branch_id', $request->branch_id);
+            }
+
+            $enrollments = $query->with([
+                'customer_det',
+                'branch_det',
+                'slab_due_det.scheme_det',
+                'scheme_det',
+                'employee_agent_intro_det',
+            ])->get();
+            $rows = [];
+            $serial = 1;
+            foreach ($enrollments as $enrol) {
+                $auctions = CommitmentAuction::where('enrollment_id', $enrol->id)
+                    ->orderBy('installment_no')
+                    ->get();
+                if ($auctions->isEmpty()) {
+                    continue;
+                }
+
+                $promisedAuction = $auctions->first(function ($auction) use ($enrol, $month) {
+                    $promisedMonth = $enrol->promised_month ? date('Y-m', strtotime($enrol->promised_month)) : null;
+                    return $promisedMonth === $month;
+                });
+                // Prefer auction whose date matches promised month; else keep promised marker auction
+                $promisedByDate = $auctions->first(function ($auction) use ($month) {
+                    return $auction->auction_date && date('Y-m', strtotime($auction->auction_date)) === $month;
+                });
+                if ($promisedAuction && $promisedByDate) {
+                    $promisedAuction = $promisedByDate;
+                } elseif (!$promisedAuction) {
+                    $promisedAuction = null;
+                }
+                $terminalAuction = $auctions->last();
+                $finalAuction = $terminalAuction && $terminalAuction->auction_date
+                    && date('Y-m', strtotime($terminalAuction->auction_date)) === $month
+                    ? $terminalAuction
+                    : null;
+                $reportType = $request->report_type;
+                $selected = $reportType === 'promised' ? $promisedAuction : $finalAuction;
+                if ($reportType === 'all') {
+                    $selected = $promisedAuction ?: $finalAuction;
+                }
+                if (!$selected && $reportType === 'promised' && $enrol->promised_month
+                    && date('Y-m', strtotime($enrol->promised_month)) === $month) {
+                    $selected = $auctions->first();
+                }
+                if (!$selected) {
+                    continue;
+                }
+
+                $paid = (float) Receipt::where('enrollment_id', $enrol->id)
+                    ->where('installment_no', $selected->installment_no)
+                    ->sum('received_amount');
+                $customer = $enrol->customer_det;
+                $agent = $enrol->introducer_name;
+                if (!$agent && $enrol->employee_agent_intro_det) {
+                    $agent = trim($enrol->employee_agent_intro_det->first_name . ' ' . $enrol->employee_agent_intro_det->last_name);
+                }
+                $schemeValue = 0;
+                $schemeName = '';
+                $scheme = $enrol->scheme_det;
+                if (!$scheme && $enrol->slab_due_det) {
+                    $scheme = $enrol->slab_due_det->scheme_det;
+                    if (!$scheme && !empty($enrol->slab_due_det->schemes_id)) {
+                        $scheme = Scheme::find($enrol->slab_due_det->schemes_id);
+                    }
+                }
+                if ($scheme) {
+                    $schemeValue = (float) ($scheme->chit_value ?? 0);
+                    $schemeName = $scheme->scheme_format ?: ($scheme->scheme_name ?? '');
+                }
+                $promisedOrFinal = ($reportType === 'final')
+                    ? ($selected->auction_date ?? $enrol->promised_month)
+                    : ($enrol->promised_month ?: $selected->auction_date);
+                $rows[] = [
+                    'sno' => $serial++,
+                    'customer_id' => $enrol->customer_id,
+                    'name' => trim(($customer->name ?? '') . ' ' . ($customer->last_name ?? '')),
+                    'mobile' => $customer->mobile_no ?? '',
+                    'spn_number' => $enrol->ar_no ?? $enrol->ticket_no,
+                    'scheme_name' => $schemeName,
+                    'scheme_value' => $schemeValue,
+                    'slab_name' => $enrol->slab_due_det ? ($enrol->slab_due_det->slab_name ?? '') : '',
+                    'joining_date' => $enrol->date_introduced,
+                    'agent' => $agent ?: '',
+                    'running_month' => $selected->installment_no,
+                    'promised_or_final_month' => $promisedOrFinal,
+                    'slab_payment' => (float) $selected->due_amount,
+                    'status' => $paid >= (float) $selected->due_amount ? 'Paid' : 'Not Paid',
+                    'paid_amount' => $paid,
+                    'enrollment_id' => $enrol->id,
+                    'branch_name' => $enrol->branch_det->branch_name ?? '',
+                    'prized_status' => (int) ($enrol->prized_status ?? 0),
+                    'event_date' => $selected->auction_date
+                        ? date('Y-m-d', strtotime($selected->auction_date))
+                        : ($enrol->promised_month ? date('Y-m-d', strtotime($enrol->promised_month)) : $month . '-01'),
+                ];
+            }
+            $totals = [
+                'scheme_value' => array_sum(array_map(function ($r) { return (float) $r['scheme_value']; }, $rows)),
+                'slab_payment' => array_sum(array_map(function ($r) { return (float) $r['slab_payment']; }, $rows)),
+                'count' => count($rows),
+            ];
+            return response()->json(['status' => 'Success', 'msg' => '', 'data' => $rows, 'totals' => $totals], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
         }
     }
 
@@ -2660,15 +2843,14 @@ class ChitDetailController extends Controller
                 }
 				$payment->debit_to = isset($request->debit_to) ? $request->debit_to : '';
 				$payment->created_by = isset($request->created_by) ? $request->created_by : 0;
-                $payment->status = isset($request->status) ? ($request->status) : 1;
-				if($request->payment_type_id == 2){
-							$payment->status = isset($request->status) ? ($request->status) : 2;
-						}
+                $this->ensurePaymentApprovalColumns();
+                $payment->approval_status = 'pending';
+                $payment->status = 0;
                 if($request->total_amount >0)
                 {
     				if($payment->save()) {
     					$response['status'] = 'Success';
-    					$response['msg'] = \Lang::get('api.success_payment_added');
+    					$response['msg'] = 'Refund request sent for admin approval';
     					$response['data'] = $payment;
     					return response()->json($response,200);
     				}
@@ -2691,6 +2873,110 @@ class ChitDetailController extends Controller
 				return response()->json($response,200);
 			}
 		}
+    }
+
+    private function ensurePaymentApprovalColumns()
+    {
+        if (!\Schema::hasTable('payments')) {
+            return;
+        }
+        if (!\Schema::hasColumn('payments', 'approval_status')) {
+            \Schema::table('payments', function ($table) {
+                $table->string('approval_status', 20)->nullable();
+            });
+        }
+        if (!\Schema::hasColumn('payments', 'approval_remarks')) {
+            \Schema::table('payments', function ($table) {
+                $table->text('approval_remarks')->nullable();
+            });
+        }
+        if (!\Schema::hasColumn('payments', 'approved_by')) {
+            \Schema::table('payments', function ($table) {
+                $table->integer('approved_by')->nullable();
+            });
+        }
+    }
+
+    public function list_refund_requests(Request $request)
+    {
+        try {
+            $this->ensurePaymentApprovalColumns();
+            $query = Payment::where('payment_for', '3')->orderBy('id', 'desc');
+            if (!empty($request->tenant_id)) {
+                $query->where('tenant_id', $request->tenant_id);
+            }
+            if (!empty($request->branch_id) && (int) $request->branch_id !== 0) {
+                $query->where('branch_id', $request->branch_id);
+            }
+            if (!empty($request->approval_status)) {
+                $query->where('approval_status', $request->approval_status);
+            } else {
+                $query->where('approval_status', 'pending');
+            }
+            $rows = $query->limit(500)->get();
+            $empName = function ($id) {
+                $e = $id ? DB::table('employees')->where('id', $id)->first(['first_name', 'last_name']) : null;
+                return $e ? trim(($e->first_name ?? '') . ' ' . ($e->last_name ?? '')) : '';
+            };
+            $userIds = $rows->pluck('created_by')->filter()->unique()->values()->all();
+            $requesters = [];
+            if ($userIds) {
+                foreach (DB::table('users')->whereIn('id', $userIds)->get() as $u) {
+                    $requesters[$u->id] = (!empty($u->employee_id) ? $empName($u->employee_id) : '') ?: ($u->name ?? ($u->email ?? ''));
+                }
+            }
+            $approvers = [];
+            $data = [];
+            $i = 1;
+            foreach ($rows as $payment) {
+                $customer = $payment->customer_det;
+                $aid = (int) ($payment->approved_by ?? 0);
+                if ($aid && !isset($approvers[$aid])) {
+                    $approvers[$aid] = $empName($aid);
+                }
+                $data[] = [
+                    'requested_by_name' => $requesters[$payment->created_by] ?? '',
+                    'requested_at' => $payment->created_at ? (string) $payment->created_at : '',
+                    'approved_by_name' => $aid ? ($approvers[$aid] ?? '') : '',
+                    'approved_at' => ($payment->approval_status && $payment->approval_status !== 'pending' && $payment->updated_at) ? (string) $payment->updated_at : '',
+                    'id' => $payment->id,
+                    'sno' => $i++,
+                    'customer_name' => $customer ? trim(($customer->name ?? '') . ' ' . ($customer->last_name ?? '')) : '',
+                    'branch_name' => $payment->branch_det->branch_name ?? '',
+                    'payment_date' => $payment->payment_date,
+                    'total_amount' => $payment->total_amount,
+                    'penalty_amount' => $payment->cancel_penalty_amount,
+                    'approval_status' => $payment->approval_status ?: 'pending',
+                    'approval_remarks' => $payment->approval_remarks,
+                ];
+            }
+            return response()->json(['status' => 'Success', 'data' => $data], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+        }
+    }
+
+    public function approve_refund_request(Request $request)
+    {
+        try {
+            $this->ensurePaymentApprovalColumns();
+            $payment = Payment::where('payment_for', '3')->find($request->id);
+            if (!$payment) {
+                return response()->json(['status' => 'Error', 'msg' => 'Refund request not found'], 200);
+            }
+            $decision = $request->decision === 'reject' ? 'rejected' : 'approved';
+            $payment->approval_status = $decision;
+            $payment->approval_remarks = $request->remarks ?: '';
+            $payment->approved_by = $request->approved_by ?: 0;
+            $payment->status = $decision === 'approved' ? 1 : 0;
+            $payment->save();
+            return response()->json([
+                'status' => 'Success',
+                'msg' => $decision === 'approved' ? 'Refund approved' : 'Refund rejected',
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+        }
     }
 	
 	public function get_payment_refund(Request $request) {
@@ -2726,6 +3012,9 @@ class ChitDetailController extends Controller
         	if(isset($request->group_id)){
         		$cond['group_id'] = $request->group_id; 
         	}
+            if(!empty($request->scheme_id)){
+                $cond['scheme_id'] = $request->scheme_id;
+            }
         	if(isset($request->start_date)) { 
         	    $s_date = ($request->start_date['year']).'-'.sprintf('%02d',($request->start_date['month'])).'-'.sprintf('%02d',($request->start_date['day'])); 
         		$start_date = date('Y-m-d',strtotime($s_date)); 
@@ -3622,7 +3911,7 @@ class ChitDetailController extends Controller
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
                         $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
-                        $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name;
+                        $enrol->enrol_name = "GROUP NAME:Commitment | SLAB NAME :".$slab_name; if ((int) ($enrol->prized_status ?? 0) === 1) { $enrol->enrol_name = ChitDetail::withPrizedTag($enrol->enrol_name); }
                         $enrol->chit_value = isset($slab_types[0]->scheme_det) ? (strval(round($slab_types[0]->scheme_det->chit_value))) : "0"; 
                     }
                      $i++;
@@ -6761,19 +7050,21 @@ class ChitDetailController extends Controller
             $cond = [];
             $cond1 = [];
             if(isset($request->tenant_id)){
-                $cond['tenant_id'] = $request->tenant_id; 
-            }        	
-        	if(isset($request->group_id)){
-        		$cond['group_id'] = $request->group_id; 
+                $cond['tenant_id'] = $request->tenant_id;
+            }
+        	if(!empty($request->group_id)){
+        		$cond['group_id'] = $request->group_id;
         	}
+            if(!empty($request->scheme_id)){
+                $cond['scheme_id'] = $request->scheme_id;
+            }
+            if(!empty($request->slab_id)){
+                $cond['slab_id'] = $request->slab_id;
+            }
             if($request->branch_id > 0){
-                $cond1['branch_id'] = $request->branch_id; 
-                $enrolls = ChitDetail::where($cond)->where($cond1)->onlyTrashed()->orderBy('id','desc')->get();
+                $cond1['branch_id'] = $request->branch_id;
             }
-            if($request->branch_id == 0)
-            {
-                $enrolls = ChitDetail::where($cond)->onlyTrashed()->orderBy('id','desc')->get();
-            }
+            $enrolls = ChitDetail::where($cond)->where($cond1)->onlyTrashed()->orderBy('id','desc')->get();
             $i=1;
 			if(count($enrolls)>0)
             {
@@ -6797,11 +7088,12 @@ class ChitDetailController extends Controller
                         $slab_types = SlabDue::where('id',$enrol->slab_id)->get();   
                         $slab_name = isset($slab_types[0]->slab_name) ? ($slab_types[0]->slab_name) : "";
                         $slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_name, $enrol->ar_no ?? null);
-                        $group_name = "Commitment ".$slab_name;
+                        $group_name = $slab_name;
                         $chit_value = isset($enrol->scheme_det->chit_value) ? ($enrol->scheme_det->chit_value) : 0;
                     }
                     $enrol->chit_value = $chit_value;
                     $enrol->group_name = $group_name;
+                    $enrol->scheme_name = isset($enrol->scheme_det) ? ($enrol->scheme_det->chit_value . ' / ' . $enrol->scheme_det->no_of_months . 'M') : '';
                     $enrol->collection_agent_info = isset($enrol->collection_agent_det) ? ($enrol->collection_agent_det) : [];
                     $enrol->introducer_info = [];
                     if(($enrol->agent_type==2) || ($enrol->agent_type==3)) {
@@ -6923,6 +7215,91 @@ class ChitDetailController extends Controller
             $response['status'] = 'Error';
             $response['msg'] = \Lang::get('api.global_error');
             return response()->json($response, 401);
+        }
+    }
+
+    public function list_sms_template(Request $request)
+    {
+        try {
+            $query = Sms::where('status', 1)->orderBy('id', 'desc');
+            if (!empty($request->tenant_id)) {
+                $query->where('tenant_id', $request->tenant_id);
+            }
+            if (!empty($request->branch_id)) {
+                $query->where('branch_id', $request->branch_id);
+            }
+            if (!empty($request->conditions) && is_array($request->conditions)) {
+                $query->where($request->conditions);
+            }
+            $smss = $query->get();
+            $i = 1;
+            foreach ($smss as $sms) {
+                $sms->sno = $i++;
+                $sms->branch_info = isset($sms->branch_det) ? $sms->branch_det : [];
+            }
+            return response()->json(['status' => 'Success', 'msg' => '', 'data' => $smss], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => \Lang::get('api.global_error'), 'error' => $e->getMessage()], 200);
+        }
+    }
+
+    public function store_sms_template(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tenant_id' => 'required',
+            'template_name' => 'required',
+            'description' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['status' => 'Error', 'msg' => $validator->errors()->first()], 200);
+        }
+        try {
+            if (!\Schema::hasTable('sms')) {
+                \Schema::create('sms', function (\Illuminate\Database\Schema\Blueprint $table) {
+                    $table->bigIncrements('id');
+                    $table->integer('tenant_id')->default(0);
+                    $table->integer('branch_id')->default(0);
+                    $table->string('template_name');
+                    $table->text('description')->nullable();
+                    $table->integer('created_by')->default(0)->nullable();
+                    $table->integer('deleted_by')->nullable();
+                    $table->tinyInteger('status')->default(1);
+                    $table->timestamps();
+                    $table->softDeletes();
+                });
+            }
+            $sms = new Sms();
+            $sms->tenant_id = $request->tenant_id ?: 0;
+            $sms->branch_id = $request->branch_id ?: 0;
+            $sms->template_name = $request->template_name;
+            $sms->description = $request->description;
+            $sms->created_by = $request->created_by ?: 0;
+            $sms->status = 1;
+            if ($sms->save()) {
+                return response()->json(['status' => 'Success', 'msg' => 'SMS template saved successfully', 'data' => $sms], 200);
+            }
+            return response()->json(['status' => 'Error', 'msg' => 'Unable to save SMS template'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+        }
+    }
+
+    public function delete_sms_template(Request $request)
+    {
+        try {
+            if (empty($request->id)) {
+                return response()->json(['status' => 'Error', 'msg' => 'Template id required'], 200);
+            }
+            $sms = Sms::find($request->id);
+            if (!$sms) {
+                return response()->json(['status' => 'Error', 'msg' => 'Template not found'], 200);
+            }
+            $sms->deleted_by = $request->deleted_by ?: 0;
+            $sms->save();
+            $sms->delete();
+            return response()->json(['status' => 'Success', 'msg' => 'SMS template deleted'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
         }
     }
 		

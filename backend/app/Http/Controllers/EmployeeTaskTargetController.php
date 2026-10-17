@@ -73,6 +73,11 @@ class EmployeeTaskTargetController extends Controller
                 $table->string('target_type', 50)->default('existing_client_collection')->after('employee_id');
             });
         }
+        if (Schema::hasTable('employee_targets') && !Schema::hasColumn('employee_targets', 'business_value')) {
+            Schema::table('employee_targets', function ($table) {
+                $table->decimal('business_value', 15, 2)->default(0)->after('target_amount');
+            });
+        }
     }
 
     private function empName($row)
@@ -124,6 +129,7 @@ class EmployeeTaskTargetController extends Controller
             'period_start' => $row->period_start,
             'period_end' => $row->period_end,
             'target_amount' => $amount,
+            'business_value' => isset($row->business_value) ? (float) $row->business_value : 0,
             'achieved_amount' => $achieved,
             'completion_percent' => $pct,
             'target_label' => $row->target_label ?: 'Collection',
@@ -240,7 +246,7 @@ class EmployeeTaskTargetController extends Controller
             if ($request->branch_id) {
                 $query->where('branch_id', (int) $request->branch_id);
             }
-            if ($request->employee_id) {
+            if ((int) $request->employee_id > 0) {
                 $query->where('employee_id', (int) $request->employee_id);
             }
             if ($request->task_status) {
@@ -348,10 +354,14 @@ class EmployeeTaskTargetController extends Controller
             'tenant_id' => 'required',
             'employee_id' => 'required',
             'period_type' => 'required|in:daily,weekly,monthly',
-            'target_amount' => 'required|numeric|min:0',
+            'target_amount' => 'nullable|numeric|min:0',
+            'business_value' => 'nullable|numeric|min:0',
         ));
         if ($validator->fails()) {
             return response()->json(array('status' => 'Error', 'msg' => $validator->errors()->first()), 200);
+        }
+        if (!is_array($request->targets) && (float) $request->target_amount <= 0 && (float) $request->business_value <= 0) {
+            return response()->json(array('status' => 'Error', 'msg' => 'Enter the Target Amount or the Business Value'), 200);
         }
 
         try {
@@ -400,6 +410,9 @@ class EmployeeTaskTargetController extends Controller
                     $row->period_start = $pStart;
                     $row->period_end = $pEnd;
                     $row->target_amount = (float) $item['target_amount'];
+                    if (isset($item['business_value'])) {
+                        $row->business_value = (float) $item['business_value'];
+                    }
                     if (isset($item['achieved_amount'])) {
                         $row->achieved_amount = (float) $item['achieved_amount'];
                     }
@@ -440,6 +453,7 @@ class EmployeeTaskTargetController extends Controller
                 $row->period_start = $start;
                 $row->period_end = $end;
                 $row->target_amount = (float) $request->target_amount;
+                $row->business_value = (float) $request->business_value;
                 if ($request->has('achieved_amount')) {
                     $row->achieved_amount = (float) $request->achieved_amount;
                 }
@@ -472,7 +486,7 @@ class EmployeeTaskTargetController extends Controller
         $this->switchTenantDb($request);
 
         try {
-            if ($request->employee_id) {
+            if ((int) $request->employee_id > 0) {
                 \App\Services\EmployeeMetricsService::syncTargetProgress(
                     (int) $request->tenant_id,
                     (int) $request->employee_id,
@@ -490,7 +504,7 @@ class EmployeeTaskTargetController extends Controller
             if ($request->branch_id) {
                 $query->where('branch_id', (int) $request->branch_id);
             }
-            if ($request->employee_id) {
+            if ((int) $request->employee_id > 0) {
                 $query->where('employee_id', (int) $request->employee_id);
             }
             if ($request->period_type) {

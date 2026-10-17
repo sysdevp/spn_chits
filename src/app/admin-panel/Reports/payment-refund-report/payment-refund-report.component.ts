@@ -119,7 +119,7 @@ export class PaymentRefundReportComponent implements OnInit {
     
       if (this.tenantid!='' && this.branchid > 0)
       {
-        this.userservice.getData(cond, "get-groups", "POST").subscribe((response: any) => {
+        this.userservice.getData(cond, "get-schemes", "POST").subscribe((response: any) => {
           try { 
             if (response.status == 'Success') {
               this.groupList = response.data;
@@ -132,9 +132,9 @@ export class PaymentRefundReportComponent implements OnInit {
       else if(this.tenantid!=''&& this.branchid==0) 
       {
         let cond1 = {
-          'tenant_id' : this.PaymentRefundReport.get('tenant_id').value,
+          'conditions[tenant_id]' : this.PaymentRefundReport.get('tenant_id').value,
         }
-        this.userservice.getData(cond1, "list-groups", "POST").subscribe((response: any) => {
+        this.userservice.getData(cond1, "get-schemes", "POST").subscribe((response: any) => {
           try { 
             if (response.status == 'Success') {
               this.groupList = response.data;
@@ -222,6 +222,7 @@ export class PaymentRefundReportComponent implements OnInit {
     }
     this.PaymentRefundReport.get('branch_id').setValue('');
     this.PaymentRefundReport.get('group_id').setValue('');
+    this.PaymentRefundReport.get('scheme_id').setValue('');
     this.PaymentRefundReport.get('start_date').setValue(null);
     this.PaymentRefundReport.get('end_date').setValue(null);
     this.groupList = [];
@@ -518,6 +519,7 @@ export class PaymentRefundReportComponent implements OnInit {
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       group_id: [''],
+      scheme_id: [''],
       start_date:[null],
       end_date:[null]
     });

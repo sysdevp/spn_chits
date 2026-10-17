@@ -9,8 +9,8 @@
   </div>
   <div class="rd-kpi accent-gold">
     <div class="rd-kpi-label">Monthly Target</div>
-    <div class="rd-kpi-value">—</div>
-    <div class="rd-kpi-note">82% placeholder</div>
+    <div class="rd-kpi-value">₹ {{ n(s().monthly_target) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">{{ n(s().monthly_target_percent) }}% achieved</div>
   </div>
   <div class="rd-kpi accent-purple">
     <div class="rd-kpi-label">Total Customers</div>

@@ -1,0 +1,144 @@
+<div class="score-guide">
+  <div class="guide-hero">
+    <div>
+      <p class="eyebrow">Settings · Customer score</p>
+      <h2>How a customer score is calculated</h2>
+      <p>One score for the customer. Paid, pending, and late days from every enrollment are added together first. The ledger uses these same numbers.</p>
+    </div>
+    <div class="hero-score">
+      <strong>{{ start }}</strong>
+      <span>starting points</span>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="flow-step navy">
+      <span>Start</span>
+      <strong>{{ start }}</strong>
+      <small>Every customer begins here</small>
+    </div>
+    <div class="flow-arrow">−</div>
+    <div class="flow-step amber">
+      <span>Pending</span>
+      <strong>up to {{ pendingMax }}</strong>
+      <small>Money still due</small>
+    </div>
+    <div class="flow-arrow">−</div>
+    <div class="flow-step red">
+      <span>Late</span>
+      <strong>up to {{ lateMax }}</strong>
+      <small>Late installments and days</small>
+    </div>
+    <div class="flow-arrow">=</div>
+    <div class="flow-step green">
+      <span>Result</span>
+      <strong>0 – {{ start }}</strong>
+      <small>Excellent, Good, Medium, or Bad</small>
+    </div>
+  </div>
+
+  <div class="section-title">Four results</div>
+  <div class="grade-row">
+    <div class="grade-card excellent">
+      <div class="grade-range">850 – 1000</div>
+      <h3>Excellent</h3>
+      <p>Payments are regular. Pending and late days are small.</p>
+    </div>
+    <div class="grade-card good">
+      <div class="grade-range">700 – 849</div>
+      <h3>Good</h3>
+      <p>Most dues are paid. A few pending or late days remain.</p>
+    </div>
+    <div class="grade-card medium">
+      <div class="grade-range">500 – 699</div>
+      <h3>Medium</h3>
+      <p>A sizeable amount is pending, or several installments are late.</p>
+    </div>
+    <div class="grade-card bad">
+      <div class="grade-range">0 – 499</div>
+      <h3>Bad</h3>
+      <p>Pending is high and late days have reduced the score sharply.</p>
+    </div>
+  </div>
+
+  <div class="meter" aria-hidden="true">
+    <div class="meter-bad">Bad</div>
+    <div class="meter-medium">Medium</div>
+    <div class="meter-good">Good</div>
+    <div class="meter-excellent">Excellent</div>
+  </div>
+  <div class="meter-scale"><span>0</span><span>500</span><span>700</span><span>850</span><span>1000</span></div>
+
+  <div class="section-title">What changes the score</div>
+  <div class="rule-grid">
+    <div class="rule-card paid">
+      <div class="rule-icon">Paid</div>
+      <h3>Collected amount</h3>
+      <p>Add the paid amount from every enrollment. Paid money does not remove points.</p>
+    </div>
+    <div class="rule-card pending">
+      <div class="rule-icon">− {{ pendingMax }}</div>
+      <h3>Pending penalty</h3>
+      <p>Pending ÷ (Paid + Pending) × {{ pendingMax }}.</p>
+      <p>All pending removes {{ pendingMax }}. Nothing pending removes 0.</p>
+    </div>
+    <div class="rule-card late">
+      <div class="rule-icon">− {{ lateMax }}</div>
+      <h3>Late penalty</h3>
+      <p>A late installment still has a balance and its due date has passed.</p>
+      <ul>
+        <li>{{ lateInstallmentPoints }} points for each late installment</li>
+        <li>{{ lateDayPoints }} point for each late day</li>
+        <li>Only the first {{ lateDaysCap }} late days of each installment count</li>
+        <li>This penalty stops at {{ lateMax }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="enroll-note">
+    <div class="mini-enrol">Enrollment 1</div>
+    <div class="mini-plus">+</div>
+    <div class="mini-enrol">Enrollment 2</div>
+    <div class="mini-plus">+</div>
+    <div class="mini-enrol">Enrollment 3</div>
+    <div class="mini-plus">=</div>
+    <div class="mini-customer">One customer score</div>
+  </div>
+  <p class="enroll-copy">Opening one enrollment does not change the score. If nothing is due yet, the score stays {{ start }}.</p>
+
+  <div class="section-title">Example</div>
+  <div class="example">
+    <div class="example-inputs">
+      <div><span>Paid</span><strong>₹80,000</strong></div>
+      <div><span>Pending</span><strong>₹20,000</strong></div>
+      <div><span>Late installments</span><strong>2</strong></div>
+      <div><span>Late days counted</span><strong>14</strong></div>
+    </div>
+    <div class="example-math">
+      <div class="math-pill navy">{{ start }}</div>
+      <span>−</span>
+      <div class="math-pill amber">{{ example.pendingPenalty }}</div>
+      <span>−</span>
+      <div class="math-pill red">{{ example.latePenalty }}</div>
+      <span>=</span>
+      <div class="math-pill result" [ngClass]="gradeClass(example.grade)">
+        <b>{{ example.score }}</b>
+        <small>{{ example.grade }}</small>
+      </div>
+    </div>
+    <p>{{ start }} − {{ example.pendingPenalty }} pending − {{ example.latePenalty }} late = {{ example.score }}. That is {{ example.grade }}.</p>
+  </div>
+
+  <div class="section-title">Customer code</div>
+  <div class="code-card">
+    <div class="code-chip">SPN</div>
+    <span class="code-dash">–</span>
+    <div class="code-chip branch">Branch</div>
+    <span class="code-dash">–</span>
+    <div class="code-chip num">{{ codeStart }}</div>
+    <div class="code-copy">
+      <p>The next new customer in a branch starts at <strong>{{ codeStart }}</strong>, then {{ codeStart + 1 }}, then {{ codeStart + 2 }}.</p>
+      <p>Example for branch CBE: <strong>SPN-CBE-{{ codeStart }}</strong>. Customers who already have a code keep it.</p>
+    </div>
+  </div>
+</div>

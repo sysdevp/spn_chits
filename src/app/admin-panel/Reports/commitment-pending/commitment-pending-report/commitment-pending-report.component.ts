@@ -211,7 +211,7 @@ export class CommitmentPendingReportComponent implements OnInit {
           },0);*/
         } else {
           this.nodataFoundMessage = true;
-          this.appService.showAlert("Commitment Pending Report", response.msg, "error");
+          this.appService.showAlert("Prized Pending Payment Report", response.msg, "error");
         }
       }
       else{
@@ -219,16 +219,16 @@ export class CommitmentPendingReportComponent implements OnInit {
         this.nodataFoundMessage=false;
       }
       } catch (err) { 
-        this.appService.showAlert("Commitment Pending Report", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Prized Pending Payment Report", 'Sorry!! Something went wrong!', "error");
       }
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Pending Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Pending Payment Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Pending Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Pending Payment Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }

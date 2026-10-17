@@ -6,6 +6,7 @@ import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { UserService } from '../../Services/user.service';
 import { AppService } from '../../app.service';
 import { DashboardAccessService } from '../../Services/dashboard-access.service';
+import { MenuPermissionService } from '../../Services/menu-permission.service';
 import { DashboardKey, DashboardTypeDef } from '../../config/dashboard-types.config';
 
 @Component({
@@ -32,6 +33,124 @@ import { DashboardKey, DashboardTypeDef } from '../../config/dashboard-types.con
       .dashboard-subtitle {
         color: #6b7280;
       }
+      .dashboard-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 10px;
+        background: transparent;
+        border: 0;
+        border-radius: 0;
+        padding: 16px 0 0;
+        box-shadow: none;
+      }
+      .dashboard-toolbar .dashboard-title {
+        font-size: 15px;
+        margin: 0;
+        color: #071D3A;
+      }
+      .dashboard-toolbar .dashboard-subtitle {
+        font-size: 12px;
+        margin: 0;
+      }
+      .temple-hero {
+        position: relative;
+        display: block;
+        min-height: 250px;
+        border-radius: 16px;
+        overflow: hidden;
+        padding: 22px 28px 18px;
+        background: #cfe6fb url('/assets/img/spn-temple-banner.png') center center / cover no-repeat;
+        box-shadow: 0 8px 22px rgba(7, 29, 58, .06);
+      }
+      .temple-hero-shade {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: linear-gradient(90deg, rgba(255,255,255,.78) 0%, rgba(255,255,255,.42) 34%, rgba(255,255,255,.08) 58%, rgba(255,255,255,0) 100%);
+      }
+      .temple-hero-main {
+        position: relative;
+        z-index: 1;
+        background: transparent;
+        max-width: 640px;
+        padding: 0;
+        min-width: 0;
+      }
+      .temple-hero-main .dashboard-title {
+        margin: 14px 0 2px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #071D3A;
+      }
+      .temple-hero-main .dashboard-subtitle {
+        margin: 0;
+        font-size: 13px;
+        color: #5c6b80;
+      }
+      .temple-hero-art {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        pointer-events: none;
+        background: none;
+      }
+      .temple-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+        margin-top: 14px;
+      }
+      .temple-tools .form-group { min-width: 180px; }
+      .temple-tools label {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #5c6b80;
+      }
+      .temple-map-btn { height: 31px; display: inline-flex; align-items: center; }
+      .temple-hero-copy h2 {
+        margin: 0 0 6px;
+        font-size: 28px;
+        font-weight: 800;
+        color: #061A3A;
+      }
+      .temple-hero-copy p {
+        margin: 0;
+        max-width: 640px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: #243044;
+      }
+      .temple-hero-date {
+        margin-top: 8px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+      .temple-hero-quote {
+        position: absolute;
+        right: 22px;
+        top: 18px;
+        max-width: 220px;
+        text-align: right;
+        font-size: 20px;
+        font-weight: 800;
+        font-style: italic;
+        line-height: 1.25;
+        color: #061A3A;
+        text-shadow: 0 1px 0 rgba(255,255,255,.45);
+      }
+      @media (max-width: 900px) {
+        .temple-hero-main { max-width: 100%; }
+      }
+      .sun { color: #ffd15c; }
       .dashboard-header-actions {
         display: flex;
         flex-wrap: wrap;
@@ -242,6 +361,9 @@ export class DashboardComponent implements OnInit {
   allowedDashboards: DashboardTypeDef[] = [];
   activeKey: DashboardKey = 'classic';
   activeTitle = 'Admin Dashboard';
+  userName = 'Admin';
+  dayPart = 'Morning';
+  todayLabel = '';
   activeSubtitle = 'Snapshot view of collections, auctions, and branch performance.';
 
   modalDetailTitle = '';
@@ -264,10 +386,19 @@ export class DashboardComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private dashboardAccess: DashboardAccessService
+    private dashboardAccess: DashboardAccessService,
+    private menuPermission: MenuPermissionService
   ) {
     this.pieSafeStyle = this.sanitizer.bypassSecurityTrustStyle(this.conicGradient);
+    const storedName = localStorage.getItem('logged_user_name');
+    this.userName = storedName && storedName.trim() ? storedName.trim() : 'Admin';
+    const now = new Date();
+    const hour = now.getHours();
+    this.dayPart = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
+    this.todayLabel = now.toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' });
   }
+
+  auctionStrip: any = null;
 
   ngOnInit() {
     this.resolveDashboardAccess();
@@ -303,6 +434,10 @@ export class DashboardComponent implements OnInit {
         () => {}
       );
     }
+  }
+
+  canPage(pageId: number): boolean {
+    return this.menuPermission.canPage(pageId);
   }
 
   resolveDashboardAccess() {
@@ -402,6 +537,8 @@ export class DashboardComponent implements OnInit {
     if (bid) {
       payload.branch_id = bid;
     }
+    this.userService.getData({ tenant_id: tenant, branch_id: bid || '', month: new Date().toISOString().slice(0, 7) }, 'spn-auction-report', 'JSON')
+      .subscribe((res: any) => { this.auctionStrip = res && res.status === 'Success' ? res : null; }, () => { this.auctionStrip = null; });
     this.userService.getData(payload, 'get-chit-dashboard-bundle', 'POST').subscribe(
       (res: any) => {
         this.loading = false;

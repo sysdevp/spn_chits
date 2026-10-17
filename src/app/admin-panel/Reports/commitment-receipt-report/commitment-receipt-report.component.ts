@@ -201,6 +201,7 @@ export class CommitmentReceiptReportComponent implements OnInit {
     this.CommitmentReceiptReport.get('customer_id').setValue('');
     this.CommitmentReceiptReport.get('employee_id').setValue('');
     this.CommitmentReceiptReport.get('payment_type_id').setValue('');
+    this.CommitmentReceiptReport.get('customer_status').setValue('');
     this.CommitmentReceiptReport.get('start_date').setValue(null);
     this.CommitmentReceiptReport.get('end_date').setValue(null);
     this.customerList = [];
@@ -272,6 +273,7 @@ export class CommitmentReceiptReportComponent implements OnInit {
             {headerName: 'Slab Name', field: 'slabName',resizable: true },
             {headerName: 'Collected Branch', field: 'other_branch_name',resizable: true },
             {headerName: 'Customer Name', field: 'customer_name' ,resizable: true},
+            {headerName: 'New / Old', field: 'customer_status', width: 100, resizable: true},
             {headerName: 'Collection Employee Name', field: 'employee_name',resizable: true },
             {headerName: 'Receipt No', field: 'receipt_no',resizable: true},
             {headerName: 'Alt Receipt No', field: 'alt_receipt_no',resizable: true},
@@ -340,7 +342,7 @@ export class CommitmentReceiptReportComponent implements OnInit {
         } else {
           this.hideReport = true;
           this.nodataFoundMessage=true;
-          this.appService.showAlert("Commitment Receipt Report", response.msg, "error");
+          this.appService.showAlert("Receipt Report", response.msg, "error");
         }
       }
       else{
@@ -348,16 +350,16 @@ export class CommitmentReceiptReportComponent implements OnInit {
         this.nodataFoundMessage=false;
       }
       } catch (err) {
-        this.appService.showAlert("Commitment Receipt Report", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Receipt Report", 'Sorry!! Something went wrong!', "error");
       }
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Filter";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Receipt Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Receipt Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -525,22 +527,22 @@ export class CommitmentReceiptReportComponent implements OnInit {
           this.ChequeGroup.get('cheque_debit_to').setValue(0);
           this.onSubmit();
         } else { 
-          this.appService.showAlert("Commitment Receipt Report", response.msg, "error");
+          this.appService.showAlert("Receipt Report", response.msg, "error");
         }
       } catch (err) {
         this.disableChequeBtn = false;
         if (err.status == 401) {
-          this.appService.showAlert("Commitment Receipt Report", 'Sorry!! Something went wrong!', "error");
+          this.appService.showAlert("Receipt Report", 'Sorry!! Something went wrong!', "error");
         }
       }
     }, (err: any) => {
       this.disableChequeBtn = false;
       this.SubmitChequeButtonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Receipt Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Receipt Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -552,6 +554,7 @@ export class CommitmentReceiptReportComponent implements OnInit {
       customer_id: [''],
       employee_id: [''],
       payment_type_id: [''],
+      customer_status: [''],
       start_date: [null],
       end_date: [null]
     });

@@ -1,0 +1,15 @@
+<div class="kyc-grid">
+  <div class="kyc-slot" *ngFor="let slot of slots" [class.done]="filesFor(slot.key).length">
+    <label class="t">{{ slot.key }}</label>
+    <input type="file" accept="image/*,application/pdf" [attr.multiple]="slot.multiple ? '' : null" (change)="pick($event, slot)" [disabled]="uploading[slot.key]" />
+    <div class="kyc-file" *ngIf="uploading[slot.key]">Uploading...</div>
+    <div class="kyc-file" *ngFor="let f of filesFor(slot.key)">
+      <span><i class="fa fa-check-circle"></i> {{ f.file_name }}</span>
+      <button type="button" (click)="remove(f)">Remove</button>
+    </div>
+  </div>
+</div>
+<div class="kyc-hint">JPG, PNG or PDF, max 5 MB each. "Other Documents" accepts many files at once (ration card, voter ID, bank passbook...). Saved files go to View Documents for KYC approval.</div>
+<div *ngIf="showSaveButton" style="margin-top: 10px;">
+  <button type="button" class="btn btn-success" (click)="saveNow()" [disabled]="saving || isUploading() || !files.length">{{ saving ? 'Saving...' : 'Save KYC Documents' }}</button>
+</div>

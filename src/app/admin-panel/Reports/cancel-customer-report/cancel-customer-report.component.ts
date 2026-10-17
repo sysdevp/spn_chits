@@ -27,6 +27,8 @@ export class CancelCustomerReportComponent implements OnInit {
   companyList: any[];
   branchList: any[];
   groupList: any[];
+  schemeList: any[] = [];
+  slabList: any[] = [];
   isSuperAdmin:boolean;
   submitted: boolean;
   disableBtn: boolean;
@@ -141,6 +143,24 @@ export class CancelCustomerReportComponent implements OnInit {
       }
   }
 
+  loadSchemes(tenant_id) {
+    this.userservice.getData({ 'conditions[tenant_id]': tenant_id }, 'get-schemes', 'POST').subscribe((response: any) => {
+      this.schemeList = response && response.status == 'Success' ? response.data : [];
+    }, () => { this.schemeList = []; });
+  }
+
+  schemeChg() {
+    const scheme_id = this.EnrollReport.get('scheme_id').value;
+    this.EnrollReport.get('slab_id').setValue('');
+    this.slabList = [];
+    if (!scheme_id) {
+      return;
+    }
+    this.userservice.getData({ 'conditions[scheme_id]': scheme_id }, 'get-slab-dues', 'POST').subscribe((response: any) => {
+      this.slabList = response && response.status == 'Success' ? response.data : [];
+    }, () => { this.slabList = []; });
+  }
+
   setData(data) {
     this.dataList = data;
     $(function() {
@@ -162,7 +182,10 @@ export class CancelCustomerReportComponent implements OnInit {
     }
     this.EnrollReport.get('branch_id').setValue('');
     this.EnrollReport.get('group_id').setValue('');
+    this.EnrollReport.get('scheme_id').setValue('');
+    this.EnrollReport.get('slab_id').setValue('');
     this.groupList = [];
+    this.slabList = [];
   }
 
   onSubmit() {
@@ -193,9 +216,8 @@ export class CancelCustomerReportComponent implements OnInit {
 			this.columnDefs = [
             {headerName: 'Sno', field: 'sno',sort: "asc",resizable: true },
             {headerName: 'Branch Name', field: 'branch_name',resizable: true  },
-            {headerName: 'Group Name', field: 'group_name',resizable: true },
-            {headerName: 'Ticket No', field: 'ticket_no',resizable: true },
-            {headerName: 'Ticket %', field: 'ticket_type',resizable: true },
+            {headerName: 'Scheme', field: 'scheme_name',resizable: true },
+            {headerName: 'Slab', field: 'group_name',resizable: true },
             {headerName: 'Chit Value', field: 'chit_value',resizable: true },
             {headerName: 'Customer Name', field: 'subscriber_name',resizable: true },
             {headerName: 'Mobile No', field: 'subscriber_mobile_no',resizable: true},
@@ -365,6 +387,8 @@ openPopup(record,chequeType) {
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       group_id: [''],
+      scheme_id: [''],
+      slab_id: [''],
       family_id: [''],
     });
     let tenant_id = localStorage.getItem('tenant_id');
@@ -372,6 +396,7 @@ openPopup(record,chequeType) {
       this.EnrollReport.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
       this.setBranchList(tenant_id);
+      this.loadSchemes(tenant_id);
     }
     else {
       this.isSuperAdmin = true;

@@ -72,14 +72,14 @@ export class ViewCommitmentPaymentComponent implements OnInit {
           this.BankInfo = [];
         }
       } catch (err) {
-        this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
       }
     }, (err: any) => {
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
       }
     });
     this.modalService.open(content, options).result.then((result) => {
@@ -117,10 +117,10 @@ export class ViewCommitmentPaymentComponent implements OnInit {
               listing.status = statusId;
             }
           });
-          this.appService.showAlert("Commitment Payment", response.msg , "success");
+          this.appService.showAlert("Prized Payment", response.msg , "success");
         }
         else {
-          this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+          this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
         }
       } catch (err) {}
     }, (err: any) => {

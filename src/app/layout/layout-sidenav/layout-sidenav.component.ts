@@ -8,13 +8,14 @@ import {
 import { Router } from '@angular/router';
 import { AppService } from '../../app.service';
 import { LayoutService } from '../layout.service';
-import { UserService } from '../../Services/user.service';
 import { MenuPermissionService } from '../../Services/menu-permission.service';
 
 @Component({
   selector: 'app-layout-sidenav',
   templateUrl: './layout-sidenav.component.html',
-  styles: [':host { display: block; }'],
+  styles: [`
+    :host { display: block; }
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
@@ -44,7 +45,6 @@ export class LayoutSidenavComponent implements AfterViewInit {
     private router: Router,
     private appService: AppService,
     private layoutService: LayoutService,
-    private userservice: UserService,
     private menuPermission: MenuPermissionService
   ) {
     // ✅ Orientation
@@ -66,7 +66,7 @@ export class LayoutSidenavComponent implements AfterViewInit {
   }
 
   ngAfterViewInit() {
-    // Safari bugfix
+    // Safari bug fix
     if (localStorage.getItem('token') == null) {
       this.router.navigate(['/logout']);
       return;
@@ -107,6 +107,20 @@ export class LayoutSidenavComponent implements AfterViewInit {
     return this.router.isActive(url, false) && this.orientation !== 'horizontal';
   }
 
+  /** Expand a main menu when the current page is one of its routes */
+  isGroupOpen(routes: string[]) {
+    if (this.orientation === 'horizontal') {
+      return false;
+    }
+    const path = (this.router.url || '').split('?')[0].replace(/^\/admin-panel\//, '');
+    return routes.some(r => path === r || path.indexOf(r + '/') === 0);
+  }
+
+  /** True when the user can see at least one [menuId, parentMenuId] pair */
+  hasAny(pairs: number[][]): boolean {
+    return pairs.some(p => this.isMenuHide(p[0], p[1]));
+  }
+
   toggleSidenav() {
     this.layoutService.toggleCollapsed();
   }
@@ -121,6 +135,28 @@ export class LayoutSidenavComponent implements AfterViewInit {
       return true;
     }
     return this.menuPermission.canShowMenu(menuId, parentMenuId);
+  }
+
+  /** Page-level access id from spn-access.config (Security Permissions screen). */
+  can(pageId: number): boolean {
+    this.menuPermission.refreshPermissions();
+    return this.menuPermission.canPage(pageId);
+  }
+
+  canAny(pageIds: number[]): boolean {
+    this.menuPermission.refreshPermissions();
+    return this.menuPermission.canAnyPage(pageIds);
+  }
+
+  canSection(key: string): boolean {
+    this.menuPermission.refreshPermissions();
+    return this.menuPermission.canSection(key);
+  }
+
+  /** Route fallback kept only for roles not yet saved with page-level access. */
+  legacyRoute(route: string): boolean {
+    this.menuPermission.refreshPermissions();
+    return !this.menuPermission.hasPageAccessModule() && this.menuPermission.hasRouteAccess(route);
   }
 
   /** Route-based permission (e.g. SPN Approval before menu 152 exists in DB). */

@@ -3,6 +3,8 @@ import { FormGroup, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { AppService } from '../../../../app.service';
 import { Router } from '@angular/router';
 import { UserService } from '../../../../Services/user.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { environment } from '../../../../../environments/environment';
 
 @Component({
   
@@ -91,8 +93,13 @@ export class AddCommitmentReceiptComponent implements OnInit {
   advanceamount: number;
   receipt_response: any;
   receipt_identify: any;
+  utrManual = false;
+  utrReady = false;
+  utrScanning = false;
+  utrMessage = '';
+  screenshotPreview = '';
 
-  constructor(private appService: AppService, private formBuilder: FormBuilder, private userservice: UserService, private router: Router) 
+  constructor(private appService: AppService, private formBuilder: FormBuilder, private userservice: UserService, private router: Router, private http: HttpClient) 
   { 
     this.SubmitbuttonName = "Submit";
     let today_date = new Date();
@@ -105,6 +112,112 @@ export class AddCommitmentReceiptComponent implements OnInit {
 
   get f() {
     return this.AddCommitmentReceipt.controls;
+  }
+
+  paymentNeedsUtr(paymentType?: any): boolean {
+    const id = String(paymentType != null ? paymentType : (this.AddCommitmentReceipt && this.AddCommitmentReceipt.get('payment_type_id') ? this.AddCommitmentReceipt.get('payment_type_id').value : ''));
+    const row = (this.paymentTypeList || []).find(function (p) {
+      return String(p.id) === id || String(p.payment_type_id) === id;
+    });
+    const n = String((row && (row.payment_name || row.name)) || '').toLowerCase();
+    if (id === '1' || id === '2' || id === '3' || id === '5') {
+      return false;
+    }
+    return id === '4' || n.indexOf('neft') >= 0 || n.indexOf('rtgs') >= 0 || n.indexOf('imps') >= 0 || n.indexOf('upi') >= 0 || n.indexOf('account') >= 0 || n.indexOf('a/c') >= 0;
+  }
+
+  resetUtrFields() {
+    this.utrReady = false;
+    this.utrMessage = '';
+    this.screenshotPreview = '';
+    this.utrManual = false;
+    this.utrScanning = false;
+    if (!this.AddCommitmentReceipt) {
+      return;
+    }
+    this.AddCommitmentReceipt.get('transaction_no').setValue('');
+    this.AddCommitmentReceipt.get('transaction_date').setValue(null);
+    this.AddCommitmentReceipt.get('transaction_time').setValue('');
+    this.AddCommitmentReceipt.get('transaction_bill').setValue('');
+    this.AddCommitmentReceipt.get('utr_entry_mode').setValue('scanned');
+  }
+
+  toggleUtrManual() {
+    this.utrManual = !this.utrManual;
+    this.AddCommitmentReceipt.get('utr_entry_mode').setValue(this.utrManual ? 'manual' : 'scanned');
+    if (this.utrManual) {
+      const hasAll = this.AddCommitmentReceipt.get('transaction_no').value
+        && this.AddCommitmentReceipt.get('transaction_date').value
+        && this.AddCommitmentReceipt.get('transaction_time').value
+        && this.AddCommitmentReceipt.get('transaction_bill').value;
+      this.utrReady = !!hasAll;
+      this.utrMessage = 'Manual entry: type UTR, date and time. These receipts show separately as Manually typed in the UTR report.';
+    } else {
+      this.utrReady = false;
+      this.utrMessage = 'Upload a successful payment screenshot. UTR, date and time are filled from the image only.';
+    }
+  }
+
+  setTxnDateFromYmd(ymd: string) {
+    const p = String(ymd || '').split('-');
+    if (p.length === 3) {
+      this.AddCommitmentReceipt.get('transaction_date').setValue({ year: +p[0], month: +p[1], day: +p[2] });
+    }
+  }
+
+  onPaymentScreenshot(event: any) {
+    const file = event.target.files && event.target.files[0];
+    if (!file) {
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e: any) => { this.screenshotPreview = e.target.result; };
+    reader.readAsDataURL(file);
+    this.utrScanning = true;
+    this.utrMessage = 'Reading UTR, date and time from screenshot...';
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const formData = new FormData();
+    formData.append('receipt_photo', file, file.name);
+    const dbName = localStorage.getItem('database_name') || '';
+    formData.append('database_name', dbName);
+    formData.append('db', dbName);
+    formData.append('tenant_id', String(this.AddCommitmentReceipt.get('tenant_id').value || localStorage.getItem('tenant_id') || ''));
+    this.http.post(environment.API + 'extract-utr-screenshot', formData, { headers: headers }).subscribe((res: any) => {
+      this.utrScanning = false;
+      if (res && res.file_name) {
+        this.AddCommitmentReceipt.get('transaction_bill').setValue(res.file_name);
+      }
+      if (this.utrManual) {
+        const hasAll = this.AddCommitmentReceipt.get('transaction_no').value
+          && this.AddCommitmentReceipt.get('transaction_date').value
+          && this.AddCommitmentReceipt.get('transaction_time').value
+          && this.AddCommitmentReceipt.get('transaction_bill').value;
+        this.utrReady = !!hasAll;
+        this.utrMessage = 'Screenshot attached. Type UTR, date and time, then submit.';
+        return;
+      }
+      if (res && res.ready && res.status === 'Success') {
+        this.AddCommitmentReceipt.get('transaction_no').setValue(res.utr || '');
+        this.setTxnDateFromYmd(res.txn_date);
+        this.AddCommitmentReceipt.get('transaction_time').setValue(res.txn_time || '');
+        this.utrReady = true;
+        this.utrMessage = 'Verified from screenshot. Fields stay locked unless you switch to Manual.';
+      } else {
+        this.utrReady = false;
+        this.utrMessage = (res && res.msg) || 'Only a successful payment screenshot with UTR, date and time is accepted.';
+        this.appService.showAlert('UTR Check', this.utrMessage, 'error');
+      }
+    }, () => {
+      this.utrScanning = false;
+      this.utrReady = false;
+      this.utrMessage = 'Unable to read the screenshot.';
+      this.appService.showAlert('UTR Check', this.utrMessage, 'error');
+    });
+    event.target.value = '';
   }
 
   companyChg(event) {
@@ -475,6 +588,8 @@ export class AddCommitmentReceiptComponent implements OnInit {
       this.hideBank=true;
       this.hideTransaction=true;
     }
+    this.hideTransaction = !this.paymentNeedsUtr(event.target.value);
+    this.resetUtrFields();
     let cond = {
       "conditions[tenant_id]" : this.AddCommitmentReceipt.get('tenant_id').value,
       "conditions[branch_id]" : this.AddCommitmentReceipt.get('branch_id').value,
@@ -500,6 +615,7 @@ export class AddCommitmentReceiptComponent implements OnInit {
     //NEFT - 4
     let transactionNo = this.AddCommitmentReceipt.get('transaction_no');
     let transactionDate = this.AddCommitmentReceipt.get('transaction_date');
+    let transactionTime = this.AddCommitmentReceipt.get('transaction_time');
     if(paymentType=='1') {
       debitTo.setValidators([Validators.required,Validators.pattern('^[a-zA-Z0-9_]+$')]);
       chequeNo.setValidators(null);
@@ -508,6 +624,7 @@ export class AddCommitmentReceiptComponent implements OnInit {
       bankBranchName.setValidators(null);
       transactionNo.setValidators(null);
       transactionDate.setValidators(null);
+      transactionTime.setValidators(null);
     }
     else if((paymentType=='2') || (paymentType=='3')) {
       debitTo.setValidators(null);
@@ -517,8 +634,9 @@ export class AddCommitmentReceiptComponent implements OnInit {
       bankBranchName.setValidators([Validators.required]);
       transactionNo.setValidators(null);
       transactionDate.setValidators(null);
+      transactionTime.setValidators(null);
     }
-    else if(paymentType=='4') {
+    else if(this.paymentNeedsUtr(paymentType)) {
       debitTo.setValidators(null);
       chequeNo.setValidators(null);
       chequeDate.setValidators(null);
@@ -526,6 +644,7 @@ export class AddCommitmentReceiptComponent implements OnInit {
       bankBranchName.setValidators(null);
       transactionNo.setValidators([Validators.required]);
       transactionDate.setValidators([Validators.required]);
+      transactionTime.setValidators([Validators.required]);
     }
     debitTo.updateValueAndValidity();
     chequeNo.updateValueAndValidity();
@@ -534,6 +653,7 @@ export class AddCommitmentReceiptComponent implements OnInit {
     bankBranchName.updateValueAndValidity();
     transactionNo.updateValueAndValidity();
     transactionDate.updateValueAndValidity();
+    transactionTime.updateValueAndValidity();
   }
 
   setBranchList(tenant_id) { 
@@ -759,11 +879,27 @@ export class AddCommitmentReceiptComponent implements OnInit {
       return;
     }
 
+    if (this.paymentNeedsUtr()) {
+      if (!this.AddCommitmentReceipt.get('transaction_bill').value) {
+        this.appService.showAlert('UTR Check', 'Upload a successful payment screenshot.', 'error');
+        this.SubmitbuttonName = 'Submit';
+        this.disableBtn = false;
+        return;
+      }
+      if (!this.utrManual && !this.utrReady) {
+        this.appService.showAlert('UTR Check', this.utrMessage || 'UTR, date and time must be read from a successful payment screenshot.', 'error');
+        this.SubmitbuttonName = 'Submit';
+        this.disableBtn = false;
+        return;
+      }
+      result.utr_entry_mode = this.utrManual ? 'manual' : 'scanned';
+    }
+
     this.userservice.getData(result, "store-receipt", "JSON").subscribe((response: any) => {
       this.SubmitbuttonName = "Submit";
       try {
         if (response.status == 'Success') {
-          this.appService.showAlert("Commitment Receipt",response.msg, "success");
+          this.appService.showAlert("Receipt",response.msg, "success");
           setTimeout(() => {
             
       this.receipt_response = response.receipt_no;
@@ -774,21 +910,21 @@ export class AddCommitmentReceiptComponent implements OnInit {
     
           }, 300);
         } else {
-          this.appService.showAlert("Commitment Receipt", response.msg, "error");
+          this.appService.showAlert("Receipt", response.msg, "error");
           this.disableBtn = false;
         }
       } catch (err) {
-        this.appService.showAlert("Commitment Receipt", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Receipt", 'Sorry!! Something went wrong!', "error");
         this.disableBtn = false;
       }
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Receipt", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Receipt", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Receipt", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -813,6 +949,9 @@ export class AddCommitmentReceiptComponent implements OnInit {
       bank_branch_name: [''],
       transaction_no: [''],
       transaction_date: [null],
+      transaction_time: [''],
+      utr_entry_mode: ['scanned'],
+      transaction_bill: [''],
       alt_rec_no: [''],
       debit_to: [''],
       amount: ['', [Validators.required,Validators.pattern(this.decimalPattern)]],

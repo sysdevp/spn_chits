@@ -114,11 +114,11 @@
           </div>
           <div class="col-6">
             <div class="form-group row">
-              <label class="col-sm-4">Select Group</label>
+              <label class="col-sm-4">Select Scheme</label>
               <div class="col-sm-8">
-                <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
-                  <option value="">Select Group</option>
-                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                <select #scheme_id class="form-control form-control w-100 border-dark" formControlName="scheme_id">
+                  <option value="">Select Scheme</option>
+                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.scheme_format || data.scheme_name || data.group_name}}</option>
                 </select>
               </div>
             </div>

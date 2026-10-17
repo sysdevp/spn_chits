@@ -84,10 +84,39 @@ class EmployeeLeaveRequestController extends Controller
             'reason' => $row->reason,
             'request_status' => $row->request_status,
             'approved_by' => (int) $row->approved_by,
+            'approved_by_name' => $this->userDisplayName((int) $row->approved_by),
+            'requested_by_name' => $name,
             'approved_at' => $row->approved_at,
             'approval_remark' => $row->approval_remark,
             'created_at' => $row->created_at ? (string) $row->created_at : '',
         );
+    }
+
+    private $userNames = array();
+
+    /** approved_by holds a users.id from the web panel; resolve it to the linked employee's name. */
+    private function userDisplayName($userId)
+    {
+        if (!$userId) {
+            return '';
+        }
+        if (!array_key_exists($userId, $this->userNames)) {
+            $label = '';
+            try {
+                $user = \Illuminate\Support\Facades\DB::table('users')->where('id', $userId)->first();
+                if ($user && !empty($user->employee_id)) {
+                    $emp = \Illuminate\Support\Facades\DB::table('employees')->where('id', $user->employee_id)->first(['first_name', 'last_name']);
+                    $label = $emp ? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')) : '';
+                }
+                if ($label === '' && $user) {
+                    $label = $user->name ?? ($user->email ?? '');
+                }
+            } catch (\Exception $e) {
+                $label = '';
+            }
+            $this->userNames[$userId] = $label;
+        }
+        return $this->userNames[$userId];
     }
 
     public function store_leave_request(Request $request)
@@ -161,8 +190,8 @@ class EmployeeLeaveRequestController extends Controller
                 if ($request->branch_id) {
                     $query->where('branch_id', $request->branch_id);
                 }
-                if ($request->mine || $request->employee_id) {
-                    $query->where('employee_id', $request->employee_id);
+                if (($request->mine || $request->employee_id) && (int) $request->employee_id > 0) {
+                    $query->where('employee_id', (int) $request->employee_id);
                 }
             }
             if ($request->request_type) {
@@ -309,20 +338,32 @@ class EmployeeLeaveRequestController extends Controller
                 }
                 $checkInLat = $row->check_in_latitude ? $row->check_in_latitude : $row->latitude;
                 $checkInLng = $row->check_in_longitude ? $row->check_in_longitude : $row->longitude;
+                $checkInPhoto = $row->check_in_photo ?? null;
+                $checkOutPhoto = $row->check_out_photo ?? null;
                 $data[] = array(
                     'id' => (int) $row->id,
                     'employee_id' => (int) $row->employee_id,
                     'employee_name' => $name,
+                    'branch_id' => (int) $row->branch_id,
                     'branch_name' => $row->branch_det && isset($row->branch_det->branch_name) ? $row->branch_det->branch_name : '',
                     'att_date' => $row->att_date,
                     'att_view_date' => $row->att_date ? date('d/m/Y', strtotime($row->att_date)) : '',
                     'check_in_time' => $row->check_in_time,
                     'check_out_time' => $row->check_out_time,
                     'punch_status' => $row->punch_status ? $row->punch_status : 'none',
+                    'outside_office' => (int) ($row->outside_office ?? 0),
+                    'outside_office_remarks' => $row->outside_office_remarks ?? '',
+                    'outside_approval_status' => $row->outside_approval_status ?? '',
+                    'punch_distance_meters' => $row->punch_distance_meters !== null ? (float) $row->punch_distance_meters : null,
+                    'location_name' => $row->live_location_name ?? '',
                     'check_in_latitude' => $checkInLat,
                     'check_in_longitude' => $checkInLng,
                     'check_out_latitude' => $row->check_out_latitude,
                     'check_out_longitude' => $row->check_out_longitude,
+                    'check_in_photo' => $checkInPhoto,
+                    'check_out_photo' => $checkOutPhoto,
+                    'check_in_photo_url' => $this->buildPunchPhotoUrl($checkInPhoto),
+                    'check_out_photo_url' => $this->buildPunchPhotoUrl($checkOutPhoto),
                     'map_url' => ($checkInLat && $checkInLng)
                         ? ('https://maps.google.com/maps?q=' . $checkInLat . ',' . $checkInLng . '&z=16&output=embed')
                         : '',
@@ -337,5 +378,23 @@ class EmployeeLeaveRequestController extends Controller
                 'error' => $e->getMessage(),
             ), 200);
         }
+    }
+
+    private function buildPunchPhotoUrl($photo)
+    {
+        if (empty($photo)) {
+            return '';
+        }
+        $photo = str_replace('\\', '/', (string) $photo);
+        if (preg_match('#^https?://#i', $photo) || preg_match('#^data:#i', $photo)) {
+            return $photo;
+        }
+        $base = rtrim((string) (env('APP_URL') ?: url('/')), '/');
+        // Match employee/customer photo URL pattern used elsewhere in the app
+        if (strpos($photo, 'uploads/') !== false) {
+            $rel = ltrim(preg_replace('#^.*?uploads/#', 'uploads/', $photo), '/');
+            return $base . '/storage/app/' . $rel;
+        }
+        return $base . '/storage/app/uploads/punch_photos/' . ltrim(basename($photo), '/');
     }
 }

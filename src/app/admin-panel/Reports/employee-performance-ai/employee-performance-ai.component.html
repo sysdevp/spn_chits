@@ -1,0 +1,79 @@
+<div class="card maz-vh">
+  <div class="card-header ai-header d-flex justify-content-between align-items-center">
+    <span class="font-weight-bold">Employee Performance Report</span>
+    <span class="small">Analysed by Emglitz Intelligence AI</span>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="loadReport()" class="mb-4 p-3 rounded" style="background:#f3e5f5;border:1px solid #ce93d8">
+      <div class="form-group row" *ngIf="isSuperAdmin">
+        <label class="col-md-2 col-form-label">Company <span class="text-danger">*</span></label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select company</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row mb-0">
+        <label class="col-md-2 col-form-label">Branch</label>
+        <div class="col-md-3">
+          <select class="form-control" formControlName="branch_id" (change)="branchChg($event)">
+            <option value="">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <label class="col-md-2 col-form-label">Employee</label>
+        <div class="col-md-3">
+          <select class="form-control" formControlName="employee_id">
+            <option value="">All employees</option>
+            <option *ngFor="let e of employeeList" [value]="e.id">{{ e.employee_name }}</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading">{{ loading ? 'Analysing…' : 'Analyse' }}</button>
+        </div>
+      </div>
+      <div *ngIf="submitted && f.tenant_id.errors" class="text-danger small mt-2">Company is required.</div>
+    </form>
+
+    <div *ngIf="loading" class="text-center text-muted py-2">Checking live employee performance…</div>
+
+    <div *ngIf="report">
+      <div class="alert alert-warning small" *ngIf="previewMode">
+        <strong>Emglitz Intelligence AI preview.</strong>
+        Sample employee scores are shown so the report is visible. Live commitment performance replaces this when the service returns employees.
+      </div>
+      <p class="mb-3">{{ report.overview }}</p>
+      <div class="row mb-3" *ngIf="report.summary">
+        <div class="col-md-4 mb-2"><div class="ai-kpi ai-kpi-a"><div class="small">Employees analysed</div><div class="h4 mb-0">{{ report.summary.employee_count }}</div></div></div>
+        <div class="col-md-4 mb-2"><div class="ai-kpi ai-kpi-b"><div class="small">Collected this month</div><div class="h4 mb-0">₹ {{ report.summary.collected_mtd | number:'1.0-0' }}</div></div></div>
+        <div class="col-md-4 mb-2"><div class="ai-kpi ai-kpi-c"><div class="small">Average score</div><div class="h4 mb-0">{{ report.summary.avg_score }}/100</div></div></div>
+      </div>
+
+      <div class="ai-card" *ngFor="let emp of report.employees">
+        <div class="d-flex justify-content-between">
+          <div>
+            <strong>#{{ emp.rank }} {{ emp.employee_name }}</strong>
+            <span class="ml-2" [ngClass]="gradeClass(emp.grade)">{{ emp.grade }}</span>
+          </div>
+          <div class="font-weight-bold">{{ emp.score }}/100</div>
+        </div>
+        <p class="mt-2 mb-2">{{ emp.narrative }}</p>
+        <div class="small mb-2" *ngIf="emp.location_name" style="background:#e8f5e9;border-radius:8px;padding:0.55rem 0.75rem;">
+          Currently at <strong>{{ emp.location_name }}</strong>.
+          <span *ngIf="emp.visit_customer"> Please call<span *ngIf="emp.mobile"> {{ emp.mobile }}</span> and visit <strong>{{ emp.visit_customer }}</strong>.</span>
+          <a *ngIf="emp.maps_link" class="ml-2" [href]="emp.maps_link" target="_blank">Open map</a>
+        </div>
+        <div class="small text-muted mb-2">
+          Customers {{ emp.customers }} · Areas {{ emp.areas }} · MTD ₹{{ emp.collected_mtd | number:'1.0-0' }} ·
+          3 months ₹{{ emp.collected_3m | number:'1.0-0' }} · Pending book ₹{{ emp.pending_book | number:'1.0-0' }} ·
+          Receipts {{ emp.receipts_mtd }} · Leave {{ emp.leave_days }} day(s) · Recovery {{ emp.recovery_pct }}%
+        </div>
+        <ul class="mb-0 pl-3 small">
+          <li *ngFor="let action of emp.actions">{{ action }}</li>
+        </ul>
+      </div>
+      <p *ngIf="!report.employees.length" class="text-muted">No commitment collection employees found for this filter.</p>
+    </div>
+  </div>
+</div>

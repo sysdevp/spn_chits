@@ -153,6 +153,20 @@ class EmployeeController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    private function applyDayAllowance($employee, Request $request)
+    {
+        if (!$request->has('day_allowance')) {
+            return;
+        }
+        if (!\Illuminate\Support\Facades\Schema::hasColumn('employees', 'day_allowance')) {
+            \Illuminate\Support\Facades\Schema::table('employees', function ($table) {
+                $table->decimal('day_allowance', 10, 2)->default(200);
+            });
+        }
+        $v = $request->day_allowance;
+        $employee->day_allowance = ($v === null || $v === '') ? 200 : (float) $v;
+    }
+
     public function store_employee(Request $request)
     {
 	  	$validator = Validator::make($request->all(), [
@@ -243,6 +257,7 @@ class EmployeeController extends Controller
 				$employee->target = isset($request->target) ? $request->target : '0';
 				$employee->salary = isset($request->salary) ? $request->salary : 0;
 				$employee->collection_area_id = isset($request->collection_area_id) ? $request->collection_area_id : '0';
+				$this->applyDayAllowance($employee, $request);
 				$employee->commission = isset($request->commission) ? $request->commission : 0;
 				$employee->incentive = isset($request->incentive) ? $request->incentive : 0;
 				$employee->created_by = isset($request->created_by) ? $request->created_by : 0;
@@ -359,6 +374,7 @@ class EmployeeController extends Controller
 					$employee->target = isset($request->target) ? $request->target : '';
 					$employee->salary = isset($request->salary) ? $request->salary : 0;
 					$employee->collection_area_id = isset($request->collection_area_id) ? $request->collection_area_id : '';
+					$this->applyDayAllowance($employee, $request);
 					$employee->commission = isset($request->commission) ? $request->commission : 0;
 					$employee->incentive = isset($request->incentive) ? $request->incentive : 0;
                     $employee->updated_by = isset($request->updated_by) ? ($request->updated_by) : 0;

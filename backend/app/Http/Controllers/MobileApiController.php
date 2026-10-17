@@ -173,6 +173,21 @@ class MobileApiController extends Controller
         }
       }
     }
+
+    $loginBranchList = [];
+    $loginEmployeeList = [];
+    try {
+        $scope = $this->resolveMappedScope($logged_user, $logged_user->tenant_id);
+        $loginBranchList = $this->buildMappedBranchList($logged_user->tenant_id, $scope['branch_ids']);
+        $loginEmployeeList = $this->buildMappedEmployeeList($logged_user->tenant_id, $scope['employee_ids']);
+    } catch (\Exception $e) {
+        $loginBranchList = [];
+        $loginEmployeeList = [];
+    }
+    if ($logged_user_name === '' && $logged_user) {
+        $logged_user_name = $logged_user->name ?: ($logged_user->email ?: 'Admin');
+    }
+
     return response()->json([
       'success' => true,
       'token' => $jwt_token,
@@ -197,11 +212,148 @@ class MobileApiController extends Controller
       'db' => $_SESSION['db'],
       'employee_id' => (int) ($logged_user->employee_id ?: $employee_id ?: 0),
       'device_id' => '',
-      'mobile_no' =>  ''
+      'mobile_no' =>  '',
+      'branch_list' => $loginBranchList,
+      'employee_list' => $loginEmployeeList,
     ]);
     
   }
 
+  /** Admin users have employee_id = 0 (or user id 1). They may see every tenant branch/employee. */
+  private function isAdminMobileUser($user)
+  {
+      if (!$user) {
+          return false;
+      }
+      if ((int) $user->id === 1) {
+          return true;
+      }
+      return (int) $user->employee_id === 0;
+  }
+
+  /**
+   * branch_ids / employee_ids = null means unrestricted (all).
+   * Empty arrays mean no access.
+   */
+  private function resolveMappedScope($user, $tenantId)
+  {
+      if (!$user) {
+          return array('is_admin' => false, 'branch_ids' => array(), 'employee_ids' => array());
+      }
+      if ($this->isAdminMobileUser($user)) {
+          return array('is_admin' => true, 'branch_ids' => null, 'employee_ids' => null);
+      }
+      $userId = (int) $user->id;
+      $allowedBranchIds = array();
+      $allowedEmployeeIds = array();
+      try {
+          if (\Schema::hasTable('user_branch_mapping')) {
+              $bMap = DB::table('user_branch_mapping')->where('user_id', $userId)->where('status', 1);
+              if (!empty($tenantId)) {
+                  $bMap->where('tenant_id', $tenantId);
+              }
+              foreach ($bMap->pluck('branch_id') as $bid) {
+                  $allowedBranchIds[] = (int) $bid;
+              }
+          }
+          if (\Schema::hasTable('user_employee_mapping')) {
+              $eMap = DB::table('user_employee_mapping')->where('user_id', $userId)->where('status', 1);
+              if (!empty($tenantId)) {
+                  $eMap->where('tenant_id', $tenantId);
+              }
+              foreach ($eMap->pluck('employee_id') as $eid) {
+                  $allowedEmployeeIds[] = (int) $eid;
+              }
+          }
+      } catch (\Exception $e) {
+      }
+      if (empty($allowedBranchIds) && (int) $user->branch_id > 0) {
+          $allowedBranchIds[] = (int) $user->branch_id;
+      }
+      if (empty($allowedEmployeeIds) && (int) $user->employee_id > 0) {
+          $allowedEmployeeIds[] = (int) $user->employee_id;
+      }
+      $allowedBranchIds = array_values(array_unique(array_filter($allowedBranchIds)));
+      $allowedEmployeeIds = array_values(array_unique(array_filter($allowedEmployeeIds)));
+      return array(
+          'is_admin' => false,
+          'branch_ids' => $allowedBranchIds,
+          'employee_ids' => $allowedEmployeeIds,
+      );
+  }
+
+  private function buildMappedBranchList($tenantId, $branchIds)
+  {
+      $q = Branch::query()->orderBy('branch_name', 'asc')->orderBy('id', 'desc');
+      if (!empty($tenantId)) {
+          $q->where('tenant_id', $tenantId);
+      }
+      if ($branchIds !== null) {
+          if (empty($branchIds)) {
+              return array();
+          }
+          $q->whereIn('id', $branchIds);
+      }
+      $out = array();
+      $i = 1;
+      foreach ($q->get() as $branch) {
+          $out[] = array(
+              'sno' => $i++,
+              'branch_id' => $branch->id,
+              'id' => $branch->id,
+              'tenant_id' => $branch->tenant_id,
+              'head_office_id' => $branch->head_office_id,
+              'branch_name' => $branch->branch_name,
+              'branch_code' => $branch->branch_code,
+              'email_id' => $branch->email_id,
+              'phone_no' => $branch->phone_no,
+              'mobile_no' => $branch->mobile_no,
+              'address_line_1' => $branch->address_line_1,
+              'address_line_2' => $branch->address_line_2,
+              'landmark' => $branch->landmark,
+              'state_name' => '',
+              'district_name' => '',
+              'city_name' => '',
+          );
+      }
+      return $out;
+  }
+
+  private function buildMappedEmployeeList($tenantId, $employeeIds, $branchId = 0)
+  {
+      $q = Employee::query()->orderBy('id', 'desc');
+      if (!empty($tenantId)) {
+          $q->where('tenant_id', $tenantId);
+      }
+      if ((int) $branchId > 0) {
+          $q->where('branch_id', (int) $branchId);
+      }
+      if ($employeeIds !== null) {
+          if (empty($employeeIds)) {
+              return array();
+          }
+          $q->whereIn('id', $employeeIds);
+      }
+      $out = array();
+      $j = 1;
+      foreach ($q->limit(500)->get() as $emp) {
+          $name = trim(($emp->first_name ? $emp->first_name : '') . ' ' . ($emp->last_name ? $emp->last_name : ''));
+          $out[] = array(
+              'sno' => $j++,
+              'employee_id' => $emp->id,
+              'id' => $emp->id,
+              'tenant_id' => $emp->tenant_id,
+              'branch_id' => $emp->branch_id,
+              'first_name' => $emp->first_name,
+              'last_name' => $emp->last_name,
+              'employee_name' => $name !== '' ? $name : ('Employee ' . $emp->id),
+              'mobile_no' => $emp->mobile_no,
+              'role_name' => optional($emp->role_det)->role_name,
+              'branch_name' => optional($emp->branch_det)->branch_name,
+          );
+      }
+      return $out;
+  }
 
   public function mobile_list_tenants(Request $request) {
     try { 
@@ -261,136 +413,26 @@ class MobileApiController extends Controller
 
         $tenantId = $request->tenant_id ?? null;
         $userId = isset($request->user_id) ? (int) $request->user_id : 0;
+        $user = $userId > 0 ? User::find($userId) : null;
+        $scope = $this->resolveMappedScope($user, $tenantId);
+        $response_data = $this->buildMappedBranchList($tenantId, $scope['branch_ids']);
+        $employees_data = $this->buildMappedEmployeeList($tenantId, $scope['employee_ids']);
 
-        $scopeByUser = $userId > 0 && $userId !== 1;
-        $allowedBranchIds = null;
-        $allowedEmployeeIds = null;
-
-        if ($scopeByUser) {
-            $allowedBranchIds = [];
-            $allowedEmployeeIds = [];
-
-            $bMap = DB::table('user_branch_mapping')
-                ->where('user_id', $userId)
-                ->where('status', 1);
-            if (!empty($tenantId)) {
-                $bMap->where('tenant_id', $tenantId);
-            }
-            foreach ($bMap->pluck('branch_id') as $bid) {
-                $allowedBranchIds[] = (int) $bid;
-            }
-
-            $eMap = DB::table('user_employee_mapping')
-                ->where('user_id', $userId)
-                ->where('status', 1);
-            if (!empty($tenantId)) {
-                $eMap->where('tenant_id', $tenantId);
-            }
-            foreach ($eMap->pluck('employee_id') as $eid) {
-                $allowedEmployeeIds[] = (int) $eid;
-            }
-
-            $user = User::find($userId);
-            if ($user) {
-                if (empty($allowedBranchIds) && !empty($user->branch_id)) {
-                    $allowedBranchIds[] = (int) $user->branch_id;
-                }
-                if (empty($allowedEmployeeIds) && !empty($user->employee_id)) {
-                    $allowedEmployeeIds[] = (int) $user->employee_id;
-                }
-            }
-
-            $allowedBranchIds = array_values(array_unique(array_filter($allowedBranchIds)));
-            $allowedEmployeeIds = array_values(array_unique(array_filter($allowedEmployeeIds)));
-        }
-
-        $query = Branch::with(['state_det', 'district_det', 'city_det'])
-                        ->orderBy('id', 'desc');
-
-        if (!empty($tenantId)) {
-            $query->where('tenant_id', $tenantId);
-        }
-
-        if ($scopeByUser) {
-            if (empty($allowedBranchIds)) {
-                $query->whereRaw('1 = 0');
-            } else {
-                $query->whereIn('id', $allowedBranchIds);
-            }
-        }
-
-        $branches = $query->get();
-
-        $response_data = [];
-        $i = 1;
-
-        foreach ($branches as $branch) {
-
-            $response_data[] = [
-                'sno'            => $i++,
-                'branch_id'      => $branch->id,
-                'tenant_id'      => $branch->tenant_id,
-                'head_office_id' => $branch->head_office_id,
-                'branch_name'    => $branch->branch_name,
-                'branch_code'    => $branch->branch_code,
-                'email_id'       => $branch->email_id,
-                'phone_no'       => $branch->phone_no,
-                'mobile_no'      => $branch->mobile_no,
-                'address_line_1' => $branch->address_line_1,
-                'address_line_2' => $branch->address_line_2,
-                'landmark'       => $branch->landmark,
-
-                // ✅ SAFE ACCESS
-                'state_name'     => optional($branch->state_det)->state_name ?? '',
-                'district_name'  => optional($branch->district_det)->district_name ?? '',
-                'city_name'      => optional($branch->city_det)->city_name ?? '',
-            ];
-        }
-
-        $employees_data = [];
-        if ($scopeByUser && $allowedEmployeeIds !== null) {
-            $empQuery = Employee::with(['role_det', 'branch_det'])
-                ->orderBy('id', 'desc');
-            if (!empty($tenantId)) {
-                $empQuery->where('tenant_id', $tenantId);
-            }
-            if (empty($allowedEmployeeIds)) {
-                $empQuery->whereRaw('1 = 0');
-            } else {
-                $empQuery->whereIn('id', $allowedEmployeeIds);
-            }
-            $j = 1;
-            foreach ($empQuery->get() as $emp) {
-                $employees_data[] = [
-                    'sno'           => $j++,
-                    'employee_id'   => $emp->id,
-                    'tenant_id'     => $emp->tenant_id,
-                    'branch_id'     => $emp->branch_id,
-                    'first_name'    => $emp->first_name,
-                    'last_name'     => $emp->last_name,
-                    'mobile_no'     => $emp->mobile_no,
-                    'role_name'     => optional($emp->role_det)->role_name ?? '',
-                    'branch_name'   => optional($emp->branch_det)->branch_name ?? '',
-                ];
-            }
-        }
-
-        $out = [
+        return response()->json([
             'status' => 'Success',
             'data'   => $response_data,
-        ];
-        if ($scopeByUser) {
-            $out['employees'] = $employees_data;
-        }
-
-        return response()->json($out, 200);
+            'employees' => $employees_data,
+            'is_admin' => !empty($scope['is_admin']),
+        ], 200);
 
     } catch (\Exception $e) {
 
         return response()->json([
             'status' => 'Error',
-            'msg'    => $e->getMessage()
-        ], 500);
+            'msg'    => $e->getMessage(),
+            'data'   => [],
+            'employees' => [],
+        ], 200);
     }
 }
 
@@ -650,9 +692,10 @@ public function mobile_list_users(Request $request)
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
       $cond =[];
-      if(isset($request->employee_id))
+      $empId = (int) ($request->employee_id ?? 0);
+      if ($empId > 0)
       {
-        $cond['employee_id'] = $request->employee_id;
+        $cond['employee_id'] = $empId;
       }
       if(isset($request->tenant_id))
       {
@@ -690,10 +733,18 @@ public function mobile_list_users(Request $request)
             : '';
         }
          
-        $followup=Followup::selectRaw('*,group_concat(DATE_FORMAT(followup_date,"%M-%d")) as dates')->where('lead_management_id',$leadmanagement->id)->groupBy('lead_management_id')->get();
-        if(count($followup)>0) 
-        { 
-          $lead_det['lead_last_followupdates'] =$followup[0]->dates;
+        try {
+          $dates = Followup::where('lead_management_id', $leadmanagement->id)
+            ->orderBy('id', 'desc')
+            ->limit(8)
+            ->pluck('followup_date')
+            ->filter()
+            ->values();
+          if ($dates->count() > 0) {
+            $lead_det['lead_last_followupdates'] = $dates->implode(',');
+          }
+        } catch (\Exception $fuEx) {
+          $lead_det['lead_last_followupdates'] = '';
         }           
         $customer=Customer::where('lead_management_id',$leadmanagement->id)->get();
         if(count($customer)>0)
@@ -716,15 +767,7 @@ public function mobile_list_users(Request $request)
         array_push($response_data,$lead_det);
         $i++;
       }  
-      if(count($leadmanagements)>0)
-      {         
-        return response()->json($response_data,200);
-      } 
-      else {
-        $response['status'] = 'Error';
-        $response['msg'] = \Lang::get('api.no_lead_found');
-        return response()->json($response, 401);
-      }      
+      return response()->json($response_data,200);     
     }
     catch(\Exception $e) {
       $response['status'] = 'Error';
@@ -928,91 +971,9 @@ public function mobile_list_users(Request $request)
                 $mappedBranchList = [];
                 $mappedEmployeeList = [];
                 try {
-                    $tenantId = (int) $logged_user->tenant_id;
-                    $userId = (int) $logged_user->id;
-
-                    $allowedBranchIds = [];
-                    $allowedEmployeeIds = [];
-
-                    $bMap = DB::table('user_branch_mapping')
-                        ->where('user_id', $userId)
-                        ->where('tenant_id', $tenantId)
-                        ->where('status', 1)
-                        ->pluck('branch_id');
-                    foreach ($bMap as $bid) {
-                        $allowedBranchIds[] = (int) $bid;
-                    }
-
-                    $eMap = DB::table('user_employee_mapping')
-                        ->where('user_id', $userId)
-                        ->where('tenant_id', $tenantId)
-                        ->where('status', 1)
-                        ->pluck('employee_id');
-                    foreach ($eMap as $eid) {
-                        $allowedEmployeeIds[] = (int) $eid;
-                    }
-
-                    if (empty($allowedBranchIds) && !empty($logged_user->branch_id)) {
-                        $allowedBranchIds[] = (int) $logged_user->branch_id;
-                    }
-                    if (empty($allowedEmployeeIds) && !empty($logged_user->employee_id)) {
-                        $allowedEmployeeIds[] = (int) $logged_user->employee_id;
-                    }
-
-                    $allowedBranchIds = array_values(array_unique(array_filter($allowedBranchIds)));
-                    $allowedEmployeeIds = array_values(array_unique(array_filter($allowedEmployeeIds)));
-
-                    $branchQuery = Branch::with(['state_det', 'district_det', 'city_det'])
-                        ->where('tenant_id', $tenantId)
-                        ->orderBy('id', 'desc');
-                    if (empty($allowedBranchIds)) {
-                        $branchQuery->whereRaw('1 = 0');
-                    } else {
-                        $branchQuery->whereIn('id', $allowedBranchIds);
-                    }
-                    $i = 1;
-                    foreach ($branchQuery->get() as $branch) {
-                        $mappedBranchList[] = [
-                            'sno'            => $i++,
-                            'branch_id'      => $branch->id,
-                            'tenant_id'      => $branch->tenant_id,
-                            'head_office_id' => $branch->head_office_id,
-                            'branch_name'    => $branch->branch_name,
-                            'branch_code'    => $branch->branch_code,
-                            'email_id'       => $branch->email_id,
-                            'phone_no'       => $branch->phone_no,
-                            'mobile_no'      => $branch->mobile_no,
-                            'address_line_1' => $branch->address_line_1,
-                            'address_line_2' => $branch->address_line_2,
-                            'landmark'       => $branch->landmark,
-                            'state_name'     => optional($branch->state_det)->state_name ?? '',
-                            'district_name'  => optional($branch->district_det)->district_name ?? '',
-                            'city_name'      => optional($branch->city_det)->city_name ?? '',
-                        ];
-                    }
-
-                    $empQuery = Employee::with(['role_det', 'branch_det'])
-                        ->where('tenant_id', $tenantId)
-                        ->orderBy('id', 'desc');
-                    if (empty($allowedEmployeeIds)) {
-                        $empQuery->whereRaw('1 = 0');
-                    } else {
-                        $empQuery->whereIn('id', $allowedEmployeeIds);
-                    }
-                    $j = 1;
-                    foreach ($empQuery->get() as $emp) {
-                        $mappedEmployeeList[] = [
-                            'sno'         => $j++,
-                            'employee_id' => $emp->id,
-                            'tenant_id'   => $emp->tenant_id,
-                            'branch_id'   => $emp->branch_id,
-                            'first_name'  => $emp->first_name,
-                            'last_name'   => $emp->last_name,
-                            'mobile_no'   => $emp->mobile_no,
-                            'role_name'   => optional($emp->role_det)->role_name ?? '',
-                            'branch_name' => optional($emp->branch_det)->branch_name ?? '',
-                        ];
-                    }
+                    $scope = $this->resolveMappedScope($logged_user, (int) $logged_user->tenant_id);
+                    $mappedBranchList = $this->buildMappedBranchList((int) $logged_user->tenant_id, $scope['branch_ids']);
+                    $mappedEmployeeList = $this->buildMappedEmployeeList((int) $logged_user->tenant_id, $scope['employee_ids']);
                 } catch (\Exception $ignore) {
                     $mappedBranchList = [];
                     $mappedEmployeeList = [];
@@ -1261,6 +1222,12 @@ public function otp_verified(Request $request)
 
   public function mobile_cash_settlement(Request $request) 
   {
+    if (empty($request->employee_id) && !empty($request->user_id)) {
+      $request->merge(['employee_id' => $request->user_id]);
+    }
+    if (empty($request->collection_employee) && !empty($request->employee_id)) {
+      $request->merge(['collection_employee' => $request->employee_id]);
+    }
     $validator = Validator::make($request->all(), [
       'tenant_id' => 'required',
       'branch_id' => 'required',
@@ -1303,9 +1270,12 @@ public function otp_verified(Request $request)
         $cashsettlement->remarks = isset($request->remarks) ? ($request->remarks) : '' ;
         $cashsettlement->created_by = isset($request->created_by) ? ($request->created_by) : 0;
         $cashsettlement->status = isset($request->status) ? ($request->status) : 1;
+        if (\Schema::hasColumn('cash_settlements', 'is_approved')) {
+          $cashsettlement->is_approved = 0;
+        }
         if($cashsettlement->save()) {
           $response['status'] = 'Success';
-          $response['msg'] = \Lang::get('api.success_cash_settlement_added');
+          $response['msg'] = 'Submitted. Waiting for approval.';
           $response['data'] = $cashsettlement;
           return response()->json($response,200);
         }
@@ -1315,6 +1285,149 @@ public function otp_verified(Request $request)
         $response['msg'] = \Lang::get('api.global_error');
         return response()->json($response, 401);
       }
+    }
+  }
+
+  private function sumApprovedMobileSettlements($empId, $startDate, $endDate, $tenantId = null)
+  {
+    if ((int) $empId <= 0) {
+      return 0.0;
+    }
+    $q = CashSettlement::where('employee_id', $empId)
+      ->where('settlement_mode', 'Mobile')
+      ->whereBetween('settlement_date', [$startDate, $endDate]);
+    if (!empty($tenantId)) {
+      $q->where('tenant_id', $tenantId);
+    }
+    if (\Schema::hasColumn('cash_settlements', 'is_approved')) {
+      $q->where('is_approved', 1);
+    }
+    return (float) $q->sum('received_amount');
+  }
+
+  public function mobile_list_cash_settlements(Request $request)
+  {
+    try {
+      DB::purge('mysql');
+      Config::set('database.connections.mysql.database', $request->db);
+      DB::reconnect('mysql');
+
+      $empId = (int) ($request->employee_id ?: 0);
+      if ($empId <= 0 && !empty($request->user_id)) {
+        $userRow = User::where('id', $request->user_id)->first();
+        $empId = $userRow ? (int) $userRow->employee_id : 0;
+      }
+
+      $q = CashSettlement::query();
+      if (!empty($request->tenant_id)) {
+        $q->where('tenant_id', $request->tenant_id);
+      }
+      $forAdmin = !empty($request->for_admin) || !empty($request->pending_only);
+      if (!$forAdmin && $empId > 0) {
+        $q->where(function ($inner) use ($empId) {
+          $inner->where('employee_id', $empId)->orWhere('collection_employee', $empId);
+        });
+      }
+      if (!empty($request->pending_only) && \Schema::hasColumn('cash_settlements', 'is_approved')) {
+        $q->where(function ($inner) {
+          $inner->whereNull('is_approved')->orWhere('is_approved', 0);
+        });
+      }
+
+      $rows = $q->orderBy('id', 'desc')->limit(80)->get();
+      $hasApproval = \Schema::hasColumn('cash_settlements', 'is_approved');
+      $data = [];
+      $pendingAmount = 0;
+      foreach ($rows as $row) {
+        $approved = $hasApproval ? (int) ($row->is_approved ?? 0) : 0;
+        $amount = (float) ($row->received_amount ?? $row->total_amount ?? 0);
+        if ($approved !== 1) {
+          $pendingAmount += $amount;
+        }
+        $data[] = [
+          'id' => $row->id,
+          'settlement_date' => $row->settlement_date,
+          'received_amount' => $amount,
+          'total_amount' => $row->total_amount,
+          'remarks' => $row->remarks,
+          'is_approved' => $approved,
+          'approval_status' => $approved === 1 ? 'approved' : 'waiting_for_approval',
+          'approval_remarks' => $row->approval_remarks ?? '',
+          'approved_at' => $row->approved_at ?? null,
+          'employee_id' => $row->employee_id,
+        ];
+      }
+
+      $startDate = '2022-04-26';
+      $today = date('Y-m-d');
+      $cashReceipts = 0;
+      $cashAdvance = 0;
+      if ($empId > 0) {
+        $cashReceipts = Receipt::where('employee_id', $empId)
+          ->where('payment_type_id', 1)
+          ->where('status', 1)
+          ->where('receipt_mode', 'Mobile')
+          ->whereBetween('receipt_date', [$startDate, $today])
+          ->selectRaw('SUM(received_amount + penalty) as total')
+          ->value('total') ?? 0;
+        $cashAdvance = AdvanceReceipt::where('employee_id', $empId)
+          ->where('payment_type_id', 1)
+          ->where('status', 1)
+          ->where('receipt_mode', 'Mobile')
+          ->whereBetween('receipt_date', [$startDate, $today])
+          ->sum('receipt_amount');
+      }
+      $settled = $this->sumApprovedMobileSettlements($empId, $startDate, $today);
+      $cashInHand = max(0, round(($cashReceipts + $cashAdvance) - $settled));
+
+      return response()->json([
+        'status' => 'Success',
+        'data' => $data,
+        'cash_in_hand' => (string) $cashInHand,
+        'pending_amount' => (string) round($pendingAmount),
+      ], 200);
+    } catch (\Exception $e) {
+      return response()->json([
+        'status' => 'Error',
+        'msg' => \Lang::get('api.global_error'),
+        'data' => [],
+        'cash_in_hand' => '0',
+      ], 200);
+    }
+  }
+
+  public function mobile_approve_cash_settlement(Request $request)
+  {
+    try {
+      DB::purge('mysql');
+      Config::set('database.connections.mysql.database', $request->db);
+      DB::reconnect('mysql');
+
+      if (empty($request->id)) {
+        return response()->json(['status' => 'Error', 'msg' => 'Settlement id is required'], 200);
+      }
+      if (!\Schema::hasColumn('cash_settlements', 'is_approved')) {
+        return response()->json(['status' => 'Error', 'msg' => 'Approval columns not found'], 200);
+      }
+
+      $row = CashSettlement::find($request->id);
+      if (!$row) {
+        return response()->json(['status' => 'Error', 'msg' => 'Settlement not found'], 200);
+      }
+      if ((int) $row->is_approved === 1) {
+        return response()->json(['status' => 'Error', 'msg' => 'Settlement already approved'], 200);
+      }
+
+      $row->is_approved = 1;
+      $row->approval_remarks = $request->approval_remarks ?: 'Approved from mobile';
+      $row->approved_by = (int) ($request->approved_by ?: $request->user_id ?: $request->logged_user_id ?: 0);
+      $row->approved_at = date('Y-m-d H:i:s');
+      $row->updated_by = $row->approved_by;
+      $row->save();
+
+      return response()->json(['status' => 'Success', 'msg' => 'Settlement approved. Cash in hand updated.', 'data' => $row], 200);
+    } catch (\Exception $e) {
+      return response()->json(['status' => 'Error', 'msg' => \Lang::get('api.global_error')], 200);
     }
   }
 
@@ -3384,6 +3497,11 @@ $penalty = 0;
         DB::purge('mysql');
         Config::set('database.connections.mysql.database', $request->db);
         DB::reconnect('mysql');
+        $utrCheck = \App\Services\UtrScanService::validateSubmission($request);
+        if ($utrCheck !== true) {
+          return response()->json(['status' => 'Error', 'msg' => $utrCheck], 200);
+        }
+        \App\Services\UtrScanService::ensureTimeColumn();
         if(isset($request->Installments)) 
         {  
           $count = count($request->Installments); 
@@ -3574,10 +3692,17 @@ $penalty = 0;
             $receipt->cheque_clear_return_date = isset($request->cheque_clear_return_date) ? ($request->cheque_clear_return_date) : '0000-00-00';   
             $receipt->bank_name_id = isset($request->bank_name_id) ? ($request->bank_name_id) : 0;
             $receipt->branch_name = isset($request->branch_name) ? ($request->branch_name) : '';
-            $receipt->transaction_no = isset($request->transaction_no) ? ($request->transaction_no) : 0;
+            $receipt->transaction_no = isset($request->transaction_no) ? \App\Services\UtrScanService::normalizeUtr($request->transaction_no) : 0;
             $receipt->transaction_date = isset($request->transaction_date) ? ($request->transaction_date) : '0000-00-00';
+            if (\Schema::hasColumn('receipts', 'transaction_time')) {
+              $receipt->transaction_time = isset($request->transaction_time) ? ($request->transaction_time) : null;
+            }
             $receipt->transaction_bill = isset($request->transaction_bill) ? ($request->transaction_bill) : '';
             $receipt->transaction_book = isset($request->transaction_book) ? ($request->transaction_book) : '';
+            if (\Schema::hasColumn('receipts', 'utr_entry_mode')) {
+              $mode = strtolower(trim((string) ($request->utr_entry_mode ?: 'scanned')));
+              $receipt->utr_entry_mode = $mode === 'manual' ? 'manual' : 'scanned';
+            }
             $receipt->neft_adjust_id = isset($request->neft_adjust_id) ? ($request->neft_adjust_id) : 0;
             $receipt->receipt_mode =  'Mobile';
             $receipt->receipt_time = isset($request->receipt_time) ? ($request->receipt_time) : '00:00:00';
@@ -3597,6 +3722,15 @@ $penalty = 0;
             $receipt->status = isset($request->status) ? ($request->status) : 1;
             if($request->payment_type_id == 2){
               $receipt->status = isset($request->status) ? ($request->status) : 2;
+            }
+            try {
+              $this->ensureReceiptGeoColumns();
+              if (\Schema::hasColumn('receipts', 'latitude')) {
+                $receipt->latitude = isset($request->latitude) ? $request->latitude : null;
+                $receipt->longitude = isset($request->longitude) ? $request->longitude : null;
+                $receipt->location_name = isset($request->location_name) ? substr(trim((string) $request->location_name), 0, 255) : null;
+              }
+            } catch (\Exception $geoEx) {
             }
             if($receipt->penalty !=0 || $receipt->received_amount !=0) {
               if($receipt->save()) {
@@ -3828,8 +3962,7 @@ $penalty = 0;
 
             $amount = $total_cash_rece + $total_cash_adv;
 
-              $settlement_table = CashSettlement::selectRaw('*,sum(received_amount) as total_settled_amount')->where('employee_id','=',$emp_id)->where('settlement_mode','=','Mobile')->whereBetween('settlement_date',[$start_date,$end_date])->get();
-              $adv_received_settlement = isset($settlement_table[0]->total_settled_amount) ? ($settlement_table[0]->total_settled_amount) : "0";
+              $adv_received_settlement = $this->sumApprovedMobileSettlements($emp_id, $start_date, $end_date);
 
               $adv_cash_settle = $amount - $adv_received_settlement;
             
@@ -4032,8 +4165,7 @@ $penalty = 0;
 
             $amount = $total_cash_rece + $total_cash_adv;
 
-              $settlement_table = CashSettlement::selectRaw('*,sum(received_amount) as total_settled_amount')->where('employee_id','=',$emp_id)->where('settlement_mode','=','Mobile')->whereBetween('settlement_date',[$start_date,$end_date])->get();
-              $adv_received_settlement = isset($settlement_table[0]->total_settled_amount) ? ($settlement_table[0]->total_settled_amount) : "0";
+              $adv_received_settlement = $this->sumApprovedMobileSettlements($emp_id, $start_date, $end_date);
 
               $adv_cash_settle = $amount - $adv_received_settlement;
             
@@ -6077,48 +6209,17 @@ private function resolveCreatedByName($createdBy)
        DB::purge('mysql');
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
-      $cond=[];
-      if(isset($request->branch_id) && $request->branch_id !== '' && $request->branch_id !== '0' && (int)$request->branch_id > 0)
-      {
-        $cond['branch_id'] = $request->branch_id;
-      }
-      $employees = Employee::where(array('tenant_id'=>$request->tenant_id))->where($cond)->orderBy('id','desc')->get();      
-      $i=1; 
-      $response_data = [];
-      foreach($employees as $employee) {
-        $employee_det = [];
-        $employee_det['tenant_id'] = strval($employee->tenant_id);
-        $employee_det['branch_id'] = strval($employee->branch_id);
-        $employee_det['employee_id'] = strval($employee->id);
-        $employee_det['employee_name'] = $employee->first_name." ". $employee->last_name;
-        if($employee->employee_type ==1 && $employee->collection_agent ==0)
-        {
-          $employee_type = "Employee";
-        }
-        elseif($employee->employee_type ==2)
-        {
-          $employee_type = "Business Agent";
-        }
-        elseif($employee->collection_agent ==1 && $employee->employee_type ==1)
-        {
-          $employee_type = "Collection Agent";
-        }
-        else
-        {
-          $employee_type  = "";
-        }
-        $employee_det['employee_type'] = $employee_type;
-        array_push($response_data,$employee_det);
-        $i++;
-      }
-      if($employees){          
-        return response()->json($response_data,200);
-      }
+      $userId = isset($request->user_id) ? (int) $request->user_id : 0;
+      $user = $userId > 0 ? User::find($userId) : null;
+      $scope = $this->resolveMappedScope($user, $request->tenant_id);
+      $branchId = (isset($request->branch_id) && $request->branch_id !== '' && (int)$request->branch_id > 0)
+        ? (int) $request->branch_id
+        : 0;
+      $response_data = $this->buildMappedEmployeeList($request->tenant_id, $scope['employee_ids'], $branchId);
+      return response()->json($response_data, 200);
     }
     catch(\Exception $e) {
-        $response['status'] = 'Error';
-        $response['msg'] = \Lang::get('api.global_error');
-        return response()->json($response, 401);
+        return response()->json([], 200);
     }
   }
  
@@ -6411,8 +6512,8 @@ public function collection_reports(Request $request)
       ]); 
       if($validator->fails()){
           $response['status']="Error";
-          $response['msg']=$validator->error()->first();
-          return response()->json($response,401);
+          $response['msg']=$validator->errors()->first();
+          return response()->json($response,200);
       }
       else {
         try { 
@@ -6420,13 +6521,26 @@ public function collection_reports(Request $request)
           $state->tenant_id = isset($request->tenant_id) ? ($request->tenant_id) : 0;
           $state->branch_id = isset($request->branch_id) ? ($request->branch_id) : 0;
           $state->customer_id = isset($request->customer_id) ? ($request->customer_id) : 0;
-          $state->employee_id = isset($request->created_by) ? ($request->created_by) : 0;
-          $state->remarks = isset($request->remarks) ? ($request->remarks) : 0;
+          $state->employee_id = isset($request->employee_id) ? ($request->employee_id) : (isset($request->created_by) ? ($request->created_by) : 0);
+          if (\Schema::hasColumn('remarks', 'remarks')) {
+            $state->remarks = isset($request->remarks) ? ($request->remarks) : '';
+          } elseif (\Schema::hasColumn('remarks', 'remark')) {
+            $state->remark = isset($request->remarks) ? ($request->remarks) : '';
+          }
           $state->remark_date = isset($request->remark_date) ? ($request->remark_date) : '0000-00-00';
           $state->remark_time = isset($request->remark_time) ? ($request->remark_time) : '00:00:00';
           $state->next_followup_date = isset($request->next_followup_date) ? ($request->next_followup_date) : '0000-00-00';
+          if (\Schema::hasColumn('remarks', 'next_followup_time') && isset($request->next_followup_time)) {
+            $state->next_followup_time = $request->next_followup_time;
+          }
           $state->created_by = isset($request->created_by) ? ($request->created_by) : 0;
           $state->status = isset($request->status) ? ($request->status) : 1;
+          if (\Schema::hasColumn('remarks', 'latitude') && isset($request->latitude)) {
+            $state->latitude = $request->latitude;
+          }
+          if (\Schema::hasColumn('remarks', 'longitude') && isset($request->longitude)) {
+            $state->longitude = $request->longitude;
+          }
           if($state->save()){
             $response['status']="Success";
             $response['msg']=\Lang::get('api.success_remark_added');
@@ -7036,18 +7150,15 @@ public function collection_reports(Request $request)
       Config::set('database.connections.mysql.database', $request->db);
       DB::reconnect('mysql');
       $response_data = [];
-      if(isset($request->start_date)) 
-      {                             
-         $start_date = $request->start_date;
-      }
+      $start_date = !empty($request->start_date) ? $request->start_date : date('Y-m-d');
       $cond = array('branch_id'=>$request->branch_id,'tenant_id'=>$request->tenant_id);
       //cash
       $response_data['start_date'] = $start_date;
       $response_data['branch_info'] = '';
       if(isset($request->branch_id))
       {
-          $branch = Branch::where('id',$request->branch_id)->get();
-          $response_data['branch_info'] = $branch[0]->branch_name;
+          $branch = Branch::where('id',$request->branch_id)->first();
+          $response_data['branch_info'] = $branch ? $branch->branch_name : '';
       }
       $cash = Receipt::selectRaw('*,sum(received_amount) as total_received,sum(penalty)as total_penalty')->where('payment_type_id','=',1)->where(array('receipt_date'=>$start_date,'status'=>1))->where($cond)->get();
       $response_data['cash_collection'] = isset($cash[0]->total_received) ? (strval(round($cash[0]->total_received))) : "0";
@@ -7135,8 +7246,8 @@ public function collection_reports(Request $request)
       $other_branch_cash1 = Receipt::where(array('receipt_date'=>$start_date))->where($cond)->get();
       foreach($other_branch_cash1 as $rcpts) 
       {   
-        $chits = ChitDetail::where('id',$rcpts->enrollment_id)->get();
-        if($rcpts->employee_branch_id != $chits[0]->branch_id)
+        $chits = ChitDetail::where('id',$rcpts->enrollment_id)->first();
+        if($chits && $rcpts->employee_branch_id != $chits->branch_id)
         {   
           if($rcpts->payment_type_id == 1 && $rcpts->status ==1)
           {
@@ -7357,13 +7468,16 @@ public function collection_reports(Request $request)
             $feedback_det['customer_id']   = $feedback->customer_id ? (string)$feedback->customer_id : "0";
             $feedback_det['next_followup_date'] = $feedback->next_followup_date ?? "0000-00-00";
             $feedback_det['remark_date'] = $feedback->remark_date ?? "0000-00-00";
-            $feedback_det['remarks'] = $feedback->remarks ?? '';
+            $feedback_det['remarks'] = $feedback->remarks ?? $feedback->remark ?? '';
             $feedback_det['branch_name'] = optional($feedback->branch_det)->branch_name ?? '';
 
             $response_data[] = $feedback_det;
         }
 
-        return response()->json($response_data, 200);
+        return response()->json([
+            'status' => 'Success',
+            'data' => $response_data,
+        ], 200);
 
     } catch (\Exception $e) {
 
@@ -9738,10 +9852,7 @@ public function mobile_get_collection_area_customers_new(Request $request)
                 ->whereBetween('receipt_date', [$startDate, $today])
                 ->sum('receipt_amount');
 
-            $settled = CashSettlement::where('employee_id', $empId)
-                ->where('settlement_mode', 'Mobile')
-                ->whereBetween('settlement_date', [$startDate, $today])
-                ->sum('received_amount');
+            $settled = $this->sumApprovedMobileSettlements($empId, $startDate, $today);
 
             $cashInHand = (string) round(($cashReceipts + $cashAdvance) - $settled);
         }
@@ -9907,11 +10018,26 @@ public function mobile_get_collection_area_customers_new(Request $request)
 
                 $overallPending += $pending; // 🔥 ADDED
 
+                $cust = $customers[$cid];
+                $photo = !empty($cust->photo)
+                    ? rtrim((string) env('APP_URL'), '/') . Storage::url('app/uploads/customer_photos/' . $cust->photo)
+                    : '';
+                $addrParts = array_filter([
+                    $cust->door_no ?? null,
+                    $cust->buildling_name ?? $cust->building_name ?? null,
+                    $cust->communication_address_line_1 ?? $cust->address_line_1 ?? null,
+                    $cust->communication_land_mark ?? $cust->landmark ?? null,
+                    $cust->communication_pincode ?? $cust->pincode ?? null,
+                ]);
+
                 $response[] = [
                     'customer_id'   => (string)$cid,
-                    'customer_name' => $customers[$cid]->name,
-                    'customer_code' => $customers[$cid]->customer_code,
-                    'mobile_no'     => $customers[$cid]->mobile_no,
+                    'customer_name' => $cust->name,
+                    'customer_code' => $cust->customer_code,
+                    'mobile_no'     => $cust->mobile_no,
+                    'photo'         => $photo,
+                    'photo_url'     => $photo,
+                    'address'       => implode(', ', $addrParts),
 
                     'total_installment' => (string)$totalInstallment,
                     'total_paid'        => (string)$paid,
@@ -10285,6 +10411,77 @@ public function mobile_today_followup_leads(Request $request)
 
         $holidays = AuctionOnHoliday::where('tenant_id',$tenantId)->get();
 
+        $firstCust = optional($entrollments->first())->customer_det;
+        $photoUrl = '';
+        if ($firstCust && !empty($firstCust->photo)) {
+            $photoUrl = rtrim((string) env('APP_URL'), '/') . Storage::url('app/uploads/customer_photos/' . $firstCust->photo);
+        }
+        $addrParts = array_filter([
+            $firstCust->door_no ?? null,
+            $firstCust->buildling_name ?? $firstCust->building_name ?? null,
+            $firstCust->communication_address_line_1 ?? $firstCust->address_line_1 ?? null,
+            $firstCust->communication_address_line_2 ?? $firstCust->address_line_2 ?? null,
+            $firstCust->communication_land_mark ?? $firstCust->landmark ?? null,
+            $firstCust->communication_pincode ?? $firstCust->pincode ?? null,
+        ]);
+        $customerAddress = implode(', ', $addrParts);
+
+        $areaIdsForName = $entrollments->pluck('collection_area_id')->filter()->unique()->values();
+        $areas = $areaIdsForName->isEmpty()
+            ? collect()
+            : CollectionArea::whereIn('id', $areaIdsForName)->get()->keyBy('id');
+
+        $lat = '';
+        $lng = '';
+        $locName = '';
+        if (Schema::hasTable('payment_desk_requests')) {
+            $desk = DB::table('payment_desk_requests')
+                ->where('customer_id', $request->customer_id)
+                ->whereNotNull('home_lat')
+                ->where('home_lat', '!=', '')
+                ->orderByDesc('id')
+                ->first();
+            if ($desk && !empty($desk->home_lat) && !empty($desk->home_lng)) {
+                $lat = (string) $desk->home_lat;
+                $lng = (string) $desk->home_lng;
+                $locName = 'Home';
+            }
+        }
+        if ($lat === '' && Schema::hasColumn('receipts', 'latitude')) {
+            $rcpt = Receipt::where('customer_id', $request->customer_id)
+                ->whereNotNull('latitude')
+                ->where('latitude', '!=', '')
+                ->orderByDesc('id')
+                ->first();
+            if ($rcpt && !empty($rcpt->latitude) && !empty($rcpt->longitude)) {
+                $lat = (string) $rcpt->latitude;
+                $lng = (string) $rcpt->longitude;
+                $locName = !empty($rcpt->location_name) ? $rcpt->location_name : 'Last collection';
+            }
+        }
+        if ($lat === '') {
+            $branchPin = $branches->first();
+            if ($branchPin && !empty($branchPin->latitude) && !empty($branchPin->longitude)) {
+                $lat = (string) $branchPin->latitude;
+                $lng = (string) $branchPin->longitude;
+                $locName = $branchPin->branch_name ?: 'Branch';
+            }
+        }
+
+        $customerProfile = [
+            'customer_id' => strval($request->customer_id),
+            'customer_name' => $firstCust->name ?? '',
+            'customer_code' => $firstCust->customer_code ?? '',
+            'mobile_no' => $firstCust->mobile_no ?? '',
+            'phone_no' => $firstCust->phone_no ?? '',
+            'photo' => $photoUrl,
+            'photo_url' => $photoUrl,
+            'address' => $customerAddress,
+            'latitude' => $lat,
+            'longitude' => $lng,
+            'location_name' => $locName,
+        ];
+
         $slabIds = $entrollments->where('chit_type', 3)->pluck('slab_id')->filter()->unique()->toArray();
         $slabs = SlabDue::with('scheme_det')
             ->whereIn('id', $slabIds)
@@ -10332,6 +10529,14 @@ public function mobile_today_followup_leads(Request $request)
 
                 'installments_det' => [],
                 'client_address' => '',
+                'photo' => $photoUrl,
+                'photo_url' => $photoUrl,
+                'customer_address' => $customerAddress,
+                'address' => $customerAddress,
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'location_name' => $locName,
+                'collection_area_name' => optional($areas[$entrol->collection_area_id] ?? null)->collection_area ?? '',
             ];
 
             $branchForAddress = $branches[$entrol->branch_id] ?? $entrol->branch_det;
@@ -10598,7 +10803,11 @@ public function mobile_today_followup_leads(Request $request)
             $response_data[] = $entrollment_det;
         }
 
-        return response()->json($response_data,200);
+        return response()->json([
+            'status' => 'Success',
+            'customer' => $customerProfile,
+            'data' => $response_data,
+        ], 200);
 
     } catch(\Exception $e) {
         return response()->json([
@@ -11987,53 +12196,26 @@ public function mobile_employee_dashboard(Request $request)
         }
 
         $loggedEmpId = (int) $user->employee_id;
+        $isAdminUser = $this->isAdminMobileUser($user);
 
         /* ================================
            MAPPED BRANCH / EMPLOYEE (same as mobile_list_branches)
+           Admin (employee_id = 0) sees all tenant branches/employees.
         ================================= */
-        $allowedBranchIds = [];
-        $allowedEmployeeIds = [];
+        $scope = $this->resolveMappedScope($user, $tenantId);
+        $allowedBranchIds = $scope['branch_ids'];
+        $allowedEmployeeIds = $scope['employee_ids'];
 
-        $bMap = DB::table('user_branch_mapping')
-            ->where('user_id', $userId)
-            ->where('status', 1);
-        if (!empty($tenantId)) {
-            $bMap->where('tenant_id', $tenantId);
-        }
-        foreach ($bMap->pluck('branch_id') as $bid) {
-            $allowedBranchIds[] = (int) $bid;
-        }
-
-        $eMap = DB::table('user_employee_mapping')
-            ->where('user_id', $userId)
-            ->where('status', 1);
-        if (!empty($tenantId)) {
-            $eMap->where('tenant_id', $tenantId);
-        }
-        foreach ($eMap->pluck('employee_id') as $eid) {
-            $allowedEmployeeIds[] = (int) $eid;
-        }
-
-        if (empty($allowedBranchIds) && !empty($user->branch_id)) {
-            $allowedBranchIds[] = (int) $user->branch_id;
-        }
-        if (empty($allowedEmployeeIds) && !empty($user->employee_id)) {
-            $allowedEmployeeIds[] = (int) $user->employee_id;
-        }
-
-        $allowedBranchIds = array_values(array_unique(array_filter($allowedBranchIds)));
-        $allowedEmployeeIds = array_values(array_unique(array_filter($allowedEmployeeIds)));
-
-        if ($reqBranchId > 0 && !in_array($reqBranchId, $allowedBranchIds, true)) {
+        if (!$isAdminUser && $reqBranchId > 0 && is_array($allowedBranchIds) && !in_array($reqBranchId, $allowedBranchIds, true)) {
             return response()->json([
                 'status' => false,
                 'message' => 'Invalid branch for this user'
             ], 200);
         }
 
-        /* Employees in scope: mapped list, optionally narrowed by branch */
+        /* Employees in scope: mapped list, optionally narrowed by branch. null = all (admin). */
         $scopedEmployeeIds = $allowedEmployeeIds;
-        if ($reqBranchId > 0 && !empty($scopedEmployeeIds)) {
+        if ($reqBranchId > 0 && is_array($scopedEmployeeIds) && !empty($scopedEmployeeIds)) {
             $scopedEmployeeIds = Employee::where('tenant_id', $tenantId)
                 ->where('branch_id', $reqBranchId)
                 ->whereIn('id', $allowedEmployeeIds)
@@ -12046,7 +12228,7 @@ public function mobile_employee_dashboard(Request $request)
         }
 
         if ($reqEmployeeId > 0) {
-            if (!in_array($reqEmployeeId, $allowedEmployeeIds, true)) {
+            if (is_array($allowedEmployeeIds) && !in_array($reqEmployeeId, $allowedEmployeeIds, true)) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Invalid employee for this user'
@@ -12083,6 +12265,9 @@ public function mobile_employee_dashboard(Request $request)
             if (!empty($branchIdsForQuery)) {
                 $query->whereIn('branch_id', $branchIdsForQuery);
             }
+            if ($scopedEmployeeIds === null) {
+                return;
+            }
             if (empty($scopedEmployeeIds)) {
                 $query->whereRaw('1 = 0');
             } elseif (count($scopedEmployeeIds) === 1) {
@@ -12093,7 +12278,7 @@ public function mobile_employee_dashboard(Request $request)
         };
 
         /* Attendance / cash: one selected employee → use them; aggregate view → logged-in employee */
-        $attendanceEmpId = (count($scopedEmployeeIds) === 1)
+        $attendanceEmpId = (is_array($scopedEmployeeIds) && count($scopedEmployeeIds) === 1)
             ? $scopedEmployeeIds[0]
             : $loggedEmpId;
 
@@ -12157,6 +12342,9 @@ public function mobile_employee_dashboard(Request $request)
                 $q->whereIn('branch_id', $branchIdsForQuery);
             })
             ->where(function ($q) use ($scopedEmployeeIds) {
+                if ($scopedEmployeeIds === null) {
+                    return;
+                }
                 if (empty($scopedEmployeeIds)) {
                     $q->whereRaw('1 = 0');
                 } elseif (count($scopedEmployeeIds) === 1) {
@@ -12231,7 +12419,7 @@ public function mobile_employee_dashboard(Request $request)
         ================================= */
         $cashInHand = 0;
 
-        if (count($scopedEmployeeIds) === 1) {
+        if (is_array($scopedEmployeeIds) && count($scopedEmployeeIds) === 1) {
 
             $cashEmpId = $scopedEmployeeIds[0];
             $startDate = "2026-02-24";
@@ -12260,11 +12448,7 @@ public function mobile_employee_dashboard(Request $request)
                 ->whereBetween('received_date', [$startDate, $today])
                 ->sum('amount');
 
-            $settlement = CashSettlement::where('employee_id', $cashEmpId)
-                ->where('tenant_id', $tenantId)
-                ->where('settlement_mode', 'Mobile')
-                ->whereBetween('settlement_date', [$startDate, $today])
-                ->sum('received_amount');
+            $settlement = $this->sumApprovedMobileSettlements($cashEmpId, $startDate, $today, $tenantId);
 
             $cashInHand = ($cashReceipts + $cashAdvance + $cashBefore) - $settlement;
         }
@@ -12283,7 +12467,7 @@ public function mobile_employee_dashboard(Request $request)
         $todayCheckOut = null;
         $punchStatus = 'none';
 
-        $dashboardEmpId = (count($scopedEmployeeIds) === 1) ? $scopedEmployeeIds[0] : $loggedEmpId;
+        $dashboardEmpId = (is_array($scopedEmployeeIds) && count($scopedEmployeeIds) === 1) ? $scopedEmployeeIds[0] : $loggedEmpId;
         $punchEmpId = $reqEmployeeId > 0 ? $reqEmployeeId : $loggedEmpId;
 
         if ($dashboardEmpId > 0 || $punchEmpId >= 0) {
@@ -12351,45 +12535,113 @@ public function mobile_employee_dashboard(Request $request)
         $todayTargetAchieved = $todaysCollection;
         $todayTargetPercent = $dailyAchievementPercent;
         $conversionRate = 0;
+        $tasks = collect();
 
         if ($dashboardEmpId > 0) {
-            \App\Services\EmployeeMetricsService::syncTargetProgress($tenantId, $dashboardEmpId, $today);
-            $perfRow = \App\Services\EmployeeMetricsService::computePerformance(
-                $tenantId,
-                (int) ($request->branch_id ?: 0),
-                $dashboardEmpId,
-                date('Y-m')
-            );
-            $performanceRating = $perfRow->performance_rating;
-            $performanceScore = (float) $perfRow->overall_score;
+            try {
+                \App\Services\EmployeeMetricsService::syncTargetProgress($tenantId, $dashboardEmpId, $today);
+                $perfRow = \App\Services\EmployeeMetricsService::computePerformance(
+                    $tenantId,
+                    (int) ($request->branch_id ?: 0),
+                    $dashboardEmpId,
+                    date('Y-m')
+                );
+                $performanceRating = $perfRow->performance_rating;
+                $performanceScore = (float) $perfRow->overall_score;
 
-            $monthStart = date('Y-m-01');
-            $leadsInMonth = \App\Services\EmployeeMetricsService::salesCount($tenantId, $dashboardEmpId, $monthStart, $today);
-            $convertedInMonth = \App\Services\EmployeeMetricsService::conversionCount($tenantId, $dashboardEmpId, $monthStart, $today);
-            $conversionRate = $leadsInMonth > 0 ? round(($convertedInMonth / $leadsInMonth) * 100, 2) : 0;
+                $monthStart = date('Y-m-01');
+                $leadsInMonth = \App\Services\EmployeeMetricsService::salesCount($tenantId, $dashboardEmpId, $monthStart, $today);
+                $convertedInMonth = \App\Services\EmployeeMetricsService::conversionCount($tenantId, $dashboardEmpId, $monthStart, $today);
+                $conversionRate = $leadsInMonth > 0 ? round(($convertedInMonth / $leadsInMonth) * 100, 2) : 0;
 
-            $tasks = \App\Models\EmployeeTask::where('tenant_id', $tenantId)
-                ->where('employee_id', $dashboardEmpId)
-                ->where('status', 1)
-                ->whereDate('task_date', $today)
-                ->get();
-            $tasksTotal = $tasks->count();
-            $tasksCompleted = $tasks->where('task_status', 'completed')->count();
-            $tasksCompletionPercent = $tasksTotal > 0 ? round(($tasksCompleted / $tasksTotal) * 100) : 0;
+                if (\Schema::hasTable('employee_tasks')) {
+                    $tasks = \App\Models\EmployeeTask::where('tenant_id', $tenantId)
+                        ->where('employee_id', $dashboardEmpId)
+                        ->where('status', 1)
+                        ->whereDate('task_date', $today)
+                        ->get();
+                    $tasksTotal = $tasks->count();
+                    $tasksCompleted = $tasks->where('task_status', 'completed')->count();
+                    $tasksCompletionPercent = $tasksTotal > 0 ? round(($tasksCompleted / $tasksTotal) * 100) : 0;
+                }
 
-            $dailyTargets = \App\Models\EmployeeTarget::where('tenant_id', $tenantId)
-                ->where('employee_id', $dashboardEmpId)
-                ->where('status', 1)
-                ->where('period_start', '<=', $today)
-                ->where('period_end', '>=', $today)
-                ->get();
-            if ($dailyTargets->count() > 0) {
-                $todayTargetAmount = (float) $dailyTargets->sum('target_amount');
-                $todayTargetAchieved = (float) $dailyTargets->sum('achieved_amount');
-                $todayTargetPercent = $todayTargetAmount > 0
-                    ? min(100, round(($todayTargetAchieved / $todayTargetAmount) * 100))
-                    : $dailyAchievementPercent;
+                if (\Schema::hasTable('employee_targets')) {
+                    $dailyTargets = \App\Models\EmployeeTarget::where('tenant_id', $tenantId)
+                        ->where('employee_id', $dashboardEmpId)
+                        ->where('status', 1)
+                        ->where('period_start', '<=', $today)
+                        ->where('period_end', '>=', $today)
+                        ->get();
+                    if ($dailyTargets->count() > 0) {
+                        $todayTargetAmount = (float) $dailyTargets->sum('target_amount');
+                        $todayTargetAchieved = (float) $dailyTargets->sum('achieved_amount');
+                        $todayTargetPercent = $todayTargetAmount > 0
+                            ? min(100, round(($todayTargetAchieved / $todayTargetAmount) * 100))
+                            : $dailyAchievementPercent;
+                    }
+                }
+            } catch (\Exception $dashExtra) {
+                \Log::error('Dashboard employee extras: '.$dashExtra->getMessage());
             }
+        }
+
+        $topEmployees = [];
+        $topBranches = [];
+        $todayKm = 0;
+        $todayTaskList = [];
+        $targetBreakdown = [
+            'sales' => \App\Services\EmployeeMetricsService::emptyTargetBucket('Sales', 'sales'),
+            'collection' => \App\Services\EmployeeMetricsService::emptyTargetBucket('Collection', 'collection'),
+            'new_customer' => \App\Services\EmployeeMetricsService::emptyTargetBucket('New customer', 'new_client_collection'),
+            'old_customer' => \App\Services\EmployeeMetricsService::emptyTargetBucket('Old customer', 'existing_client_collection'),
+        ];
+        try {
+            $topEmployees = \App\Services\EmployeeMetricsService::leaderboard($tenantId, 0, date('Y-m'), 10);
+            if (count($topEmployees) < 3) {
+                $byCol = \App\Services\EmployeeMetricsService::topEmployeesByCollection($tenantId, $monthStart, $today, 6);
+                $seen = array();
+                foreach ($topEmployees as $row) {
+                    $seen[(int) ($row['employee_id'] ?? 0)] = true;
+                }
+                foreach ($byCol as $row) {
+                    $eid = (int) ($row['employee_id'] ?? 0);
+                    if ($eid && empty($seen[$eid])) {
+                        $topEmployees[] = $row;
+                        $seen[$eid] = true;
+                    }
+                }
+            }
+            $topEmployees = \App\Services\EmployeeMetricsService::ensureTopEmployees($topEmployees, $tenantId, 3);
+            $topBranches = \App\Services\EmployeeMetricsService::topBranchesByCollection($tenantId, $monthStart, $today, 6);
+            $topBranches = \App\Services\EmployeeMetricsService::ensureTopBranches($topBranches, $tenantId, 3);
+            if ($dashboardEmpId > 0) {
+                $targetBreakdown = \App\Services\EmployeeMetricsService::targetBreakdown($tenantId, $dashboardEmpId, $today);
+            }
+            $kmEmpId = $punchEmpId > 0 ? $punchEmpId : $dashboardEmpId;
+            $todayKm = $this->dashboardTodayKm($tenantId, $kmEmpId, $today);
+            if (isset($tasks) && $tasks) {
+                $todayTaskList = $tasks->take(3)->map(function ($t) {
+                    return [
+                        'id' => $t->id,
+                        'title' => $t->title,
+                        'description' => $t->description,
+                        'task_date' => $t->task_date,
+                        'due_date' => $t->due_date,
+                        'task_status' => $t->task_status,
+                        'priority' => $t->priority,
+                        'employee_id' => $t->employee_id,
+                        'branch_id' => $t->branch_id,
+                    ];
+                })->values()->all();
+            }
+        } catch (\Exception $homeEx) {
+            \Log::error('Dashboard home extras: '.$homeEx->getMessage());
+        }
+
+        try {
+            $topEmployees = \App\Services\EmployeeMetricsService::ensureTopEmployees($topEmployees, $tenantId, 3);
+            $topBranches = \App\Services\EmployeeMetricsService::ensureTopBranches($topBranches, $tenantId, 3);
+        } catch (\Exception $e) {
         }
 
         /* ================================
@@ -12417,6 +12669,11 @@ public function mobile_employee_dashboard(Request $request)
                     'todayCheckIn' => $todayCheckIn,
                     'todayCheckOut' => $todayCheckOut,
                     'punchStatus' => $punchStatus,
+                    'todayKm' => $todayKm,
+                    'topEmployees' => $topEmployees,
+                    'topBranches' => $topBranches,
+                    'targetBreakdown' => $targetBreakdown,
+                    'todayTasks' => $todayTaskList,
                     'incomeCardsData' => [
                         ['id' => 1, 'title' => 'Todays Collections', 'amount' => '₹ ' . number_format($todaysCollection)],
                         ['id' => 2, 'title' => 'Receipts Generated', 'amount' => (string)$receiptsGenerated],
@@ -12576,6 +12833,7 @@ public function mobile_punch_attendance(Request $request)
     $request->merge(['employee_id' => $resolvedEmployeeId]);
 
     try {
+        $this->ensureEmployeeAttendanceLiveColumns();
         $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
         $punchType = $request->punch_type;
         $nowTime = date('H:i:s');
@@ -12585,10 +12843,88 @@ public function mobile_punch_attendance(Request $request)
         $attendance = $this->findMobilePunchRecord($request, $attDate);
 
         if ($punchType === 'check_in') {
-            if ($attendance && !empty($attendance->check_in_time)) {
+            if ($attendance && !empty($attendance->check_in_time) && ($attendance->punch_status === 'checked_in' || $this->normalizePunchStatus($attendance) === 'checked_in')) {
                 return response()->json([
                     'status' => 'Error',
                     'msg' => 'Already checked in for today',
+                ], 200);
+            }
+
+            if (empty($latitude) || empty($longitude)) {
+                return response()->json([
+                    'status' => 'Error',
+                    'msg' => 'GPS location is required for check-in',
+                ], 200);
+            }
+
+            $geo = $this->validateBranchGeoFence($request, $latitude, $longitude);
+            if (!$geo['ok']) {
+                // Outside radius without toggle → create pending approval request + notify admins
+                $outsideRemarks = trim((string) ($request->outside_office_remarks ?? $request->remarks ?? ''));
+                if ($outsideRemarks === '') {
+                    return response()->json([
+                        'status' => 'Error',
+                        'msg' => $geo['msg'],
+                        'outside_office' => 1,
+                        'distance_meters' => $geo['distance'],
+                        'allowed_radius_meters' => $geo['radius'],
+                        'require_outside_toggle' => true,
+                        'require_admin_approval' => true,
+                    ], 200);
+                }
+
+                if (!$attendance) {
+                    $attendance = new EmployeeAttendance();
+                    $attendance->tenant_id = $request->tenant_id;
+                    $attendance->branch_id = $request->branch_id;
+                    $attendance->employee_id = $request->employee_id;
+                    $attendance->att_date = $attDate;
+                    $attendance->attendance_type = 1;
+                    $attendance->created_by = $request->created_by ?? $request->user_id ?? 0;
+                    $attendance->status = 1;
+                }
+
+                $attendance->check_in_time = null;
+                $attendance->check_in_latitude = $latitude;
+                $attendance->check_in_longitude = $longitude;
+                $attendance->punch_status = 'pending_approval';
+                $attendance->latitude = $latitude;
+                $attendance->longitude = $longitude;
+                $attendance->outside_office = 1;
+                $attendance->outside_office_remarks = $outsideRemarks;
+                $attendance->punch_distance_meters = $geo['distance'];
+                $attendance->outside_approval_status = 'pending';
+                $attendance->remarks = 'Outside office punch request: ' . $outsideRemarks;
+                if (!empty($request->punch_photo) && \Schema::hasColumn('employee_attendances', 'check_in_photo')) {
+                    $attendance->check_in_photo = $request->punch_photo;
+                }
+                $attendance->save();
+
+                try {
+                    $emp = Employee::find($request->employee_id);
+                    $empName = $emp ? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')) : ('Employee #' . $request->employee_id);
+                    \App\Services\MobilePushService::notifyAdmins(
+                        $request->tenant_id,
+                        'Outside office punch request',
+                        $empName . ' requested check-in outside radius (' . round((float) $geo['distance']) . ' m). Remarks: ' . $outsideRemarks,
+                        [
+                            'type' => 'outside_punch_approval',
+                            'attendance_id' => (string) $attendance->id,
+                            'employee_id' => (string) $request->employee_id,
+                        ],
+                        (int) ($request->user_id ?? 0)
+                    );
+                } catch (\Exception $pushEx) {
+                    // ignore push failures
+                }
+
+                return response()->json([
+                    'status' => 'Success',
+                    'msg' => 'Outside office punch request sent to admin for approval',
+                    'pending_approval' => true,
+                    'outside_office' => 1,
+                    'distance_meters' => $geo['distance'],
+                    'data' => $attendance,
                 ], 200);
             }
 
@@ -12603,19 +12939,42 @@ public function mobile_punch_attendance(Request $request)
                 $attendance->status = 1;
             }
 
+            // If previous pending exists, upgrade to checked_in when now inside / approved path
             $attendance->check_in_time = $nowTime;
             $attendance->check_in_latitude = $latitude;
             $attendance->check_in_longitude = $longitude;
             $attendance->punch_status = 'checked_in';
             $attendance->latitude = $latitude;
             $attendance->longitude = $longitude;
-            $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch in';
+            $attendance->live_latitude = $latitude;
+            $attendance->live_longitude = $longitude;
+            $attendance->live_location_at = date('Y-m-d H:i:s');
+            if (!empty($request->punch_photo) && \Schema::hasColumn('employee_attendances', 'check_in_photo')) {
+                $attendance->check_in_photo = $request->punch_photo;
+            }
+            $attendance->outside_office = !empty($geo['outside_office']) ? 1 : 0;
+            $attendance->outside_office_remarks = !empty($geo['outside_office'])
+                ? ($geo['outside_remarks'] ?? ($request->outside_office_remarks ?? ''))
+                : null;
+            $attendance->punch_distance_meters = $geo['distance'];
+            if (!empty($geo['outside_office'])) {
+                $attendance->outside_approval_status = 'auto_allowed';
+            } else {
+                $attendance->outside_approval_status = null;
+            }
+            $attendance->remarks = isset($request->remarks) ? $request->remarks : (
+                !empty($geo['outside_office']) ? ('Outside office: ' . ($geo['outside_remarks'] ?? '')) : 'Mobile punch in'
+            );
             $attendance->save();
 
             return response()->json([
                 'status' => 'Success',
-                'msg' => 'Checked in successfully',
+                'msg' => !empty($geo['outside_office'])
+                    ? 'Checked in outside office (highlighted for admin review)'
+                    : 'Checked in successfully',
                 'data' => $attendance,
+                'outside_office' => (int) $attendance->outside_office,
+                'distance_meters' => $geo['distance'],
             ], 200);
         }
 
@@ -12637,6 +12996,13 @@ public function mobile_punch_attendance(Request $request)
         $attendance->check_out_latitude = $latitude;
         $attendance->check_out_longitude = $longitude;
         $attendance->punch_status = 'checked_out';
+        if (!empty($request->punch_photo) && \Schema::hasColumn('employee_attendances', 'check_out_photo')) {
+            $attendance->check_out_photo = $request->punch_photo;
+        }
+        // Stop live tracking after punch-out
+        $attendance->live_latitude = null;
+        $attendance->live_longitude = null;
+        $attendance->live_location_at = null;
         $attendance->remarks = isset($request->remarks) ? $request->remarks : 'Mobile punch out';
         $attendance->save();
 
@@ -12651,6 +13017,324 @@ public function mobile_punch_attendance(Request $request)
             'msg' => \Lang::get('api.global_error'),
             'error' => $e->getMessage(),
         ], 401);
+    }
+}
+
+/**
+ * Always-on live GPS while employee is logged in (office mobile).
+ * Also mirrors onto today's attendance row when checked-in.
+ */
+public function mobile_update_live_location(Request $request)
+{
+    if (!empty($request->db)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+    }
+
+    $validator = Validator::make($request->all(), [
+        'tenant_id' => 'required',
+        'latitude' => 'required',
+        'longitude' => 'required',
+        'db' => 'required',
+    ]);
+    if ($validator->fails()) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => $validator->errors()->first(),
+        ], 200);
+    }
+
+    $resolvedEmployeeId = $this->resolveMobileEmployeeId($request);
+    if ($resolvedEmployeeId <= 0) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => 'Employee mapping not found for this login',
+        ], 200);
+    }
+    $request->merge(['employee_id' => $resolvedEmployeeId]);
+
+    try {
+        $this->ensureEmployeeAttendanceLiveColumns();
+        $this->ensureEmployeeLiveLocationTable();
+
+        $now = date('Y-m-d H:i:s');
+        $locationName = isset($request->location_name) ? substr(trim((string) $request->location_name), 0, 255) : '';
+
+        DB::table('employee_live_locations')->updateOrInsert(
+            [
+                'tenant_id' => (int) $request->tenant_id,
+                'employee_id' => (int) $resolvedEmployeeId,
+            ],
+            [
+                'branch_id' => (int) ($request->branch_id ?? 0),
+                'user_id' => (int) ($request->user_id ?? $request->created_by ?? 0),
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'location_name' => $locationName,
+                'updated_at' => $now,
+                'created_at' => $now,
+            ]
+        );
+
+        // Append trail point for road-map / KM tracking (skip tiny GPS noise moves)
+        try {
+            $this->ensureEmployeeLocationTracksTable();
+            $last = DB::table('employee_location_tracks')
+                ->where('tenant_id', (int) $request->tenant_id)
+                ->where('employee_id', (int) $resolvedEmployeeId)
+                ->whereDate('recorded_at', date('Y-m-d'))
+                ->orderBy('id', 'desc')
+                ->first();
+            $shouldInsert = true;
+            if ($last) {
+                $d = $this->distanceMeters($last->latitude, $last->longitude, $request->latitude, $request->longitude);
+                if ($d !== null && $d < 25) {
+                    $shouldInsert = false;
+                }
+            }
+            if ($shouldInsert) {
+                DB::table('employee_location_tracks')->insert([
+                    'tenant_id' => (int) $request->tenant_id,
+                    'branch_id' => (int) ($request->branch_id ?? 0),
+                    'employee_id' => (int) $resolvedEmployeeId,
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'location_name' => $locationName,
+                    'recorded_at' => $now,
+                    'created_at' => $now,
+                ]);
+            }
+        } catch (\Exception $trackEx) {
+            // ignore trail write failures
+        }
+
+        $attDate = isset($request->att_date) ? $request->att_date : date('Y-m-d');
+        $attendance = $this->findMobilePunchRecord($request, $attDate);
+        $punchStatus = 'none';
+        if ($attendance && empty($attendance->check_out_time) && !empty($attendance->check_in_time)
+            && $this->normalizePunchStatus($attendance) === 'checked_in') {
+            $attendance->live_latitude = $request->latitude;
+            $attendance->live_longitude = $request->longitude;
+            $attendance->live_location_at = $now;
+            if ($locationName !== '' && \Schema::hasColumn('employee_attendances', 'live_location_name')) {
+                $attendance->live_location_name = $locationName;
+            }
+            $attendance->save();
+            $punchStatus = 'checked_in';
+        }
+
+        return response()->json([
+            'status' => 'Success',
+            'msg' => 'Location updated',
+            'tracking' => true,
+            'data' => [
+                'live_latitude' => $request->latitude,
+                'live_longitude' => $request->longitude,
+                'live_location_at' => $now,
+                'location_name' => $locationName,
+                'punch_status' => $punchStatus,
+            ],
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => \Lang::get('api.global_error'),
+            'error' => $e->getMessage(),
+        ], 200);
+    }
+}
+
+/**
+ * Admin: current locations of all employees with recent GPS (always-on).
+ */
+public function list_live_employee_locations(Request $request)
+{
+    if (!empty($request->db)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+    } elseif (!empty($request->database_name)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->database_name);
+        DB::reconnect('mysql');
+    }
+
+    try {
+        $this->ensureEmployeeLiveLocationTable();
+        $query = DB::table('employee_live_locations as ell')
+            ->leftJoin('employees as e', 'e.id', '=', 'ell.employee_id')
+            ->leftJoin('branches as b', 'b.id', '=', 'ell.branch_id')
+            ->whereNotNull('ell.latitude')
+            ->where('ell.latitude', '!=', '')
+            ->whereNotNull('ell.longitude')
+            ->where('ell.longitude', '!=', '')
+            ->where('ell.updated_at', '>=', date('Y-m-d H:i:s', strtotime('-24 hours')));
+
+        if (!empty($request->tenant_id)) {
+            $query->where('ell.tenant_id', $request->tenant_id);
+        }
+        if (!empty($request->branch_id)) {
+            $query->where('ell.branch_id', $request->branch_id);
+        }
+
+        $rows = $query->orderBy('ell.updated_at', 'desc')
+            ->select(
+                'ell.*',
+                'e.first_name',
+                'e.last_name',
+                'b.branch_name'
+            )
+            ->get();
+
+        $data = [];
+        foreach ($rows as $row) {
+            $name = trim(($row->first_name ?? '') . ' ' . ($row->last_name ?? ''));
+            $lat = $row->latitude;
+            $lng = $row->longitude;
+            $updatedAt = $row->updated_at ?: '';
+            $data[] = [
+                'id' => (int) $row->id,
+                'employee_id' => (int) $row->employee_id,
+                'employee_name' => $name,
+                'branch_id' => (int) $row->branch_id,
+                'branch_name' => $row->branch_name ?? '',
+                'check_in_time' => '',
+                'punch_status' => 'live',
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'location_name' => $row->location_name ?? '',
+                'live_location_at' => $updatedAt,
+                'live_location_view' => $updatedAt ? date('d/m/Y H:i:s', strtotime($updatedAt)) : '',
+                'map_url' => 'https://maps.google.com/maps?q=' . $lat . ',' . $lng . '&z=16&output=embed',
+                'maps_link' => 'https://www.google.com/maps?q=' . $lat . ',' . $lng,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'Success',
+            'msg' => '',
+            'as_of' => date('Y-m-d H:i:s'),
+            'data' => $data,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => 'Unable to fetch live locations',
+            'error' => $e->getMessage(),
+        ], 200);
+    }
+}
+
+/**
+ * Admin approves outside-office punch request → employee becomes checked_in.
+ */
+public function approve_outside_punch(Request $request)
+{
+    if (!empty($request->db)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+    } elseif (!empty($request->database_name)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->database_name);
+        DB::reconnect('mysql');
+    }
+
+    $id = (int) ($request->attendance_id ?? $request->id ?? 0);
+    if ($id <= 0) {
+        return response()->json(['status' => 'Error', 'msg' => 'attendance_id required'], 200);
+    }
+
+    try {
+        $this->ensureEmployeeAttendanceLiveColumns();
+        $attendance = EmployeeAttendance::find($id);
+        if (!$attendance) {
+            return response()->json(['status' => 'Error', 'msg' => 'Attendance not found'], 200);
+        }
+        if (($attendance->outside_approval_status ?? '') !== 'pending' && ($attendance->punch_status ?? '') !== 'pending_approval') {
+            return response()->json(['status' => 'Error', 'msg' => 'No pending outside punch for this record'], 200);
+        }
+
+        $attendance->check_in_time = $attendance->check_in_time ?: date('H:i:s');
+        $attendance->punch_status = 'checked_in';
+        $attendance->outside_approval_status = 'approved';
+        $attendance->approved_by = (int) ($request->approved_by ?? $request->user_id ?? $request->logged_user_id ?? 0);
+        $attendance->approved_at = date('Y-m-d H:i:s');
+        $attendance->live_latitude = $attendance->check_in_latitude ?: $attendance->latitude;
+        $attendance->live_longitude = $attendance->check_in_longitude ?: $attendance->longitude;
+        $attendance->live_location_at = date('Y-m-d H:i:s');
+        if (!empty($request->admin_remarks)) {
+            $attendance->remarks = trim(($attendance->remarks ? $attendance->remarks . ' | ' : '') . 'Admin: ' . $request->admin_remarks);
+        }
+        $attendance->save();
+
+        try {
+            \App\Services\MobilePushService::notifyEmployee(
+                $attendance->employee_id,
+                'Punch approved',
+                'Your outside office check-in was approved by admin.',
+                ['type' => 'outside_punch_approved', 'attendance_id' => (string) $attendance->id]
+            );
+        } catch (\Exception $e) {
+        }
+
+        return response()->json(['status' => 'Success', 'msg' => 'Outside punch approved', 'data' => $attendance], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+    }
+}
+
+/**
+ * Admin rejects outside-office punch request.
+ */
+public function reject_outside_punch(Request $request)
+{
+    if (!empty($request->db)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+    } elseif (!empty($request->database_name)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->database_name);
+        DB::reconnect('mysql');
+    }
+
+    $id = (int) ($request->attendance_id ?? $request->id ?? 0);
+    if ($id <= 0) {
+        return response()->json(['status' => 'Error', 'msg' => 'attendance_id required'], 200);
+    }
+
+    try {
+        $this->ensureEmployeeAttendanceLiveColumns();
+        $attendance = EmployeeAttendance::find($id);
+        if (!$attendance) {
+            return response()->json(['status' => 'Error', 'msg' => 'Attendance not found'], 200);
+        }
+
+        $attendance->punch_status = 'rejected';
+        $attendance->outside_approval_status = 'rejected';
+        $attendance->approved_by = (int) ($request->approved_by ?? $request->user_id ?? $request->logged_user_id ?? 0);
+        $attendance->approved_at = date('Y-m-d H:i:s');
+        $attendance->check_in_time = null;
+        if (!empty($request->admin_remarks)) {
+            $attendance->remarks = trim(($attendance->remarks ? $attendance->remarks . ' | ' : '') . 'Rejected: ' . $request->admin_remarks);
+        }
+        $attendance->save();
+
+        try {
+            \App\Services\MobilePushService::notifyEmployee(
+                $attendance->employee_id,
+                'Punch rejected',
+                'Your outside office check-in was rejected by admin.',
+                ['type' => 'outside_punch_rejected', 'attendance_id' => (string) $attendance->id]
+            );
+        } catch (\Exception $e) {
+        }
+
+        return response()->json(['status' => 'Success', 'msg' => 'Outside punch rejected', 'data' => $attendance], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
     }
 }
 
@@ -12700,6 +13384,417 @@ public function mobile_receipt_file_upload(Request $request)
     }
 }
 
+public function extract_utr_screenshot(Request $request)
+{
+    try {
+        $dbName = $request->db ?: $request->database_name;
+        if (!empty($dbName)) {
+            DB::purge('mysql');
+            Config::set('database.connections.mysql.database', $dbName);
+            DB::reconnect('mysql');
+        }
+        if (!$request->hasFile('receipt_photo')) {
+            return response()->json(['status' => 'Error', 'msg' => 'Upload the payment screenshot'], 200);
+        }
+        $file = $request->file('receipt_photo');
+        $name = 'utr_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/receipt_photos', $name);
+        $absolute = storage_path('app/' . $path);
+        $parsed = \App\Services\UtrScanService::extractFromFile($absolute);
+        if (!empty($parsed['is_failed'])) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'This looks like a failed payment screen. Capture only a successful payment screenshot.',
+                'file_name' => $name,
+                'ready' => false,
+            ], 200);
+        }
+        if (empty($parsed['is_success'])) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Only a successful payment screenshot is accepted (must show Success/Paid plus UTR, date and time).',
+                'file_name' => $name,
+                'utr' => $parsed['utr'],
+                'txn_date' => $parsed['date'],
+                'txn_time' => $parsed['time'],
+                'ready' => false,
+            ], 200);
+        }
+        if ($parsed['utr'] === '' || $parsed['date'] === '' || $parsed['time'] === '') {
+            $hint = $parsed['raw_text'] === ''
+                ? 'Could not read text from the screenshot. Install Tesseract OCR on the server, then retake a clear payment screenshot.'
+                : 'Screenshot was read, but UTR, date and time were not all found. Retake a clearer screenshot that shows UTR, date and time.';
+            return response()->json([
+                'status' => 'Error',
+                'msg' => $hint,
+                'file_name' => $name,
+                'utr' => $parsed['utr'],
+                'txn_date' => $parsed['date'],
+                'txn_time' => $parsed['time'],
+                'ready' => false,
+            ], 200);
+        }
+        if (!empty($parsed['duplicate_receipt'])) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'UTR ' . $parsed['utr'] . ' is already used on receipt ' . $parsed['duplicate_receipt'],
+                'file_name' => $name,
+                'utr' => $parsed['utr'],
+                'txn_date' => $parsed['date'],
+                'txn_time' => $parsed['time'],
+                'duplicate' => true,
+                'ready' => false,
+            ], 200);
+        }
+        return response()->json([
+            'status' => 'Success',
+            'msg' => 'UTR, date and time verified from screenshot',
+            'file_name' => $name,
+            'utr' => $parsed['utr'],
+            'txn_date' => $parsed['date'],
+            'txn_time' => $parsed['time'],
+            'duplicate' => false,
+            'ready' => true,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+    }
+}
+
+public function mobile_punch_photo_upload(Request $request)
+{
+    try {
+        if (!empty($request->db)) {
+            DB::purge('mysql');
+            Config::set('database.connections.mysql.database', $request->db);
+            DB::reconnect('mysql');
+        }
+        if (!$request->hasFile('punch_photo')) {
+            return response()->json(array('status' => 'Error', 'msg' => 'No punch photo uploaded'), 200);
+        }
+        $file = $request->file('punch_photo');
+        $name = 'punch_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs('uploads/punch_photos', $name);
+        return response()->json(array(
+            'status' => 'Success',
+            'msg' => 'Uploaded',
+            'file_name' => $name,
+            'file_path' => $path,
+        ), 200);
+    } catch (\Exception $e) {
+        return response()->json(array('status' => 'Error', 'msg' => $e->getMessage()), 200);
+    }
+}
+
+/**
+ * Travel road-map: trail points + KM + receipt / feedback pins for filters.
+ */
+public function employee_travel_map(Request $request)
+{
+    if (!empty($request->db)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+    } elseif (!empty($request->database_name)) {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->database_name);
+        DB::reconnect('mysql');
+    }
+
+    try {
+        $this->ensureEmployeeLocationTracksTable();
+        $this->ensureReceiptGeoColumns();
+
+        $employeeId = (int) ($request->employee_id ?: $this->resolveMobileEmployeeId($request));
+        $date = !empty($request->date) ? date('Y-m-d', strtotime($request->date)) : date('Y-m-d');
+        $tenantId = (int) ($request->tenant_id ?: 0);
+
+        // Optional login → logout window (attendance row or explicit times)
+        $fromDt = null;
+        $toDt = null;
+        $punchIn = null;
+        $punchOut = null;
+        $attendanceId = (int) ($request->attendance_id ?? 0);
+        if ($attendanceId > 0) {
+            $att = DB::table('employee_attendances')->where('id', $attendanceId)->first();
+            if ($att) {
+                $employeeId = (int) $att->employee_id;
+                if (!empty($att->att_date)) {
+                    $date = date('Y-m-d', strtotime($att->att_date));
+                }
+                if (!empty($att->check_in_time)) {
+                    $fromDt = $date . ' ' . $att->check_in_time;
+                }
+                if (!empty($att->check_out_time)) {
+                    $toDt = $date . ' ' . $att->check_out_time;
+                }
+                $inLat = !empty($att->check_in_latitude) ? $att->check_in_latitude : $att->latitude;
+                $inLng = !empty($att->check_in_longitude) ? $att->check_in_longitude : $att->longitude;
+                if ((float) $inLat && (float) $inLng && $fromDt) {
+                    $punchIn = ['latitude' => (float) $inLat, 'longitude' => (float) $inLng, 'recorded_at' => $fromDt];
+                }
+                if ((float) $att->check_out_latitude && (float) $att->check_out_longitude && $toDt) {
+                    $punchOut = ['latitude' => (float) $att->check_out_latitude, 'longitude' => (float) $att->check_out_longitude, 'recorded_at' => $toDt];
+                }
+            }
+        }
+        if (!empty($request->from_time)) {
+            $fromDt = $date . ' ' . date('H:i:s', strtotime($request->from_time));
+        }
+        if (!empty($request->to_time)) {
+            $toDt = $date . ' ' . date('H:i:s', strtotime($request->to_time));
+        }
+
+        $trailQuery = DB::table('employee_location_tracks')
+            ->whereDate('recorded_at', $date)
+            ->orderBy('employee_id', 'asc')
+            ->orderBy('recorded_at', 'asc')
+            ->orderBy('id', 'asc');
+        if ($tenantId > 0) {
+            $trailQuery->where('tenant_id', $tenantId);
+        }
+        if ($employeeId > 0) {
+            $trailQuery->where('employee_id', $employeeId);
+        }
+        if (!empty($request->branch_id) && $attendanceId <= 0) {
+            $trailQuery->where('branch_id', $request->branch_id);
+        }
+        if ($fromDt) {
+            $trailQuery->where('recorded_at', '>=', $fromDt);
+        }
+        if ($toDt) {
+            $trailQuery->where('recorded_at', '<=', $toDt);
+        }
+        $trailRows = $trailQuery->get();
+
+        $byEmployee = [];
+        foreach ($trailRows as $row) {
+            if (!(float) $row->latitude || !(float) $row->longitude) {
+                continue;
+            }
+            $byEmployee[(int) $row->employee_id][] = [
+                'latitude' => (float) $row->latitude,
+                'longitude' => (float) $row->longitude,
+                'location_name' => $row->location_name,
+                'recorded_at' => $row->recorded_at,
+                'source' => 'gps',
+            ];
+        }
+        if ($employeeId > 0 && ($punchIn || $punchOut)) {
+            $pts = $byEmployee[$employeeId] ?? [];
+            if ($punchIn) {
+                array_unshift($pts, $punchIn + ['location_name' => 'Check-in', 'source' => 'check_in']);
+            }
+            if ($punchOut) {
+                $pts[] = $punchOut + ['location_name' => 'Check-out', 'source' => 'check_out'];
+            }
+            $byEmployee[$employeeId] = $pts;
+        }
+
+        $empNames = [];
+        if (!empty($byEmployee)) {
+            foreach (DB::table('employees')->whereIn('id', array_keys($byEmployee))->get(['id', 'first_name', 'last_name']) as $e) {
+                $empNames[(int) $e->id] = trim(($e->first_name ?? '') . ' ' . ($e->last_name ?? ''));
+            }
+        }
+
+        $trail = [];
+        $employeesSummary = [];
+        $totalMeters = 0.0;
+        foreach ($byEmployee as $empId => $points) {
+            $kept = [];
+            $empMeters = 0.0;
+            foreach ($points as $p) {
+                $prev = end($kept);
+                if ($prev) {
+                    $d = $this->distanceMeters($prev['latitude'], $prev['longitude'], $p['latitude'], $p['longitude']);
+                    $secs = max(0, strtotime($p['recorded_at']) - strtotime($prev['recorded_at']));
+                    // Drop GPS spikes (> ~150 km/h between consecutive fixes)
+                    if ($d !== null && $d > 300 && ($secs === 0 || ($d / $secs) > 42) && $p['source'] === 'gps') {
+                        continue;
+                    }
+                    if ($d !== null) {
+                        $empMeters += $d;
+                    }
+                }
+                $kept[] = $p;
+            }
+            $count = count($kept);
+            for ($i = 0; $i < $count; $i++) {
+                $next = $i + 1 < $count ? $kept[$i + 1]['recorded_at'] : null;
+                $kept[$i]['stay_minutes'] = $next ? (int) round((strtotime($next) - strtotime($kept[$i]['recorded_at'])) / 60) : 0;
+                $kept[$i]['employee_id'] = $empId;
+                $kept[$i]['time'] = date('h:i A', strtotime($kept[$i]['recorded_at']));
+                $trail[] = $kept[$i];
+            }
+            $totalMeters += $empMeters;
+            $employeesSummary[] = [
+                'employee_id' => $empId,
+                'employee_name' => $empNames[$empId] ?? ('Employee ' . $empId),
+                'km' => round($empMeters / 1000, 2),
+                'points' => $count,
+                'first_at' => $count ? $kept[0]['recorded_at'] : null,
+                'last_at' => $count ? $kept[$count - 1]['recorded_at'] : null,
+            ];
+        }
+        usort($employeesSummary, function ($a, $b) {
+            return $b['km'] <=> $a['km'];
+        });
+
+        $receiptPins = [];
+        if (\Schema::hasTable('receipts')) {
+            $rq = DB::table('receipts as r')
+                ->leftJoin('customers as c', 'c.id', '=', 'r.customer_id')
+                ->whereDate('r.receipt_date', $date)
+                ->whereNotNull('r.latitude')
+                ->where('r.latitude', '!=', '')
+                ->whereNotNull('r.longitude')
+                ->where('r.longitude', '!=', '')
+                ->select(
+                    'r.id',
+                    'r.receipt_no',
+                    'r.latitude',
+                    'r.longitude',
+                    'r.location_name',
+                    'r.received_amount',
+                    'r.employee_id',
+                    DB::raw("TRIM(CONCAT(COALESCE(c.name,''),' ',COALESCE(c.last_name,''))) as customer_name")
+                );
+            if ($tenantId > 0) {
+                $rq->where('r.tenant_id', $tenantId);
+            }
+            if ($employeeId > 0) {
+                $rq->where('r.employee_id', $employeeId);
+            }
+            if (!empty($request->branch_id)) {
+                $rq->where('r.branch_id', $request->branch_id);
+            }
+            foreach ($rq->get() as $r) {
+                $receiptPins[] = [
+                    'id' => $r->id,
+                    'receipt_no' => $r->receipt_no,
+                    'customer_name' => $r->customer_name,
+                    'amount' => $r->received_amount,
+                    'latitude' => $r->latitude,
+                    'longitude' => $r->longitude,
+                    'location_name' => $r->location_name,
+                    'type' => 'receipt',
+                ];
+            }
+        }
+
+        $feedbackPins = [];
+        // Collection remarks with GPS
+        if (\Schema::hasTable('remarks') && \Schema::hasColumn('remarks', 'latitude')) {
+            try {
+                $rqFb = DB::table('remarks as rm')
+                    ->leftJoin('customers as c', 'c.id', '=', 'rm.customer_id')
+                    ->whereDate('rm.remark_date', $date)
+                    ->whereNotNull('rm.latitude')
+                    ->where('rm.latitude', '!=', '')
+                    ->select(
+                        'rm.id',
+                        'rm.latitude',
+                        'rm.longitude',
+                        'rm.remarks',
+                        DB::raw("TRIM(CONCAT(COALESCE(c.name,''),' ',COALESCE(c.last_name,''))) as customer_name")
+                    );
+                if ($tenantId > 0) {
+                    $rqFb->where('rm.tenant_id', $tenantId);
+                }
+                if ($employeeId > 0 && \Schema::hasColumn('remarks', 'employee_id')) {
+                    $rqFb->where('rm.employee_id', $employeeId);
+                }
+                foreach ($rqFb->limit(200)->get() as $f) {
+                    if (empty($f->latitude) || empty($f->longitude)) {
+                        continue;
+                    }
+                    $feedbackPins[] = [
+                        'id' => $f->id,
+                        'title' => 'Collection Feedback',
+                        'customer_name' => $f->customer_name,
+                        'remarks' => $f->remarks,
+                        'latitude' => $f->latitude,
+                        'longitude' => $f->longitude,
+                        'type' => 'feedback',
+                    ];
+                }
+            } catch (\Exception $rmEx) {
+                // ignore
+            }
+        }
+        if (\Schema::hasTable('followups')) {
+            $fq = DB::table('followups as f')
+                ->leftJoin('customers as c', 'c.id', '=', 'f.customer_id')
+                ->whereDate('f.created_at', $date)
+                ->where(function ($q) {
+                    $q->whereNotNull('f.latitude')->where('f.latitude', '!=', '');
+                })
+                ->select(
+                    'f.id',
+                    'f.latitude',
+                    'f.longitude',
+                    'f.remarks',
+                    DB::raw("TRIM(CONCAT(COALESCE(c.name,''),' ',COALESCE(c.last_name,''))) as customer_name")
+                );
+            if ($tenantId > 0 && \Schema::hasColumn('followups', 'tenant_id')) {
+                $fq->where('f.tenant_id', $tenantId);
+            }
+            if ($employeeId > 0 && \Schema::hasColumn('followups', 'employee_id')) {
+                $fq->where('f.employee_id', $employeeId);
+            }
+            try {
+                foreach ($fq->limit(200)->get() as $f) {
+                    if (empty($f->latitude) || empty($f->longitude)) {
+                        continue;
+                    }
+                    $feedbackPins[] = [
+                        'id' => $f->id,
+                        'title' => 'Feedback',
+                        'customer_name' => $f->customer_name,
+                        'remarks' => $f->remarks,
+                        'latitude' => $f->latitude,
+                        'longitude' => $f->longitude,
+                        'type' => 'feedback',
+                    ];
+                }
+            } catch (\Exception $fbEx) {
+                // keep remarks pins if any
+            }
+        }
+
+        $totalKm = round($totalMeters / 1000, 2);
+
+        return response()->json([
+            'status' => 'Success',
+            'msg' => '',
+            'date' => $date,
+            'employee_id' => $employeeId,
+            'from_time' => $fromDt,
+            'to_time' => $toDt,
+            'tracking_table_ready' => \Schema::hasTable('employee_location_tracks'),
+            'employees' => $employeesSummary,
+            'total_km' => $totalKm,
+            'total_meters' => round($totalMeters, 1),
+            'expenses' => [
+                'travel_km' => $totalKm,
+                'suggested_rate_per_km' => 0,
+                'suggested_amount' => 0,
+                'note' => 'Use travel_km with your expense policy rate',
+            ],
+            'trail' => $trail,
+            'receipt_pins' => $receiptPins,
+            'feedback_pins' => $feedbackPins,
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'Error',
+            'msg' => \Lang::get('api.global_error'),
+            'error' => $e->getMessage(),
+        ], 200);
+    }
+}
+
 public function mobile_list_banks(Request $request)
 {
     try {
@@ -12744,6 +13839,7 @@ private function resolveMobileEmployeeId(Request $request)
 
 private function findMobilePunchRecord(Request $request, $attDate)
 {
+    $this->ensureEmployeeAttendanceLiveColumns();
     $empId = (int) $request->employee_id;
     $userId = (int) ($request->user_id ?? $request->created_by ?? 0);
 
@@ -12757,6 +13853,234 @@ private function findMobilePunchRecord(Request $request, $attDate)
         })
         ->orderByDesc('id')
         ->first();
+}
+
+/**
+ * Ensure punch + live location columns exist on employee_attendances.
+ */
+private function ensureEmployeeAttendanceLiveColumns()
+{
+    if (!\Schema::hasTable('employee_attendances')) {
+        return;
+    }
+    $cols = [
+        'check_in_time' => "TIME NULL DEFAULT NULL",
+        'check_out_time' => "TIME NULL DEFAULT NULL",
+        'check_in_latitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'check_in_longitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'check_out_latitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'check_out_longitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'punch_status' => "VARCHAR(20) NULL DEFAULT 'none'",
+        'live_latitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'live_longitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'live_location_at' => "DATETIME NULL DEFAULT NULL",
+        'outside_office' => "TINYINT(1) NULL DEFAULT 0",
+        'outside_office_remarks' => "TEXT NULL",
+        'punch_distance_meters' => "DECIMAL(10,2) NULL DEFAULT NULL",
+        'outside_approval_status' => "VARCHAR(20) NULL DEFAULT NULL",
+        'approved_by' => "INT NULL DEFAULT NULL",
+        'approved_at' => "DATETIME NULL DEFAULT NULL",
+        'live_location_name' => "VARCHAR(255) NULL DEFAULT NULL",
+        'check_in_photo' => "VARCHAR(255) NULL DEFAULT NULL",
+        'check_out_photo' => "VARCHAR(255) NULL DEFAULT NULL",
+    ];
+    foreach ($cols as $name => $def) {
+        if (!\Schema::hasColumn('employee_attendances', $name)) {
+            try {
+                DB::statement("ALTER TABLE `employee_attendances` ADD COLUMN `{$name}` {$def}");
+            } catch (\Exception $e) {
+                // ignore race / already exists
+            }
+        }
+    }
+    if (\Schema::hasTable('branches')) {
+        $branchCols = [
+            'latitude' => "VARCHAR(50) NULL DEFAULT NULL",
+            'longitude' => "VARCHAR(50) NULL DEFAULT NULL",
+            'punch_radius_meters' => "INT NULL DEFAULT 50",
+        ];
+        foreach ($branchCols as $name => $def) {
+            if (!\Schema::hasColumn('branches', $name)) {
+                try {
+                    DB::statement("ALTER TABLE `branches` ADD COLUMN `{$name}` {$def}");
+                } catch (\Exception $e) {
+                }
+            }
+        }
+    }
+}
+
+private function ensureEmployeeLiveLocationTable()
+{
+    if (\Schema::hasTable('employee_live_locations')) {
+        return;
+    }
+    try {
+        \Schema::create('employee_live_locations', function ($table) {
+            $table->increments('id');
+            $table->integer('tenant_id')->default(0);
+            $table->integer('branch_id')->default(0);
+            $table->integer('employee_id')->default(0);
+            $table->integer('user_id')->default(0);
+            $table->string('latitude', 50)->nullable();
+            $table->string('longitude', 50)->nullable();
+            $table->string('location_name', 255)->nullable();
+            $table->dateTime('updated_at')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->unique(['tenant_id', 'employee_id'], 'uniq_employee_live');
+        });
+    } catch (\Exception $e) {
+    }
+}
+
+private function ensureEmployeeLocationTracksTable()
+{
+    if (\Schema::hasTable('employee_location_tracks')) {
+        return;
+    }
+    try {
+        \Schema::create('employee_location_tracks', function ($table) {
+            $table->bigIncrements('id');
+            $table->integer('tenant_id')->default(0);
+            $table->integer('branch_id')->default(0);
+            $table->integer('employee_id')->default(0);
+            $table->string('latitude', 50)->nullable();
+            $table->string('longitude', 50)->nullable();
+            $table->string('location_name', 255)->nullable();
+            $table->dateTime('recorded_at')->nullable();
+            $table->dateTime('created_at')->nullable();
+            $table->index(['tenant_id', 'employee_id', 'recorded_at'], 'idx_emp_track_day');
+        });
+    } catch (\Exception $e) {
+    }
+}
+
+private function ensureReceiptGeoColumns()
+{
+    if (!\Schema::hasTable('receipts')) {
+        return;
+    }
+    $cols = [
+        'latitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'longitude' => "VARCHAR(50) NULL DEFAULT NULL",
+        'location_name' => "VARCHAR(255) NULL DEFAULT NULL",
+    ];
+    foreach ($cols as $name => $def) {
+        if (!\Schema::hasColumn('receipts', $name)) {
+            try {
+                DB::statement("ALTER TABLE `receipts` ADD COLUMN `{$name}` {$def}");
+            } catch (\Exception $e) {
+            }
+        }
+    }
+}
+
+/** Today's GPS trail distance in km for the Home punch card. */
+private function dashboardTodayKm($tenantId, $employeeId, $date)
+{
+    if ((int) $employeeId <= 0 || !\Schema::hasTable('employee_location_tracks')) {
+        return 0;
+    }
+    $trailQuery = DB::table('employee_location_tracks')
+        ->whereDate('recorded_at', $date)
+        ->orderBy('recorded_at', 'asc')
+        ->orderBy('id', 'asc');
+    if ((int) $tenantId > 0) {
+        $trailQuery->where('tenant_id', $tenantId);
+    }
+    $trailQuery->where('employee_id', (int) $employeeId);
+    $prev = null;
+    $totalMeters = 0.0;
+    foreach ($trailQuery->get(['latitude', 'longitude']) as $row) {
+        $lat = (float) $row->latitude;
+        $lng = (float) $row->longitude;
+        if (!$lat || !$lng) {
+            continue;
+        }
+        if ($prev) {
+            $d = $this->distanceMeters($prev[0], $prev[1], $lat, $lng);
+            if ($d !== null) {
+                $totalMeters += $d;
+            }
+        }
+        $prev = [$lat, $lng];
+    }
+    return round($totalMeters / 1000, 2);
+}
+
+/** Haversine distance in meters between two lat/lng points. */
+private function distanceMeters($lat1, $lng1, $lat2, $lng2)
+{
+    $lat1 = (float) $lat1;
+    $lng1 = (float) $lng1;
+    $lat2 = (float) $lat2;
+    $lng2 = (float) $lng2;
+    if (!$lat1 || !$lng1 || !$lat2 || !$lng2) {
+        return null;
+    }
+    $earth = 6371000;
+    $dLat = deg2rad($lat2 - $lat1);
+    $dLng = deg2rad($lng2 - $lng1);
+    $a = sin($dLat / 2) * sin($dLat / 2)
+        + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) * sin($dLng / 2);
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    return round($earth * $c, 2);
+}
+
+/**
+ * Validate check-in against branch geo radius.
+ * Returns [ok(bool), message, distance, outside_office, radius]
+ */
+private function validateBranchGeoFence(Request $request, $latitude, $longitude)
+{
+    $branch = Branch::find($request->branch_id);
+    if (!$branch || empty($branch->latitude) || empty($branch->longitude)) {
+        // No geo configured → do not block punch
+        return [
+            'ok' => true,
+            'msg' => '',
+            'distance' => null,
+            'outside_office' => 0,
+            'radius' => null,
+            'geofence_enabled' => false,
+        ];
+    }
+
+    $radius = (int) ($branch->punch_radius_meters ?: 50);
+    if (!in_array($radius, [50, 100], true)) {
+        $radius = 50;
+    }
+    $distance = $this->distanceMeters($latitude, $longitude, $branch->latitude, $branch->longitude);
+    $allowOutside = !empty($request->allow_outside_office) && (
+        $request->allow_outside_office === true
+        || $request->allow_outside_office === 1
+        || $request->allow_outside_office === '1'
+        || $request->allow_outside_office === 'true'
+    );
+    $outsideRemarks = trim((string) ($request->outside_office_remarks ?? $request->remarks ?? ''));
+
+    if ($distance !== null && $distance <= $radius) {
+        return [
+            'ok' => true,
+            'msg' => '',
+            'distance' => $distance,
+            'outside_office' => 0,
+            'radius' => $radius,
+            'geofence_enabled' => true,
+        ];
+    }
+
+    // Outside radius → must go to admin approval (remarks collected by client)
+    return [
+        'ok' => false,
+        'msg' => 'You are outside office radius (' . $radius . ' m' . ($distance !== null ? ', currently ' . round($distance) . ' m away' : '') . '). Enter remarks and submit for admin approval.',
+        'distance' => $distance,
+        'outside_office' => 1,
+        'radius' => $radius,
+        'geofence_enabled' => true,
+        'allow_outside_requested' => $allowOutside,
+        'outside_remarks' => $outsideRemarks,
+    ];
 }
 
 private function normalizePunchStatus($attendance)
@@ -12786,6 +14110,119 @@ function formatDate($date, $format = 'd-m-Y')
     return \Carbon\Carbon::parse($date)->format($format);
 }
 
+public function mobile_get_employee_profile(Request $request)
+{
+    try {
+        DB::purge('mysql');
+        Config::set('database.connections.mysql.database', $request->db);
+        DB::reconnect('mysql');
+
+        $empId = (int) ($request->employee_id ?: 0);
+        if ($empId <= 0 && !empty($request->user_id)) {
+            $u = User::find($request->user_id);
+            $empId = $u ? (int) $u->employee_id : 0;
+        }
+        if ($empId <= 0) {
+            return response()->json(['status' => 'Error', 'msg' => 'Employee not mapped'], 200);
+        }
+
+        $emp = Employee::with([
+            'branch_det',
+            'designation_det',
+            'role_det',
+            'state_det',
+            'district_det',
+            'city_det',
+            'communication_state_det',
+            'communication_district_det',
+            'communication_city_det',
+            'bank_det',
+        ])->find($empId);
+
+        if (!$emp) {
+            return response()->json(['status' => 'Error', 'msg' => 'Employee not found'], 200);
+        }
+
+        $gender = ((int) $emp->gender === 2) ? 'Female' : (((int) $emp->gender === 1) ? 'Male' : '');
+        $blood = [
+            'a_positive' => 'A+', 'o_positive' => 'O+', 'b_positive' => 'B+', 'ab_positive' => 'AB+',
+            'a_negative' => 'A-', 'o_negative' => 'O-', 'b_negative' => 'B-', 'ab_negative' => 'AB-',
+        ];
+        $photo = !empty($emp->photo)
+            ? rtrim((string) env('APP_URL'), '/') . Storage::url('app/uploads/employee_photos/' . $emp->photo)
+            : '';
+        $permAddr = implode(', ', array_filter([
+            $emp->door_no,
+            $emp->building_name,
+            $emp->address_line_1,
+            $emp->address_line_2,
+            $emp->land_mark,
+            optional($emp->city_det)->city_name,
+            optional($emp->district_det)->district_name,
+            optional($emp->state_det)->state_name,
+            $emp->pincode,
+        ]));
+        $commAddr = implode(', ', array_filter([
+            $emp->communication_door_no,
+            $emp->communication_building_name,
+            $emp->communication_address_line_1,
+            $emp->communication_address_line_2,
+            $emp->communication_land_mark,
+            optional($emp->communication_city_det)->city_name,
+            optional($emp->communication_district_det)->district_name,
+            optional($emp->communication_state_det)->state_name,
+            $emp->communication_pincode,
+        ]));
+        $loginEmail = User::where('employee_id', $empId)->value('email');
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => [
+                'employee_id' => (string) $emp->id,
+                'photo' => $photo,
+                'photo_url' => $photo,
+                'salutation' => $emp->saluation ?? '',
+                'first_name' => $emp->first_name ?? '',
+                'last_name' => $emp->last_name ?? '',
+                'full_name' => trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')),
+                'gender' => $gender,
+                'dob' => $emp->dob ?? '',
+                'blood_group' => $blood[$emp->blood_group] ?? ($emp->blood_group ?? ''),
+                'father_name' => $emp->father_name ?? '',
+                'spouse_name' => $emp->spouse_name ?? '',
+                'branch_name' => optional($emp->branch_det)->branch_name ?? '',
+                'employee_type' => ((int) $emp->employee_type === 2) ? 'Business Agent' : 'Employee',
+                'designation' => optional($emp->designation_det)->designation_name ?? '',
+                'role_name' => optional($emp->role_det)->role_name ?? '',
+                'joining_date' => $emp->joining_date ?? '',
+                'experience' => $emp->experience ?? '',
+                'qualification' => $emp->qualification ?? '',
+                'salary' => $emp->salary ?? '',
+                'pf' => $emp->pf ?? '',
+                'esi' => $emp->esi ?? '',
+                'target' => $emp->target ?? '',
+                'incentive' => $emp->incentive ?? '',
+                'commission' => $emp->commission ?? '',
+                'previous_company_details' => $emp->previous_company_details ?? '',
+                'collection_agent' => ((int) $emp->collection_agent === 1) ? 'Yes' : 'No',
+                'holder_name' => $emp->holder_name ?? '',
+                'account_no' => $emp->account_no ?? '',
+                'bank_name' => optional($emp->bank_det)->bank_name ?? '',
+                'ifsc_code' => $emp->ifsc_code ?? '',
+                'phone_no' => $emp->phone_no ?? '',
+                'mobile_no' => $emp->mobile_no ?? '',
+                'email' => $emp->email ?? $loginEmail ?? '',
+                'permanent_address' => $permAddr,
+                'communication_address' => $commAddr,
+                'aadhar' => $emp->adhar_card ?? '',
+                'pan_no' => $emp->pan_no ?? '',
+                'driving_license' => $emp->driving_license ?? '',
+            ],
+        ], 200);
+    } catch (\Throwable $e) {
+        return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+    }
+}
 
 }
        

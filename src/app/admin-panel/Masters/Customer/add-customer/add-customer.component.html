@@ -579,6 +579,10 @@
             </div>
           </div>
         </div>
+        <div class="col-md-12 mb-3">
+          <label class="col-form-label font-weight-bold">Upload KYC Documents (Aadhaar front &amp; back, PAN, others)</label>
+          <app-kyc-upload #kycUpload [aadharNo]="AddCustomer.get('adhar_no').value" [panNo]="AddCustomer.get('pan_no').value"></app-kyc-upload>
+        </div>
       </div>
 
       <div class="row">
@@ -1782,7 +1786,15 @@
         </div> -->
         <div class="col-md-6"></div>
       </div>
-      <div class="row">
+      <div class="row" *ngIf="!showChitSection">
+        <div class="col-md-12 mb-3">
+          <div class="alert alert-success mb-0">
+            <b>Chits are added on a separate page.</b> Save the profile first, then open
+            <a [routerLink]="['/admin-panel/add-commitment-chit']">Add Chit</a> to enrol this customer in a scheme.
+          </div>
+        </div>
+      </div>
+      <div class="row" *ngIf="showChitSection">
         <div class="col-md-12 mb-3">
           <div class="card-header d-flex justify-content-between align-items-center">
             <strong>Chit Section</strong>

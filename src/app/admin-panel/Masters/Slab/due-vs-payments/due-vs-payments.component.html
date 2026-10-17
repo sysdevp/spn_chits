@@ -1,0 +1,70 @@
+<div class="dvp-page">
+  <div class="dvp-hero">
+    <div>
+      <div class="dvp-kicker">Slabs</div>
+      <h1>Due vs Payments</h1>
+      <p>Each scheme is a pamphlet. Chit value, slab name and months sit on top. The table under it lists every installment with due amount and payment amount.</p>
+    </div>
+    <button type="button" class="dvp-btn" (click)="exportNotice()">Export</button>
+  </div>
+
+  <div class="dvp-filters">
+    <div>
+      <label>Search</label>
+      <input type="text" [(ngModel)]="searchText" (ngModelChange)="applyFilters()" placeholder="Slab, branch, chit value">
+    </div>
+    <div>
+      <label>Branch</label>
+      <select [(ngModel)]="branchFilter" (ngModelChange)="applyFilters()">
+        <option value="">All branches</option>
+        <option *ngFor="let name of branches" [value]="name">{{name}}</option>
+      </select>
+    </div>
+    <button type="button" class="dvp-btn soft" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <div class="loader" *ngIf="loading">
+    <img style="width: 90px;" src="assets/img/loading.gif" alt="">
+  </div>
+
+  <div class="board" *ngIf="!loading && filtered.length">
+    <article class="pamphlet" *ngFor="let item of filtered" [ngClass]="item.tone">
+      <div class="ribbon">
+        <div class="facts">
+          <div class="fact chit"><span>Chit value</span><b>{{money(item.chitValue)}}</b></div>
+          <div class="fact"><span>Slab name</span><b>{{item.slabName}}</b></div>
+          <div class="fact"><span>Months</span><b>{{item.months}}</b></div>
+        </div>
+        <div class="branch-line">{{item.branch}}</div>
+      </div>
+      <div class="sheet">
+        <table class="sheet-table">
+          <thead>
+            <tr>
+              <th>Inst</th>
+              <th>Due amount</th>
+              <th>Payment amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of item.rows" [class.first]="row.first">
+              <td class="inst">{{row.label}}</td>
+              <td class="due">{{money(row.due)}}</td>
+              <td class="pay" *ngIf="item.hasPayment">{{money(row.pay)}}</td>
+              <td class="missing" *ngIf="!item.hasPayment">Not set</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="foot">
+        <span class="due">Due {{money(item.dueTotal)}}</span>
+        <span class="pay" *ngIf="item.hasPayment">Payment {{money(item.payTotal)}}</span>
+        <span class="missing" *ngIf="!item.hasPayment">Payment not set</span>
+      </div>
+    </article>
+  </div>
+
+  <div class="empty-note" *ngIf="!loading && !filtered.length">
+    No schemes match these filters.
+  </div>
+</div>

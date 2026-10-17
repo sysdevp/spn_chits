@@ -1,0 +1,99 @@
+<div class="sg-hero">
+  <h1>{{ title }}</h1>
+  <p>{{ subtitle }}</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="isSuperAdmin">
+      <label>Company</label>
+      <select [(ngModel)]="f.tenant_id" (change)="companyChg()">
+        <option value="">Select Company</option>
+        <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name }}</option>
+      </select>
+    </div>
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id">
+        <option value="0">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div><label>Month</label><input type="month" [(ngModel)]="f.month" /></div>
+    <div>
+      <label>Status</label>
+      <select [(ngModel)]="f.status">
+        <option value="">All</option>
+        <option value="Paid">Paid</option>
+        <option value="Not Paid">Not Paid</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" [disabled]="loading" (click)="onSubmit()">{{ loading ? 'Loading...' : 'Search' }}</button>
+      <button type="button" class="sg-btn light" (click)="exportExcel()">Excel</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-kpis">
+  <div class="sr-kpi"><span>{{ mode === 'final' ? 'Final closed' : 'Promised' }} customers</span><b>{{ totals.count }}</b></div>
+  <div class="sr-kpi blue"><span>Scheme value</span><b>{{ money(totals.scheme_value) }}</b></div>
+  <div class="sr-kpi gold"><span>Due this month</span><b>{{ money(totals.slab_payment) }}</b></div>
+  <div class="sr-kpi"><span>Collected</span><b>{{ money(totals.paid) }}</b></div>
+  <div class="sr-kpi rose"><span>Paid / Not paid</span><b>{{ totals.paidCount }} / {{ totals.count - totals.paidCount }}</b></div>
+</div>
+
+<div class="sr-tabs">
+  <button type="button" [class.on]="view === 'calendar'" (click)="view = 'calendar'"><i class="fa fa-calendar"></i> Calendar view</button>
+  <button type="button" [class.on]="view === 'table'" (click)="view = 'table'"><i class="fa fa-table"></i> Table view</button>
+  <button type="button" *ngIf="selectedDay" (click)="selectedDay = ''">Clear day {{ selectedDay | date:'dd MMM' }} ✕</button>
+</div>
+
+<div class="sg-card" *ngIf="view === 'calendar'">
+  <div class="cal">
+    <div class="cal-h" *ngFor="let d of weekDays">{{ d }}</div>
+    <ng-container *ngFor="let w of weeks">
+      <div *ngFor="let c of w" class="cal-d" [class.off]="!c" [class.has]="c && dayRows(c.date).length"
+        [class.sel]="c && c.date === selectedDay" [class.today]="c && c.today" (click)="pickDay(c)">
+        <ng-container *ngIf="c">
+          <span class="cal-n">{{ c.day }}</span>
+          <div class="cal-e" *ngFor="let r of dayRows(c.date) | slice:0:3" [class.np]="r.status !== 'Paid'"
+            [title]="r.name + ' · ' + r.spn_number + ' · ' + r.status">{{ r.name }} · {{ money(r.slab_payment) }}</div>
+          <div class="cal-more" *ngIf="dayRows(c.date).length > 3">+{{ dayRows(c.date).length - 3 }} more</div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+  <div class="sg-note">Click a day to see all its customers below. Green = paid, red = not paid.</div>
+</div>
+
+<div class="sg-card" style="overflow:auto" *ngIf="view === 'table' || selectedDay">
+  <div class="sr-title" *ngIf="selectedDay">Customers on {{ selectedDay | date:'dd MMM yyyy' }}</div>
+  <table class="sg-table" *ngIf="rows.length">
+    <thead><tr>
+      <th>#</th><th>Date</th><th>Customer</th><th>Branch</th><th>SPN No</th><th>Scheme</th><th>Slab</th>
+      <th>Joined</th><th>Agent</th><th>Running</th><th>{{ mode === 'final' ? 'Final month' : 'Promised month' }}</th>
+      <th class="sr-right">Due</th><th class="sr-right">Paid</th><th>Status</th>
+    </tr></thead>
+    <tbody>
+      <tr *ngFor="let r of rows; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ r.event_date | date:'dd/MM/yyyy' }}</td>
+        <td>{{ r.name }} <span class="spn-prized-tag sm" *ngIf="r.prized_status == 1">SPN Prized</span>
+          <div class="sg-note" style="margin:0">{{ r.customer_id }} · {{ r.mobile }}</div></td>
+        <td>{{ r.branch_name || '-' }}</td>
+        <td>{{ r.spn_number }}</td>
+        <td>{{ r.scheme_name || '-' }}<div class="sg-note" style="margin:0">{{ money(r.scheme_value) }}</div></td>
+        <td>{{ r.slab_name || '-' }}</td>
+        <td>{{ r.joining_date | date:'dd/MM/yyyy' }}</td>
+        <td>{{ r.agent || '-' }}</td>
+        <td>{{ r.running_month }}</td>
+        <td>{{ r.promised_or_final_month | date:'MMM yyyy' }}</td>
+        <td class="sr-right">{{ money(r.slab_payment) }}</td>
+        <td class="sr-right">{{ money(r.paid_amount) }}</td>
+        <td [class.sr-green]="r.status === 'Paid'" [class.sr-red]="r.status !== 'Paid'">{{ r.status }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !rows.length">No records found for this month.</div>
+</div>

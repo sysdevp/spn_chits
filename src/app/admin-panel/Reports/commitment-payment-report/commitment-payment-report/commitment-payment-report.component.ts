@@ -318,7 +318,7 @@ export class CommitmentPaymentReportComponent implements OnInit {
           },0);*/
         } else {
           this.nodataFoundMessage=true;
-          this.appService.showAlert("Commitment Payment Report", response.msg, "error");
+          this.appService.showAlert("Prized Payment Report", response.msg, "error");
         }
       }
       else{
@@ -326,16 +326,16 @@ export class CommitmentPaymentReportComponent implements OnInit {
         this.nodataFoundMessage=false;
       }
       } catch (err) { 
-        this.appService.showAlert("Commitment Payment Report", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Prized Payment Report", 'Sorry!! Something went wrong!', "error");
       }
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Payment Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Payment Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -503,22 +503,22 @@ export class CommitmentPaymentReportComponent implements OnInit {
           this.ChequeGroup.get('cheque_debit_to').setValue(0);
           this.onSubmit();
         } else { 
-          this.appService.showAlert("Commitment Payment Report", response.msg, "error");
+          this.appService.showAlert("Prized Payment Report", response.msg, "error");
         }
       } catch (err) {
         this.disableChequeBtn = false;
         if (err.status == 401) {
-          this.appService.showAlert("Commitment Payment Report", 'Sorry!! Something went wrong!', "error");
+          this.appService.showAlert("Prized Payment Report", 'Sorry!! Something went wrong!', "error");
         }
       }
     }, (err: any) => {
       this.disableChequeBtn = false;
       this.SubmitChequeButtonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Payment Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Payment Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }

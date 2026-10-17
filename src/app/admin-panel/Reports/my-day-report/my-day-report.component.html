@@ -1,0 +1,77 @@
+<div class="sg-hero">
+  <h1>My Day Report</h1>
+  <p>Income and expenses for one day, cash and bank separately, branch-wise. (Layout can be finalised to the client's design.)</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id" (change)="load()">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div><label>Date</label><input type="date" [(ngModel)]="f.date" (change)="load()" /></div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn light" (click)="shift(-1)">‹ Prev day</button>
+      <button type="button" class="sg-btn light" (click)="shift(1)">Next day ›</button>
+      <button type="button" class="sg-btn" (click)="load()">{{ loading ? 'Loading...' : 'Refresh' }}</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+      <button type="button" class="sg-btn light" (click)="print()">Print</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-kpis">
+  <div class="sr-kpi"><span>Income · cash</span><b>{{ money(totals.income_cash) }}</b></div>
+  <div class="sr-kpi blue"><span>Income · bank</span><b>{{ money(totals.income_bank) }}</b></div>
+  <div class="sr-kpi rose"><span>Expense · cash</span><b>{{ money(totals.expense_cash) }}</b></div>
+  <div class="sr-kpi rose"><span>Expense · bank</span><b>{{ money(totals.expense_bank) }}</b></div>
+  <div class="sr-kpi gold"><span>Net cash in hand</span><b>{{ money(totals.net_cash) }}</b></div>
+  <div class="sr-kpi violet"><span>Net bank</span><b>{{ money(totals.net_bank) }}</b></div>
+</div>
+
+<div class="sr-split">
+  <div class="sg-card">
+    <div class="sr-title">Income</div>
+    <table class="sg-table">
+      <thead><tr><th>Head</th><th class="sr-right">Cash</th><th class="sr-right">Bank</th><th class="sr-right">Total</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let l of side('income')"><td>{{ l.category }} <small>({{ l.count }})</small></td>
+          <td class="sr-right">{{ money(l.cash) }}</td><td class="sr-right">{{ money(l.bank) }}</td><td class="sr-right"><b>{{ money(l.cash + l.bank) }}</b></td></tr>
+        <tr *ngIf="!side('income').length"><td colspan="4" class="sg-empty">No income</td></tr>
+      </tbody>
+      <tfoot><tr><th>Total</th><th class="sr-right">{{ money(totals.income_cash) }}</th><th class="sr-right">{{ money(totals.income_bank) }}</th><th class="sr-right sr-green">{{ money(totals.income) }}</th></tr></tfoot>
+    </table>
+  </div>
+  <div class="sg-card">
+    <div class="sr-title">Expenses</div>
+    <table class="sg-table">
+      <thead><tr><th>Head</th><th class="sr-right">Cash</th><th class="sr-right">Bank</th><th class="sr-right">Total</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let l of side('expense')"><td>{{ l.category }} <small>({{ l.count }})</small></td>
+          <td class="sr-right">{{ money(l.cash) }}</td><td class="sr-right">{{ money(l.bank) }}</td><td class="sr-right"><b>{{ money(l.cash + l.bank) }}</b></td></tr>
+        <tr *ngIf="!side('expense').length"><td colspan="4" class="sg-empty">No expenses</td></tr>
+      </tbody>
+      <tfoot><tr><th>Total</th><th class="sr-right">{{ money(totals.expense_cash) }}</th><th class="sr-right">{{ money(totals.expense_bank) }}</th><th class="sr-right sr-red">{{ money(totals.expense) }}</th></tr></tfoot>
+    </table>
+  </div>
+</div>
+
+<div class="sr-insight" *ngIf="totals.pending_approvals">{{ totals.pending_approvals }} cash box entr{{ totals.pending_approvals === 1 ? 'y is' : 'ies are' }} still waiting for admin approval and are not counted above.</div>
+
+<div class="sg-card" style="overflow:auto">
+  <div class="sr-title">All entries of the day</div>
+  <table class="sg-table" *ngIf="entries.length">
+    <thead><tr><th>Type</th><th>Head</th><th>Mode</th><th>Branch</th><th>Reference</th><th>By</th><th class="sr-right">Amount</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let e of entries">
+        <td [class.sr-green]="e.kind === 'income'" [class.sr-red]="e.kind !== 'income'">{{ e.kind === 'income' ? 'Income' : 'Expense' }}</td>
+        <td>{{ e.category }}</td><td>{{ e.mode }}</td><td>{{ e.branch_name }}</td><td>{{ e.ref }}</td><td>{{ e.employee_name || '-' }}</td>
+        <td class="sr-right">{{ money(e.amount) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !entries.length">No entries on this day.</div>
+</div>

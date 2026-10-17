@@ -1,0 +1,176 @@
+<div class="sg-hero">
+  <h1>{{ title }}</h1>
+  <p *ngIf="tab === 'box'">Receipt cash is added automatically. Payouts and manual cash entries move the cash box only after admin approval.</p>
+  <p *ngIf="tab === 'approvals'">Every payout and cash entry waiting for admin approval — who requested it and who approved it.</p>
+  <p *ngIf="tab === 'income'">Collection cash, RF cash and my cash — each box separately, day by day, on one page.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div><label>From</label><input type="date" [(ngModel)]="f.from_date" /></div>
+    <div><label>To</label><input type="date" [(ngModel)]="f.to_date" /></div>
+    <div>
+      <label>Mode</label>
+      <select [(ngModel)]="f.mode">
+        <option value="">Cash + Bank</option>
+        <option value="cash">Cash only</option>
+        <option value="bank">Bank only</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" (click)="load()">{{ loading ? 'Loading...' : 'Search' }}</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+      <button type="button" class="sg-btn light" *ngIf="tab === 'box'" (click)="showForm = !showForm">+ Cash entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="sg-card" *ngIf="showForm && tab === 'box'">
+  <div class="sr-title">New cash entry (goes to admin approval)</div>
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="entry.branch_id">
+        <option value="">Select</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Type</label>
+      <select [(ngModel)]="entry.direction">
+        <option value="in">Cash in (my cash)</option>
+        <option value="out">Cash out</option>
+      </select>
+    </div>
+    <div>
+      <label>Mode</label>
+      <select [(ngModel)]="entry.mode"><option value="cash">Cash</option><option value="bank">Bank</option></select>
+    </div>
+    <div><label>Date</label><input type="date" [(ngModel)]="entry.entry_date" /></div>
+    <div><label>Amount</label><input type="number" [(ngModel)]="entry.amount" /></div>
+    <div><label>For</label><input type="text" [(ngModel)]="entry.title" placeholder="e.g. Opening cash, bank deposit" /></div>
+    <div><label>Remarks</label><input type="text" [(ngModel)]="entry.remarks" /></div>
+    <div style="display:flex;gap:8px"><button type="button" class="sg-btn" (click)="submitEntry()">Send for approval</button></div>
+  </div>
+</div>
+
+<!-- Totals -->
+<div class="sr-kpis" *ngIf="tab !== 'approvals'">
+  <div class="sr-kpi"><span>Income</span><b>{{ money(data.summary.income) }}</b></div>
+  <div class="sr-kpi rose"><span>Out (approved)</span><b>{{ money(data.summary.expense) }}</b></div>
+  <div class="sr-kpi blue"><span>Cash box balance</span><b>{{ money(data.summary.balance) }}</b></div>
+  <div class="sr-kpi gold"><span>Waiting approval</span><b>{{ data.summary.pending_count || 0 }} · {{ money(data.summary.pending_amount) }}</b></div>
+</div>
+
+<!-- Income cash box: three boxes -->
+<ng-container *ngIf="tab === 'income' || tab === 'box'">
+  <div class="sr-kpis">
+    <div class="sr-kpi" style="cursor:pointer" (click)="kindFilter = kindFilter === 'collection' ? '' : 'collection'"><span>Collection cash</span><b>{{ money(data.summary.cash?.collection) }}</b><small>Bank {{ money(data.summary.bank?.collection) }}</small></div>
+    <div class="sr-kpi violet" style="cursor:pointer" (click)="kindFilter = kindFilter === 'rf' ? '' : 'rf'"><span>RF cash</span><b>{{ money(data.summary.cash?.rf) }}</b><small>Bank {{ money(data.summary.bank?.rf) }}</small></div>
+    <div class="sr-kpi gold" style="cursor:pointer" (click)="kindFilter = kindFilter === 'mycash' ? '' : 'mycash'"><span>My cash</span><b>{{ money(data.summary.cash?.mycash) }}</b><small>Bank {{ money(data.summary.bank?.mycash) }}</small></div>
+    <div class="sr-kpi blue"><span>Other / petty income</span><b>{{ money((data.summary.cash?.other || 0) + (data.summary.cash?.petty || 0)) }}</b></div>
+  </div>
+</ng-container>
+
+<div class="sg-card" style="overflow:auto" *ngIf="tab === 'income'">
+  <div class="sr-title">Day-wise income cash box</div>
+  <table class="sg-table" *ngIf="data.days?.length">
+    <thead><tr><th>Date</th><th class="sr-right">Collection</th><th class="sr-right">RF</th><th class="sr-right">My cash</th><th class="sr-right">Other</th>
+      <th class="sr-right">Total income</th><th class="sr-right">Out</th><th class="sr-right">Running balance</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let d of data.days">
+        <td>{{ d.date | date:'dd/MM/yyyy' }}</td>
+        <td class="sr-right">{{ money(d.collection) }}</td>
+        <td class="sr-right">{{ money(d.rf) }}</td>
+        <td class="sr-right">{{ money(d.mycash) }}</td>
+        <td class="sr-right">{{ money(d.other) }}</td>
+        <td class="sr-right sr-green">{{ money(d.income) }}</td>
+        <td class="sr-right sr-red">{{ money(d.expense) }}</td>
+        <td class="sr-right"><b>{{ money(d.balance) }}</b></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!data.days?.length">No money movement in this period.</div>
+</div>
+
+<!-- Approvals -->
+<div class="sg-card" style="overflow:auto" *ngIf="tab === 'approvals' || (tab === 'box' && data.pending?.length)">
+  <div class="sr-title">Waiting for admin approval ({{ data.pending?.length || 0 }})</div>
+  <table class="sg-table" *ngIf="data.pending?.length">
+    <thead><tr><th>Date</th><th>Type</th><th>For</th><th>Branch</th><th>Mode</th><th class="sr-right">Amount</th><th>Requested by</th><th *ngIf="isAdmin">Action</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let p of data.pending">
+        <td>{{ p.entry_date | date:'dd/MM/yyyy' }}</td>
+        <td><span [class.sr-green]="p.direction === 'in'" [class.sr-red]="p.direction === 'out'">{{ p.direction === 'in' ? 'In' : 'Out' }}</span> · {{ sourceLabel(p.source) }}</td>
+        <td>{{ p.title }}<div class="sg-note" style="margin:0" *ngIf="p.remarks">{{ p.remarks }}</div></td>
+        <td>{{ p.branch_name }}</td>
+        <td>{{ p.mode }}</td>
+        <td class="sr-right">{{ money(p.amount) }}</td>
+        <td>{{ p.requested_by_name }}<div class="sg-note" style="margin:0">{{ p.created_at | slice:0:16 }}</div></td>
+        <td *ngIf="isAdmin" style="min-width:230px">
+          <input type="text" class="pd-input" [(ngModel)]="remarks[p.id]" placeholder="Remarks (required to reject)" style="width:100%;margin-bottom:4px" />
+          <button type="button" class="sg-btn" (click)="decide(p, 'approve')">Approve</button>
+          <button type="button" class="sg-btn light" (click)="decide(p, 'reject')">Reject</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!data.pending?.length">Nothing waiting for approval.</div>
+  <div class="sg-note" *ngIf="!isAdmin">Only admin logins can approve.</div>
+</div>
+
+<div class="sg-card" style="overflow:auto" *ngIf="tab === 'approvals'">
+  <div class="sr-title">Approval history</div>
+  <table class="sg-table" *ngIf="data.history?.length">
+    <thead><tr><th>Date</th><th>Type</th><th>For</th><th>Branch</th><th class="sr-right">Amount</th><th>Requested by</th><th>Decision</th><th>Approved / rejected by</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let h of data.history">
+        <td>{{ h.entry_date | date:'dd/MM/yyyy' }}</td>
+        <td>{{ h.direction === 'in' ? 'In' : 'Out' }} · {{ sourceLabel(h.source) }}</td>
+        <td>{{ h.title }}</td>
+        <td>{{ h.branch_name }}</td>
+        <td class="sr-right">{{ money(h.amount) }}</td>
+        <td>{{ h.requested_by_name }}</td>
+        <td [class.sr-green]="h.status === 'approved'" [class.sr-red]="h.status === 'rejected'">{{ h.status }}<div class="sg-note" style="margin:0" *ngIf="h.approval_remarks">{{ h.approval_remarks }}</div></td>
+        <td>{{ h.approved_by_name || '-' }}<div class="sg-note" style="margin:0">{{ h.approved_at | slice:0:16 }}</div></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!data.history?.length">No decisions in this period.</div>
+</div>
+
+<!-- Ledger -->
+<div class="sg-card" style="overflow:auto" *ngIf="tab !== 'approvals'">
+  <div class="sr-tabs">
+    <button type="button" [class.on]="!kindFilter" (click)="kindFilter = ''">All</button>
+    <button type="button" [class.on]="kindFilter === 'income'" (click)="kindFilter = 'income'">Income</button>
+    <button type="button" [class.on]="kindFilter === 'expense'" (click)="kindFilter = 'expense'">Out</button>
+    <button type="button" [class.on]="kindFilter === 'collection'" (click)="kindFilter = 'collection'">Collection</button>
+    <button type="button" [class.on]="kindFilter === 'rf'" (click)="kindFilter = 'rf'">RF</button>
+    <button type="button" [class.on]="kindFilter === 'mycash'" (click)="kindFilter = 'mycash'">My cash</button>
+    <button type="button" [class.on]="kindFilter === 'payout'" (click)="kindFilter = 'payout'">Payouts</button>
+  </div>
+  <table class="sg-table" *ngIf="entries.length">
+    <thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Mode</th><th>Branch</th><th>Reference</th><th>By</th><th class="sr-right">Amount</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let e of entries | slice:0:500">
+        <td>{{ e.date | date:'dd/MM/yyyy' }}</td>
+        <td [class.sr-green]="e.kind === 'income'" [class.sr-red]="e.kind !== 'income'">{{ e.kind === 'income' ? 'In' : 'Out' }}</td>
+        <td>{{ e.category }}</td>
+        <td>{{ e.mode }}</td>
+        <td>{{ e.branch_name }}</td>
+        <td>{{ e.ref }}</td>
+        <td>{{ e.employee_name || '-' }}</td>
+        <td class="sr-right">{{ money(e.amount) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!entries.length">No entries for this filter.</div>
+</div>

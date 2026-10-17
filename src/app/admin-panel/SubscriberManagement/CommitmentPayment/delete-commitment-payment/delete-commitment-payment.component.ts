@@ -36,7 +36,7 @@ export class DeleteCommitmentPaymentComponent implements OnInit {
     const resultData = Object.assign({}, this.DeleteCommitmentPayment.value);
     swal({
       title: "Are you sure?",
-      text: "You are deleting the Commitment Payment detail.",
+      text: "You are deleting the Prized Payment detail.",
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -49,14 +49,14 @@ export class DeleteCommitmentPaymentComponent implements OnInit {
           try {
             this.router.navigate(['/admin-panel/view-commitment-payment']);
           } catch (err) {
-            this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
           }
         }, (err: any) => {
           if (err.status == 401) {
-            this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
           }
           else {
-            this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
           }
         });
       }

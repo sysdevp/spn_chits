@@ -1,0 +1,256 @@
+<div class="card maz-vh pred-report-root">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="font-weight-bold">Collection Prediction Report</span>
+    <span class="ai-brand small">Analysed by Emglitz Intelligence AI</span>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="loadReport()" class="mb-4 p-3 rounded" style="background: #f3f4fb; border: 1px solid #c5cae9">
+      <div class="form-group row" *ngIf="isSuperAdmin">
+        <label class="col-md-2 col-form-label">Company <span class="text-danger">*</span></label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select company</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name || c.company_name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-md-2 col-form-label">Branch</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="branch_id" (change)="branchChg($event)">
+            <option value="">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <label class="col-md-2 col-form-label">Customer</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="customer_id">
+            <option value="">All customers</option>
+            <option *ngFor="let c of customerList" [value]="c.id">{{ c.customer_name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row mb-0">
+        <label class="col-md-2 col-form-label">Collection area</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="area_id">
+            <option value="">All areas</option>
+            <option *ngFor="let a of areaList" [value]="a.id">{{ a.collection_area }}</option>
+          </select>
+        </div>
+        <label class="col-md-2 col-form-label">Employee</label>
+        <div class="col-md-4">
+          <select class="form-control" formControlName="employee_id">
+            <option value="">All employees</option>
+            <option *ngFor="let e of employeeList" [value]="e.id">{{ e.employee_name }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="mt-3">
+        <button type="submit" class="btn btn-primary px-4" [disabled]="loading">
+          {{ loading ? 'Analysing…' : 'Run prediction' }}
+        </button>
+      </div>
+      <div *ngIf="submitted && f.tenant_id.errors" class="text-danger small mt-2">Company is required.</div>
+    </form>
+
+    <div *ngIf="loading" class="text-center text-muted py-2">Checking live commitment data…</div>
+
+    <div *ngIf="report">
+      <div class="alert alert-warning small" *ngIf="previewMode">
+        <strong>Emglitz Intelligence AI preview.</strong>
+        This is sample commitment-chit analysis so you can see the report. Live numbers replace it when the prediction service returns customers.
+      </div>
+      <p class="small text-muted mb-1">Chit customers only. Analysed by <strong>Emglitz Intelligence AI</strong>.</p>
+      <p class="small text-muted mb-3">
+        Period: <strong>{{ report.period.month_label }}</strong> —
+        data up to <strong>{{ report.period.to_date }}</strong>
+        ({{ report.period.days_elapsed }} day(s) elapsed, {{ report.period.working_days_remaining }} working day(s) left)
+        — mode: <strong>{{ report.period.prediction_mode === 'remainder_forecast' ? 'Remainder forecast' : 'Full month blend' }}</strong>
+      </p>
+
+      <div class="row mb-3">
+        <div class="col-md-6 col-lg-3 mb-2">
+          <div class="pred-kpi pred-kpi-a">
+            <div class="pred-kpi-label">Collected (MTD)</div>
+            <div class="pred-kpi-value">₹ {{ num(report.summary.collected_mtd) | number:'1.0-0' }}</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-2">
+          <div class="pred-kpi pred-kpi-b">
+            <div class="pred-kpi-label">Pending outstanding</div>
+            <div class="pred-kpi-value">₹ {{ num(report.summary.pending_total) | number:'1.0-0' }}</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-2">
+          <div class="pred-kpi pred-kpi-c">
+            <div class="pred-kpi-label">Predicted remaining</div>
+            <div class="pred-kpi-value">₹ {{ num(report.summary.predicted_remaining) | number:'1.0-0' }}</div>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3 mb-2">
+          <div class="pred-kpi pred-kpi-d">
+            <div class="pred-kpi-label">Predicted month total</div>
+            <div class="pred-kpi-value">₹ {{ num(report.summary.predicted_month_total) | number:'1.0-0' }}</div>
+            <small>Confidence ~{{ report.summary.confidence_pct }}%</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="pred-section-title">Live location — call and visit</div>
+      <div *ngIf="report.field_calls && report.field_calls.length">
+        <div class="pred-suggestion-box pred-suggestion-priority-high" *ngFor="let call of report.field_calls">
+          <strong>{{ call.employee_name }}</strong> is currently at <strong>{{ call.location_name }}</strong>
+          <span class="text-muted">({{ call.seen_at }})</span>.
+          Please call<span *ngIf="call.mobile"> {{ call.mobile }}</span> and ask them to visit
+          <strong>{{ call.customer_name }}</strong>
+          <span *ngIf="call.ar_no">({{ call.ar_no }})</span>
+          <span *ngIf="call.area_name"> in {{ call.area_name }}</span>.
+          <span *ngIf="call.pending"> Pending ₹{{ call.pending | number:'1.0-0' }}.</span>
+          <a *ngIf="call.maps_link" class="ml-2" [href]="call.maps_link" target="_blank">Open map</a>
+        </div>
+      </div>
+
+      <div class="pred-section-title">Emglitz Intelligence AI suggestions</div>
+      <div class="pred-suggestion-box" *ngIf="report.agent_attendance">
+        <strong>Employee attendance:</strong> {{ report.agent_attendance.message }}
+        <span class="ml-2 text-muted small" *ngIf="report.agent_attendance.total_agents > 0">
+          ({{ report.agent_attendance.attendance_pct }}% present · ~{{ report.agent_attendance.estimated_capacity_pct }}% field capacity)
+        </span>
+      </div>
+      <div class="pred-suggestion-box" *ngIf="report.suggestions && report.suggestions.length">
+        <ul class="mb-0">
+          <li *ngFor="let s of report.suggestions"
+              [class.pred-suggestion-priority-high]="s.priority === 'high'"
+              [class.pred-suggestion-priority-medium]="s.priority === 'medium'"
+              [class.pred-suggestion-priority-low]="s.priority === 'low'">
+            {{ s.message }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="pred-section-title">Prediction factors</div>
+      <div class="table-responsive mb-3">
+        <table class="table table-sm table-bordered bg-white">
+          <thead>
+            <tr><th>Factor</th><th>Impact</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let factor of report.factor_impact">
+              <td>{{ factor.label }}</td>
+              <td><span class="factor-badge">{{ factor.impact }}</span></td>
+              <td class="small">{{ factor.note }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-info small" *ngIf="report.weather">
+        <strong>Weather ({{ report.weather.provider }}):</strong> {{ report.weather.summary }}
+      </div>
+
+      <div class="pred-section-title" *ngIf="report.weather && report.weather.by_area && report.weather.by_area.length">Area-wise rain plan (8am–7pm collection hours)</div>
+      <div *ngIf="report.weather && report.weather.by_area && report.weather.by_area.length">
+        <div class="pred-weather-area-card" *ngFor="let aw of report.weather.by_area">
+          <strong>{{ aw.area_name }}</strong>
+          <ul class="mb-1 mt-2 small pl-3" *ngIf="aw.best_collection_slots_today && aw.best_collection_slots_today.length">
+            <li *ngFor="let slot of aw.best_collection_slots_today">{{ slot }}</li>
+          </ul>
+          <div *ngIf="aw.today_rainy_windows && aw.today_rainy_windows.length">
+            <div class="small text-danger font-weight-bold mb-1">Today — avoid these hours:</div>
+            <ul class="mb-0 small pl-3">
+              <li *ngFor="let w of aw.today_rainy_windows">{{ w.suggestion }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="pred-section-title" *ngIf="report.external_tn_holidays && report.external_tn_holidays.length">Tamil Nadu holidays this month</div>
+      <div class="table-responsive mb-3" *ngIf="report.external_tn_holidays && report.external_tn_holidays.length">
+        <table class="table table-sm table-bordered bg-white">
+          <thead><tr><th>Date</th><th>Event</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let h of report.external_tn_holidays">
+              <td>{{ h.date }}</td><td>{{ h.event_name }}</td><td class="small">{{ h.source }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pred-section-title" *ngIf="report.agent_leave_summary && report.agent_leave_summary.length">Employee leave</div>
+      <div class="table-responsive mb-3" *ngIf="report.agent_leave_summary && report.agent_leave_summary.length">
+        <table class="table table-sm table-bordered bg-white">
+          <thead><tr><th>Employee</th><th>Leave days</th><th>Capacity</th><th>Suggestions</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let a of report.agent_leave_summary">
+              <td>{{ a.agent_name }}</td>
+              <td>{{ a.leave_days_mtd }}</td>
+              <td>{{ (a.factor * 100) | number:'1.0-0' }}%</td>
+              <td class="small">
+                <ul class="pred-customer-tip mb-0 pl-3" *ngIf="a.suggestions && a.suggestions.length">
+                  <li *ngFor="let tip of a.suggestions">{{ tip }}</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mb-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary tab-btn" [class.active]="activeTab === 'customer'" (click)="setTab('customer')">By customer</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary tab-btn" [class.active]="activeTab === 'area'" (click)="setTab('area')">By area</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary tab-btn" [class.active]="activeTab === 'agent'" (click)="setTab('agent')">By employee</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary tab-btn" [class.active]="activeTab === 'branch'" (click)="setTab('branch')">By branch</button>
+      </div>
+
+      <div class="pred-table-wrap" *ngIf="activeTab === 'customer'">
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr>
+              <th>Customer</th><th>AR</th><th>Area</th><th>Employee</th><th>Pay type</th>
+              <th>Avg delay (days)</th><th>MTD coll.</th><th>Pending</th><th>Predicted rem.</th><th>Prob. %</th><th>Suggestions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of report.by_customer">
+              <td>{{ r.customer_name }}</td>
+              <td>{{ r.ar_no }}</td>
+              <td>{{ r.area_name }}</td>
+              <td>{{ r.agent_name }}</td>
+              <td>{{ r.payment_type_label }}</td>
+              <td>{{ r.avg_payment_delay_days }}<span class="text-muted small d-block" *ngIf="r.typical_payment_day">~day {{ r.typical_payment_day }}</span></td>
+              <td>{{ r.collected_mtd | number:'1.0-0' }}</td>
+              <td>{{ r.pending_amount | number:'1.0-0' }}</td>
+              <td><strong>{{ r.predicted_remaining | number:'1.0-0' }}</strong></td>
+              <td>{{ r.collection_probability_pct }}%</td>
+              <td>
+                <ul class="pred-customer-tip mb-0 pl-3" *ngIf="r.suggestions && r.suggestions.length">
+                  <li *ngFor="let tip of r.suggestions">{{ tip }}</li>
+                </ul>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pred-table-wrap" *ngIf="activeTab !== 'customer'">
+        <table class="table table-striped table-sm">
+          <thead>
+            <tr><th>Name</th><th>MTD collected</th><th>Pending</th><th>Predicted remaining</th><th>Predicted month total</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of tabRows()">
+              <td>{{ r.area_name || r.agent_name || r.branch_name }}</td>
+              <td>{{ r.collected_mtd | number:'1.0-0' }}</td>
+              <td>{{ r.pending_amount | number:'1.0-0' }}</td>
+              <td><strong>{{ r.predicted_remaining | number:'1.0-0' }}</strong></td>
+              <td>{{ r.predicted_month_total | number:'1.0-0' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="small text-muted mt-3" *ngIf="report.notes">{{ report.notes.ai_method }}</p>
+    </div>
+  </div>
+</div>

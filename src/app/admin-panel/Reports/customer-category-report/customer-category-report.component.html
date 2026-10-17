@@ -1,0 +1,70 @@
+<div class="cc-hero">
+  <h1>Customer Category</h1>
+  <p>Who are Excellent, Good, Medium and Bad customers — based on paid vs pending amount and late installments.</p>
+</div>
+
+<div class="cc-filters">
+  <div>
+    <label>Branch</label>
+    <select [(ngModel)]="branchId" (change)="load()">
+      <option value="">All Branches</option>
+      <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+    </select>
+  </div>
+  <div>
+    <label>Scheme</label>
+    <select [(ngModel)]="schemeId" (change)="load()">
+      <option value="">All Schemes</option>
+      <option *ngFor="let s of schemeList" [value]="s.id">{{ s.chit_value }} / {{ s.no_of_months }} Months</option>
+    </select>
+  </div>
+  <div>
+    <label>Category</label>
+    <select [(ngModel)]="grade" (change)="load()">
+      <option value="">All Categories</option>
+      <option *ngFor="let g of grades" [value]="g.label">{{ g.label }} ({{ g.min }} - {{ g.max }})</option>
+    </select>
+  </div>
+  <button type="button" class="cc-btn" (click)="load()" [disabled]="loading">{{ loading ? 'Loading...' : 'Filter' }}</button>
+  <button type="button" class="cc-btn light" (click)="exportCsv()">Excel</button>
+</div>
+
+<div class="cc-kpis">
+  <div class="cc-kpi k-all" [class.active]="!grade" (click)="grade = ''; load()">
+    <span>All Customers</span><b>{{ total }}</b><small>Active chit customers</small>
+  </div>
+  <div class="cc-kpi" *ngFor="let g of grades" [ngClass]="'k-' + g.label" [class.active]="grade === g.label" (click)="pick(g.label)">
+    <span>{{ g.label }}</span><b>{{ summary[g.label] || 0 }}</b><small>Score {{ g.min }} - {{ g.max }}</small>
+  </div>
+</div>
+
+<div class="cc-table">
+  <table>
+    <thead>
+      <tr>
+        <th>S.No</th><th>Customer</th><th>Mobile</th><th>Branch</th><th>Schemes</th><th>Chits</th>
+        <th>Paid</th><th>Pending</th><th>Late Dues</th><th>Score</th><th>Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of rows">
+        <td>{{ r.sno }}</td>
+        <td>{{ r.customer }} <small class="text-muted" *ngIf="r.customer_code">({{ r.customer_code }})</small></td>
+        <td>{{ r.mobile }}</td>
+        <td>{{ r.branch }}</td>
+        <td>{{ r.schemes }}</td>
+        <td>{{ r.chits }}</td>
+        <td>{{ money(r.paid) }}</td>
+        <td>{{ money(r.pending) }}</td>
+        <td>{{ r.late_installments }}</td>
+        <td><b>{{ r.score }}</b></td>
+        <td><span class="pill" [ngClass]="'g-' + r.grade">{{ r.grade }}</span></td>
+      </tr>
+      <tr *ngIf="!rows.length && !loading"><td colspan="11" class="cc-empty">No customers for this filter.</td></tr>
+    </tbody>
+  </table>
+  <div class="cc-rule">
+    Score starts at 1000. Pending penalty = pending ÷ (paid + pending) × 400. Late penalty = 20 per late due + 1 per late day (max 10 days per due), capped at 400.
+    <a routerLink="/admin-panel/customer-score-rules">See full rules</a>
+  </div>
+</div>

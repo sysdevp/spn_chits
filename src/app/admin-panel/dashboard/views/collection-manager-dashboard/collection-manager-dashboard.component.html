@@ -6,12 +6,17 @@
   </div>
   <div class="rd-kpi accent-gold">
     <div class="rd-kpi-label">Collection Target</div>
-    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-value">₹ {{ n(s().collection_target || s().monthly_target) | number:'1.0-0' }}</div>
   </div>
   <div class="rd-kpi accent-teal">
     <div class="rd-kpi-label">Achievement %</div>
-    <div class="rd-kpi-value">—</div>
-    <div class="rd-kpi-note">Placeholder</div>
+    <div class="rd-kpi-value">{{ n(s().collection_target_percent || s().monthly_target_percent) }}%</div>
+    <div class="rd-kpi-note">Vs collection targets</div>
+  </div>
+  <div class="rd-kpi accent-orange">
+    <div class="rd-kpi-label">Live Tracking</div>
+    <div class="rd-kpi-value">{{ n(s().live_employee_count) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note"><a routerLink="/admin-panel/view-punch-attendance">Open route map</a></div>
   </div>
   <div class="rd-kpi accent-orange">
     <div class="rd-kpi-label">Pending Collections</div>

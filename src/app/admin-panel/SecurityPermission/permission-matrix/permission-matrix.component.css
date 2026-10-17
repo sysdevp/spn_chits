@@ -1,0 +1,44 @@
+.pm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f4f8fc;
+  border: 1px solid #dbe6f1;
+  border-radius: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.pm-search { position: relative; flex: 1 1 260px; }
+.pm-search i { position: absolute; left: 10px; top: 9px; color: #8a9bb0; }
+.pm-search input { padding-left: 30px; }
+.pm-count { font-size: 13px; color: #33475b; }
+.pm-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.pm-legend { display: flex; flex-wrap: wrap; gap: 18px; font-size: 12px; color: #5b6b7d; margin: 8px 2px 12px; }
+
+.pm-section { border: 1px solid #dbe6f1; border-radius: 8px; margin-bottom: 12px; overflow: hidden; background: #fff; }
+.pm-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #1f4e79; color: #fff; }
+.pm-head.pm-some { background: #2f6aa3; }
+.pm-head.pm-all { background: #16794a; }
+.pm-collapse { background: transparent; border: 0; color: #fff; width: 22px; padding: 0; }
+.pm-icon { font-size: 18px; width: 22px; text-align: center; }
+.pm-title { flex: 1; cursor: pointer; font-weight: 600; }
+.pm-title small { display: block; font-weight: 400; opacity: .85; }
+.pm-pill { background: rgba(255,255,255,.2); border-radius: 10px; padding: 1px 8px; font-size: 12px; margin-left: 6px; }
+.pm-head-btns { display: flex; gap: 4px; }
+.pm-head-btns .btn-xs { padding: 2px 8px; font-size: 12px; }
+.pm-head-btns .btn-outline-danger { color: #fff; border-color: rgba(255,255,255,.6); }
+
+.pm-table th { background: #eef3f8; font-size: 12px; text-transform: uppercase; color: #4a5b6d; }
+.pm-table td, .pm-table th { vertical-align: middle; }
+.pm-col-chk { width: 70px; text-align: center; }
+.pm-col-chk input { width: 16px; height: 16px; cursor: pointer; }
+.pm-table tr.pm-on td { background: #f0faf4; }
+.pm-table tr.pm-ov-row td.pm-col-name { font-weight: 600; }
+.pm-group td { background: #f7f9fb; font-weight: 600; color: #1f4e79; font-size: 13px; }
+.pm-route { font-size: 11px; color: #8a9bb0; }
+.pm-hint { font-size: 11px; color: #b7791f; }
+.pm-badge { display: inline-block; font-size: 10px; font-weight: 700; border-radius: 4px; padding: 1px 6px; margin-right: 4px; vertical-align: middle; }
+.pm-badge.ov { background: #e0ecff; color: #1d4ed8; }

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPN Chits – 44 Point Change Guide</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #10233f; font-size: 11.5px; line-height: 1.5; }
+  h1 { color: #0b6b3a; font-size: 24px; margin: 0 0 4px; }
+  h2 { color: #fff; background: #0b6b3a; padding: 6px 10px; font-size: 15px; margin: 22px 0 10px; border-radius: 4px; page-break-after: avoid; }
+  .sub { color: #555; margin-bottom: 14px; }
+  .pt { border: 1px solid #d7e5dc; border-left: 5px solid #18A957; border-radius: 4px; padding: 8px 10px; margin: 0 0 9px; page-break-inside: avoid; }
+  .pt h3 { margin: 0 0 4px; font-size: 13px; color: #0b6b3a; }
+  .pt .req { color: #6b4e00; background: #fff8e1; padding: 3px 6px; border-radius: 3px; margin-bottom: 5px; font-style: italic; }
+  .lbl { font-weight: 700; color: #10233f; }
+  code { background: #eef5f0; padding: 1px 4px; border-radius: 3px; font-size: 10.5px; }
+  ul { margin: 3px 0 0 18px; padding: 0; }
+  li { margin: 1px 0; }
+  table.toc { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+  table.toc td, table.toc th { border: 1px solid #d7e5dc; padding: 3px 6px; text-align: left; }
+  table.toc th { background: #eef5f0; }
+  .note { background: #eef5f0; border: 1px solid #c8dccf; padding: 8px 10px; border-radius: 4px; }
+  .flow { font-weight: 700; color: #0b6b3a; }
+</style>
+</head>
+<body>
+
+<h1>SPN Chits – 44 Point Change Guide</h1>
+<div class="sub">What was changed for each point, where to find it, and how to use it. Menu paths are from the left sidebar; URLs are relative to <code>/admin-panel/</code>.</div>
+
+<div class="note">
+  <b>Before you start</b>
+  <ul>
+    <li>After a deploy, log out and log in again so the new menus and permissions are loaded.</li>
+    <li>New database tables and columns (SPN groups, KYC verification, employee advance, payment chit-admin stage) are created automatically the first time the page is opened. No manual SQL is needed.</li>
+    <li>New menus follow the existing security permissions. If a user cannot see a menu, tick it under <b>HR &rarr; Security Permissions</b> (see point 36).</li>
+  </ul>
+</div>
+
+<h2>Summary by area</h2>
+<table class="toc">
+  <tr><th>Area</th><th>Points</th></tr>
+  <tr><td>Admin dashboard and overview pages</td><td>1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 43</td></tr>
+  <tr><td>Look and feel, logout</td><td>14, 15, 16</td></tr>
+  <tr><td>Reports</td><td>17, 18, 19, 20, 31, 32, 33, 34, 35, 38</td></tr>
+  <tr><td>Side menu renames and moves</td><td>21, 26, 27, 30, 42, 44</td></tr>
+  <tr><td>Customers, KYC, chits</td><td>22, 23, 24, 25</td></tr>
+  <tr><td>SPN group formation</td><td>28, 29</td></tr>
+  <tr><td>Payments and approval process</td><td>37, 39</td></tr>
+  <tr><td>HR (permissions, advance, attendance)</td><td>36, 40, 41</td></tr>
+</table>
+
+<h2>Admin Dashboard (points 1 – 13, 43)</h2>
+<div class="note">Every card on the MD / admin dashboard is now clickable. Each one opens a full overview page at <code>hub/&lt;section&gt;</code> with KPI cards, a branch-wise breakdown, charts and a detail table. Each overview page has a branch filter and Excel/CSV export.</div>
+
+<div class="pt"><h3>1) Today Collection – click shows data</h3>
+<div class="req">today collection if i click not showing data</div>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Today Collection</b> card (URL <code>hub/today-collection</code>).<br>
+<span class="lbl">How it works:</span> Shows today's receipts with totals by branch, by employee and by payment mode, plus a chart and the full receipt list.</div>
+
+<div class="pt"><h3>2) Sales Target – overview, top 3 branch-wise and employee-wise</h3>
+<div class="req">sales target &gt; if i click not opening ... top 3 sales branchwise and employee wise</div>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Sales Target</b> card or the Target panel's "View Details" (<code>hub/sales</code>).<br>
+<span class="lbl">How it works:</span> Target vs achieved for the month, the top 3 branches and top 3 employees by sales, a branch-wise chart and an employee-wise table.</div>
+
+<div class="pt"><h3>3) Today Enrollment – full details</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Today Enrollment</b> card (<code>hub/today-enrollment</code>).<br>
+<span class="lbl">How it works:</span> Lists every chit enrolled today: customer, scheme, slab, branch, employee and amount, with branch-wise totals.</div>
+
+<div class="pt"><h3>4) Pending Collection and 5) Overdue Collection</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Pending Collection</b> (<code>hub/pending-collection</code>) and <b>Overdue Collection</b> (<code>hub/overdue-collection</code>).<br>
+<span class="lbl">How it works:</span> Shows the pending (this month) or overdue (past months) amount per branch, then per customer with due number and amount, with a chart.</div>
+
+<div class="pt"><h3>6) All dashboard cards open a new overview page</h3>
+<span class="lbl">How it works:</span> Click any top card (collection, sales, chits, enrollment, pending, overdue, attendance). It opens a new page with branch-wise data and charts. Use the browser Back button or the sidebar to return.</div>
+
+<div class="pt"><h3>7) Top 3 Employees and Branches – why they are best</h3>
+<span class="lbl">Where:</span> The "Top Employees" and "Top Branches" boards &rarr; <b>Full Overview</b> (<code>hub/top-performers</code>).<br>
+<span class="lbl">How it works:</span> Ranks branches and employees by business (collection plus new enrollments) and by target achievement %, showing the numbers behind each rank.</div>
+
+<div class="pt"><h3>8) Live Tracking and Today Attendance – present / absent count</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Attendance</b> card (<code>hub/attendance</code>). "View Full Map" opens live tracking.<br>
+<span class="lbl">How it works:</span> Shows present and absent counts, branch-wise. Clicking opens the full employee list with punch in and punch out times.</div>
+
+<div class="pt"><h3>9) Employee birthdays – today and this month</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Birthdays</b> tile (<code>hub/birthdays</code>).<br>
+<span class="lbl">How it works:</span> Two lists: employees with a birthday today and this month, with their branch.</div>
+
+<div class="pt"><h3>10) Today Task and Today Target</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Today Tasks</b> / <b>Today Target</b> tiles (<code>hub/tasks-targets</code>).<br>
+<span class="lbl">How it works:</span> Shows tasks assigned today (open and completed) and each employee's target vs achieved, branch-wise.</div>
+
+<div class="pt"><h3>11) Today Expenses – fixed</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; Expenses panel &rarr; <b>View All</b> (<code>hub/expenses</code>).<br>
+<span class="lbl">How it works:</span> Shows only today's expense and petty-cash entries, with the head, branch and amount, and a branch-wise total.</div>
+
+<div class="pt"><h3>12) Recent Collection no longer goes to Settlement</h3>
+<span class="lbl">How it works:</span> "Recent Collections" &rarr; <b>View All</b> now opens the receipts overview (<code>hub/today-collection</code>), not the settlement screen.</div>
+
+<div class="pt"><h3>13) Settlement Approvals on the dashboard</h3>
+<span class="lbl">Where:</span> Dashboard &rarr; <b>Settlement Approvals</b> panel. "View All" opens <code>hub/settlement-approvals</code>; "Approve Settlements" opens the settlement report.<br>
+<span class="lbl">How it works:</span> Lists pending cash settlements with branch, employee and amount. Approve them from the settlement screen.</div>
+
+<div class="pt"><h3>43) Corporate Admin Panel</h3>
+<span class="lbl">Where:</span> Dashboard header &rarr; <b>Corporate</b> button (<code>hub/corporate</code>). The existing dashboard is unchanged.<br>
+<span class="lbl">How it works:</span> A company-level panel covering all branches: collection, enrollment, outstanding, staff and approvals, with a branch comparison chart. Click a branch to open its own overview (<code>branch-overview/&lt;id&gt;</code>).</div>
+
+<h2>Look and Feel (points 14 – 16)</h2>
+<div class="pt"><h3>14) Dropdown font like "Add Commitment"</h3>
+<span class="lbl">How it works:</span> Every dropdown in the software (normal selects, multi-select and searchable selects) now uses the same bold Segoe UI font as the card header buttons. No action is needed.</div>
+
+<div class="pt"><h3>15) Logout fixed</h3>
+<span class="lbl">Where:</span> Top right profile menu &rarr; <b>Log Out</b>.<br>
+<span class="lbl">How it works:</span> Clears the login session (theme settings are kept), tells the server the token is no longer valid, and returns to the company's login page. The Back button cannot return into the app.</div>
+
+<div class="pt"><h3>16) Customer Ledger – dark green theme</h3>
+<span class="lbl">Where:</span> Customer Ledger screen.<br>
+<span class="lbl">How it works:</span> The blue headers, buttons and highlights are now dark green, matching the rest of the software.</div>
+
+<h2>Reports (points 17 – 20, 31 – 35, 38)</h2>
+<div class="pt"><h3>17) Eligibility Approval – overall branch option</h3>
+<span class="lbl">Where:</span> SPN Chit Management &rarr; <b>SPN Eligibility Approval</b> (<code>commitment-eligibility-approval</code>).<br>
+<span class="lbl">How it works:</span> The branch dropdown has <b>All Branches</b>, which shows every branch's eligible customers in one list.</div>
+
+<div class="pt"><h3>18) Cancelled Customers Report – scheme and slab filter only</h3>
+<span class="lbl">Where:</span> Reports &rarr; <b>Cancelled Customers Report</b> (<code>cancel-customer-report</code>).<br>
+<span class="lbl">How it works:</span> The group filter was removed. Pick a <b>Scheme</b>, then optionally a <b>Slab</b> (the slab list follows the scheme), then Search.</div>
+
+<div class="pt"><h3>19) Customer Category report (Excellent / Good / Bad)</h3>
+<span class="lbl">Where:</span> SPN My Customers &rarr; <b>Customer Category (Excellent / Good / Bad)</b> (<code>customer-category-report</code>).<br>
+<span class="lbl">How it works:</span> This is a separate menu, not the formula screen. Filter by branch (All Branches or one), scheme and grade. KPI cards show the count per grade, and the table lists each customer with score, grade, scheme, paid and pending. Export to CSV. The grade rules are still set in Settings &rarr; Customer Score Rules.</div>
+
+<div class="pt"><h3>20) Chit Enrollment Report – scheme dropdown fixed, chit based</h3>
+<span class="lbl">Where:</span> Reports &rarr; <b>Chit Enrollment Report</b> (<code>commitment-report</code>).<br>
+<span class="lbl">How it works:</span> The report is now based on commitment chits, not groups. Filters: branch (optional, All Branches), scheme (now loads correctly), slab, and from/to enrollment date. A Scheme column was added.</div>
+
+<div class="pt"><h3>31) and 35) "Commitment" removed from report names</h3>
+<span class="lbl">How it works:</span> Report menu items and page titles no longer use the word "Commitment". For example, "Commitment Receipt Report" is now "Receipt Report (New / Old)" and "Commitment Report" is now "Chit Enrollment Report". Only the visible names changed; the URLs are unchanged.</div>
+
+<div class="pt"><h3>32) Old / New customer filter</h3>
+<span class="lbl">Where:</span> Reports &rarr; <b>Receipt Report (New / Old)</b>.<br>
+<span class="lbl">How it works:</span> A new <b>New / Old Customer</b> filter and column. <b>Old</b> means the customer has paid at least the first full installment (scheme monthly due). <b>New</b> means they are still in the first due.</div>
+
+<div class="pt"><h3>33) This Month Unpaid – due no and running month</h3>
+<span class="lbl">Where:</span> Reports &rarr; <b>This Month Unpaid</b> (<code>this-month-unpaid-report</code>).<br>
+<span class="lbl">How it works:</span> The running month now comes from the same installment number as the due number, so both columns always show the same current due.</div>
+
+<div class="pt"><h3>34) Other Charges report – real charge name</h3>
+<span class="lbl">Where:</span> Receipts &amp; Payments &rarr; <b>Other Charges Receipt</b> (<code>other-receipt-charges-report</code>).<br>
+<span class="lbl">How it works:</span> A new <b>Charge Name</b> column (also in the PDF) shows the actual charge from the Charge Type master. Only receipts with no charge type show "Registration Fee (RF)". You can filter by charge type. "Group Name" is now "Chit / Scheme".</div>
+
+<div class="pt"><h3>38) Prized Payment – this chit pending vs old chit pending</h3>
+<span class="lbl">Where:</span> Payments &rarr; <b>Prized Payment</b> (<code>payment-priced</code>).<br>
+<span class="lbl">How it works:</span> The single "Total pending" figure is replaced by two figures: <b>This chit pending</b> (only the chit being paid) and <b>Old chit pending</b> (the customer's other chits). This is shown in all four places on the screen.</div>
+
+<h2>Side Menu (points 21, 26, 27, 30, 42, 44)</h2>
+<div class="pt"><h3>21) Customer Report removed from the side menu</h3>
+The standalone "Customer Report" link was removed. Pledge and Suit Filed reports remain under Reports &rarr; Customer Reports.</div>
+<div class="pt"><h3>26) "SPN Chits" renamed to "SPN My Customers"</h3>
+Contains Profile Creation, Add Chit, SPN Approved Customers, Customer Category, KYC Documents &amp; Approval, Branch Transfer and Family Code Master. Eligible Customers was moved out (eligibility approval is under SPN Chit Management).</div>
+<div class="pt"><h3>27) "SPN Group Management" renamed to "SPN Chit Management"</h3>
+Contains Schemes, <b>SPN New Group</b>, <b>Group View</b> and SPN Eligibility Approval.</div>
+<div class="pt"><h3>30) "Commitment Receipt" renamed to "Receipts"</h3>
+Receipts &amp; Payments &rarr; <b>Receipts</b> opens the same receipt entry screen as before.</div>
+<div class="pt"><h3>42) "SPN Action" renamed to "SPN Target / Task"</h3>
+Contains Task Assignment, Daily Tasks &amp; Targets, Task Report and Target Set.</div>
+<div class="pt"><h3>44) Separate "SPN Account Management" menu</h3>
+All accounts in one place: Entries (income/expense, petty cash, cheque in bank), Books (cash book, bank book, day book, day closing), Final Accounts (trial balance, profit &amp; loss, balance sheet) and Account Masters (accounting group, head, bank details).</div>
+
+<h2>Customers, KYC and Chits (points 22 – 25)</h2>
+<div class="pt"><h3>22) Family Code Master checked</h3>
+<span class="lbl">Where:</span> SPN My Customers &rarr; <b>Family Code Master</b> (<code>view-family-code</code>).<br>
+<span class="lbl">How it works:</span> The list shows branch, family code and a new <b>Members</b> count. Use the eye icon to see members and the edit icon to update.</div>
+
+<div class="pt"><h3>23) Profile – Aadhaar front and back, PAN and multiple documents</h3>
+<span class="lbl">Where:</span> SPN My Customers &rarr; Profile Creation &rarr; Add Customer (and Update Customer), in the <b>KYC Documents</b> section.<br>
+<span class="lbl">How it works:</span>
+<ul>
+  <li>There are four upload slots: <b>Aadhaar Front</b>, <b>Aadhaar Back</b>, <b>PAN Card</b> and <b>Other Documents</b>. Other Documents accepts several files at once.</li>
+  <li>Each file uploads as soon as it is chosen (maximum 5 MB; image or PDF). Remove one with the &times; button.</li>
+  <li>On <b>Add Customer</b>, the documents are saved automatically after the customer is saved.</li>
+  <li>On <b>Update Customer</b>, press <b>Save Documents</b>.</li>
+  <li>Saved documents appear in KYC Documents &amp; Approval (point 25).</li>
+</ul></div>
+
+<div class="pt"><h3>24) Chit section moved to a separate page</h3>
+<span class="lbl">How it works:</span> The chit block is no longer inside customer creation. After saving a new customer, the system asks <b>"Add a chit for this customer now?"</b>:
+<ul>
+  <li><b>Yes</b> opens SPN My Customers &rarr; <b>Add Chit</b> (<code>add-commitment-chit</code>).</li>
+  <li><b>No</b> returns to the customer list.</li>
+</ul></div>
+
+<div class="pt"><h3>25) KYC Documents – customer name, chit details and approval</h3>
+<span class="lbl">Where:</span> SPN My Customers &rarr; <b>KYC Documents &amp; Approval</b> (<code>view-documents</code>).<br>
+<span class="lbl">How it works:</span>
+<ul>
+  <li>Filter by branch (or All Branches) and by KYC status (Pending, Approved or Rejected).</li>
+  <li>The list shows the full customer name, code, mobile, the chit details (scheme, slab and AR no) and a KYC status badge.</li>
+  <li>Click the eye icon to open the documents. The pop-up shows the customer details, a chit table and every uploaded file.</li>
+  <li>Enter remarks if needed, then press <b>Approve KYC</b> or <b>Reject</b>. Remarks are required when rejecting.</li>
+  <li>The approver and the date are recorded.</li>
+</ul></div>
+
+<h2>SPN Group Formation (points 28, 29)</h2>
+<div class="pt"><h3>28) SPN New Group</h3>
+<span class="lbl">Where:</span> SPN Chit Management &rarr; <b>SPN New Group</b> (<code>spn-new-group</code>).<br>
+<span class="lbl">How to use:</span>
+<ul>
+  <li>Choose a <b>Branch</b> (or <b>All Branches</b> for a cross-branch group), a <b>Scheme</b>, a <b>Slab</b> and a <b>Due No</b>. The due-number list shows how many free chits each due has.</li>
+  <li>Choose a mode:
+    <ul>
+      <li><b>Auto:</b> the system picks the first free chits on that due number, up to the maximum.</li>
+      <li><b>Manual:</b> tick the customers yourself.</li>
+    </ul></li>
+  <li>Enter a <b>Group Name</b>, or leave it blank for an automatic name such as <code>50000-10M-D3-G1</code>. Then press <b>Create Group</b>.</li>
+</ul>
+<span class="lbl">Rules enforced:</span>
+<ul>
+  <li>The maximum number of members equals the scheme's number of months. For example, a 50,000 / 10-month scheme allows exactly 10 members, and the counter blocks more.</li>
+  <li>All members must be on the same due number.</li>
+  <li>A chit can belong to only one group.</li>
+</ul></div>
+
+<div class="pt"><h3>29) Group View</h3>
+<span class="lbl">Where:</span> SPN Chit Management &rarr; <b>Group View</b> (<code>spn-group-view</code>).<br>
+<span class="lbl">How it works:</span>
+<ul>
+  <li>Filter by branch, scheme, slab, due no or group name.</li>
+  <li>KPI cards show the total groups, full groups, open seats and members.</li>
+  <li>Each group row shows a fill bar (for example 7 / 10). Expand a row to see its members with paid and pending amounts.</li>
+  <li>From the expanded row you can <b>Add Member</b> (same due, if seats are free), <b>Remove</b> a member or <b>Delete</b> the group.</li>
+  <li>Export to CSV.</li>
+</ul></div>
+
+<h2>Payments and Approval Process (points 37, 39)</h2>
+<div class="pt"><h3>37) Commitment Payment renamed to Prized Payment</h3>
+<span class="lbl">Where:</span> Receipts &amp; Payments &rarr; <b>Prized Payment</b>, and Payments &rarr; <b>Prized Payment</b>.<br>
+<span class="lbl">How it works:</span> Every "Commitment Payment" title, button and message now reads "Prized Payment" (Add / View / Delete Prized Payment). Only the names changed; the payment logic is the same.</div>
+
+<div class="pt"><h3>39) Payment request process – Branch &rarr; Chit Admin &rarr; Final Approval</h3>
+<div class="flow">Branch request &rarr; Field verification &rarr; Chit Admin check &rarr; Final (MD/Admin) approval &rarr; Payment release</div>
+<ul>
+  <li><b>1. Branch request:</b> the branch raises the request in Payments &rarr; Prized Payment, Final Closed Payment or Refund Payment. Status: <i>Field visit</i>.</li>
+  <li><b>2. Field verification:</b> the field employee submits camera photos, the home pin and the collection pin from the mobile app. Status: <i>Chit admin</i>.</li>
+  <li><b>3. Chit Admin:</b> opens Payments &rarr; <b>Pending Approvals</b>, checks the photos and pins, enters remarks, then presses <b>Verify &amp; Forward</b> or <b>Reject</b>.</li>
+  <li><b>4. Final approval:</b> the admin/MD sees the forwarded row with the chit admin's remarks and presses <b>Final Approve</b> or <b>Reject</b>. Status: <i>Processed</i> or <i>Cancelled</i>.</li>
+  <li>The Pending Approvals page shows counts for each stage: Waiting field visit, Waiting chit admin, Ready for final approval, Approved and Rejected.</li>
+  <li>Requests that were already at "Pending admin" before this change can still be approved directly.</li>
+  <li>Receipts, refunds and ledgers are unchanged.</li>
+</ul></div>
+
+<h2>HR – Permissions, Advance, Attendance (points 36, 40, 41)</h2>
+<div class="pt"><h3>36) Security permissions for all current menus</h3>
+<span class="lbl">Where:</span> HR &rarr; <b>Security Permissions</b> (<code>add-permission</code>).<br>
+<span class="lbl">How it works:</span> The permission tree now matches the current side menu: SPN My Customers, SPN Chit Management, Receipts &amp; Payments, Payments, HR, SPN Target / Task, SPN Account Management, Reports and the rest. Every new screen in this guide is included. Select a role, tick View / Add / Edit / Delete for each screen, and save. The user sees the changes after logging in again.</div>
+
+<div class="pt"><h3>40) Employee Advance / Loan menu</h3>
+<span class="lbl">Where:</span> HR &rarr; <b>Employee Advance / Loan</b> (<code>employee-advance</code>). Employee Salary is unchanged.<br>
+<span class="lbl">How to use:</span>
+<ul>
+  <li>Select a branch and then an employee. Choose the type (Advance or Loan) and enter the amount and number of months; the EMI is calculated automatically. Enter the date and reason, then <b>Save</b>.</li>
+  <li>The list shows KPI totals and filters by branch, type and status.</li>
+  <li>Actions move a request through the stages: <b>Approve</b> or <b>Reject</b>, then <b>Mark Paid</b> once the money is given, then <b>Mark Recovered</b> once it is fully repaid.</li>
+</ul></div>
+
+<div class="pt"><h3>41) Attendance without the map</h3>
+<span class="lbl">Where:</span> HR &rarr; <b>Attendance (In / Out)</b> (<code>view-employee-attendance</code>). The map is now only in HR &rarr; <b>Live Tracking &amp; Punch Map</b>.<br>
+<span class="lbl">How it works:</span>
+<ul>
+  <li>Filter by branch and employee, then choose a view: <b>Day wise</b> (one date), <b>Month wise</b> (one month) or <b>From – To</b> (date range).</li>
+  <li>The table shows each employee's punch in and punch out time and branch.</li>
+  <li>KPI cards show employees, punched in, punched out and outside office.</li>
+  <li><b>Excel</b> exports the list. "Open Live Map" goes to the tracking screen.</li>
+</ul></div>
+
+<div class="note" style="margin-top:16px">
+  <b>Technical note:</b> The frontend production (AOT) build and the type check pass, and all changed PHP files pass syntax checks. New tables (<code>spn_groups</code>, <code>spn_group_members</code>) and new columns (KYC verification on <code>documents</code>, chit-admin stage on <code>payment_desk_requests</code>) are added automatically on first use.
+</div>
+
+</body>
+</html>

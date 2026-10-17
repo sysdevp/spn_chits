@@ -73,17 +73,67 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     ],
   },
   {
-    title: 'Chit',
+    title: 'SPN My Customers',
+    virtual: true,
+    leaves: [
+      { title: 'Profile Creation', menuId: 5, storageModuleId: 28, pageType: P.VIEW, route: 'view-customer' },
+      { title: 'Add Chit (separate page)', menuId: 32, storageModuleId: 28, pageType: P.VIEW, route: 'add-commitment-chit' },
+      { title: 'SPN Approved Customers', menuId: 32, storageModuleId: 28, pageType: P.VIEW, route: 'view-commitment-chit' },
+      { title: 'Customer Category (Excellent / Good / Bad)', menuId: 32, storageModuleId: 28, pageType: P.REPORT, route: 'customer-category-report' },
+      { title: 'KYC Documents & Approval', menuId: 38, storageModuleId: 28, pageType: P.VIEW, route: 'view-documents' },
+      { title: 'Branch Transfer', menuId: 5, storageModuleId: 28, pageType: P.VIEW, route: 'branch-transfer-customer' },
+      { title: 'Family Code Master', menuId: 5, storageModuleId: 28, pageType: P.VIEW, route: 'view-family-code' },
+    ],
+  },
+  {
+    title: 'SPN Chit Management',
     virtual: true,
     leaves: [
       { title: 'Schemes', menuId: 8, storageModuleId: 2, pageType: P.VIEW, route: 'view-scheme' },
-      { title: 'Profile Creation', menuId: 5, storageModuleId: 28, pageType: P.VIEW, route: 'view-customer' },
-      { title: 'SPN Approved Customers', menuId: 32, storageModuleId: 28, pageType: P.VIEW, route: 'view-commitment-chit' },
+      { title: 'SPN New Group (group formation)', menuId: 8, storageModuleId: 2, pageType: P.VIEW, route: 'spn-new-group' },
+      { title: 'Group View', menuId: 8, storageModuleId: 2, pageType: P.VIEW, route: 'spn-group-view' },
       { title: 'SPN Eligibility Approval', menuId: 152, storageModuleId: 28, pageType: P.VIEW, route: 'commitment-eligibility-approval' },
-      { title: 'Receipt', menuId: 57, storageModuleId: 37, pageType: P.VIEW, route: 'add-commitment-receipt' },
-      { title: 'Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'view-commitment-payment' },
+    ],
+  },
+  {
+    title: 'Receipts & Payments',
+    virtual: true,
+    leaves: [
+      { title: 'Receipts', menuId: 57, storageModuleId: 37, pageType: P.VIEW, route: 'add-commitment-receipt' },
+      { title: 'Prized Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'view-commitment-payment' },
+      { title: 'Prized / Closed Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'document-preparation' },
       { title: 'Refund', menuId: 109, storageModuleId: 37, pageType: P.VIEW, route: 'add-commitment-enrol' },
+      { title: 'Refund Approval', menuId: 109, storageModuleId: 37, pageType: P.VIEW, route: 'refund-approval' },
       { title: 'Other Charges Receipt', menuId: 60, storageModuleId: 37, pageType: P.VIEW, route: 'other-receipt-charges-report' },
+    ],
+  },
+  {
+    title: 'Payments',
+    virtual: true,
+    leaves: [
+      { title: 'Payments Dashboard', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-dashboard' },
+      { title: 'Prized Payment (this chit / old chit pending)', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-priced' },
+      { title: 'Final Closed Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-closed' },
+      { title: 'Refund Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-refund-desk' },
+      { title: 'Pending Approvals', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-pending-approvals' },
+      { title: 'Prized Show Group', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'prized-show-group' },
+      { title: 'Prized Show Report', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'prized-show-report' },
+      { title: 'SPN Auction Report', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'spn-auction-report' },
+      { title: 'Accounts Payout Approval', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'payment-accounts-payout' },
+      { title: 'Final Closed Report', menuId: 71, storageModuleId: 65, pageType: P.REPORT, route: 'final-closed-report' },
+      { title: 'Completed – Payment Not Given', menuId: 71, storageModuleId: 65, pageType: P.REPORT, route: 'completed-not-paid-report' },
+    ],
+  },
+  {
+    title: 'Cash Box & Branch Accounts',
+    virtual: true,
+    leaves: [
+      { title: 'My Cash Box', menuId: 148, storageModuleId: 67, pageType: P.VIEW, route: 'my-cash-box' },
+      { title: 'Cash Box Approvals', menuId: 148, storageModuleId: 67, pageType: P.VIEW, route: 'cash-box-approvals' },
+      { title: 'Income Cash Box Report', menuId: 148, storageModuleId: 67, pageType: P.REPORT, route: 'income-cash-box-report' },
+      { title: 'My Day Report', menuId: 148, storageModuleId: 67, pageType: P.REPORT, route: 'my-day-report' },
+      { title: 'Branch Income & Expense', menuId: 105, storageModuleId: 67, pageType: P.REPORT, route: 'branch-income-expense-report' },
+      { title: 'Petty Cash Branch Report', menuId: 26, storageModuleId: 62, pageType: P.REPORT, route: 'petty-cash-branch-report' },
     ],
   },
   {
@@ -92,6 +142,14 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     leaves: [
       { title: 'Due Slab', menuId: 20, storageModuleId: 2, pageType: P.VIEW, route: 'view-due-slab' },
       { title: 'Payment Slab', menuId: 24, storageModuleId: 2, pageType: P.VIEW, route: 'view-payment-slab' },
+      { title: 'Due vs Payments', menuId: 20, storageModuleId: 2, pageType: P.VIEW, route: 'due-vs-payments' },
+    ],
+  },
+  {
+    title: 'Settings',
+    virtual: true,
+    leaves: [
+      { title: 'Customer Score Rules', menuId: 53, storageModuleId: 53, pageType: P.VIEW, route: 'customer-score-rules' },
     ],
   },
   {
@@ -104,12 +162,22 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
       { title: 'Security Permissions', menuId: 53, storageModuleId: 53, pageType: P.VIEW, route: 'add-permission' },
       { title: 'User Logins', menuId: 36, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee-login' },
       { title: 'Employee Salary', menuId: 101, storageModuleId: 34, pageType: P.VIEW, route: 'employee-salary' },
+      { title: 'Employee Advance / Loan', menuId: 101, storageModuleId: 34, pageType: P.VIEW, route: 'employee-advance' },
+      { title: 'Day Allowance Report', menuId: 101, storageModuleId: 34, pageType: P.REPORT, route: 'day-allowance-report' },
+      { title: 'Petrol Allowance', menuId: 101, storageModuleId: 34, pageType: P.VIEW, route: 'petrol-allowance' },
       { title: 'Collection Area Mapping', menuId: 55, storageModuleId: 34, pageType: P.VIEW, route: 'view-collection-area-mapping' },
-      { title: 'Attendance', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee-attendance' },
+      { title: 'Attendance (In / Out)', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee-attendance' },
       { title: 'Leave / Permission / OD', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'view-leave-requests' },
-      { title: 'Login Time & Map', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'view-punch-attendance' },
+      { title: 'Office Wish & Tickets', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'office-tickets' },
+      { title: 'Live Tracking & Punch Map', menuId: 35, storageModuleId: 34, pageType: P.VIEW, route: 'view-punch-attendance' },
       { title: 'Employee Documents', menuId: 118, storageModuleId: 34, pageType: P.VIEW, route: 'view-employee-document' },
       { title: 'Auction On Holidays', menuId: 16, storageModuleId: 2, pageType: P.VIEW, route: 'view-auction-on-holidays' },
+    ],
+  },
+  {
+    title: 'SPN Target / Task',
+    virtual: true,
+    leaves: [
       { title: 'Task Assignment', menuId: 118, storageModuleId: 34, pageType: P.VIEW, route: 'add-task' },
       { title: 'Daily Tasks & Targets', menuId: 118, storageModuleId: 34, pageType: P.VIEW, route: 'view-daily-tasks-targets' },
       { title: 'Task Report', menuId: 118, storageModuleId: 34, pageType: P.VIEW, route: 'task-report' },
@@ -166,9 +234,16 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
     ],
   },
   {
-    title: 'Accounts',
+    title: 'SPN Account Management',
     virtual: true,
     leaves: [
+      { title: 'Income and Expense Entry', menuId: 104, storageModuleId: 37, pageType: P.VIEW, route: 'add-expenses-income' },
+      { title: 'Petty Cash Expense', menuId: 26, storageModuleId: 62, pageType: P.VIEW, route: 'view-petty-cash-expense' },
+      { title: 'Day Book', menuId: 148, storageModuleId: 67, pageType: P.REPORT, route: 'day-book-report' },
+      { title: 'Day Closing', menuId: 75, storageModuleId: 67, pageType: P.REPORT, route: 'day-closing-report' },
+      { title: 'Trial Balance', menuId: 106, storageModuleId: 67, pageType: P.REPORT, route: 'trial-balance' },
+      { title: 'Profit & Loss', menuId: 108, storageModuleId: 67, pageType: P.REPORT, route: 'profit-loss-report' },
+      { title: 'Balance Sheet', menuId: 107, storageModuleId: 67, pageType: P.REPORT, route: 'balance-sheet-report' },
       { title: 'Bank Details', menuId: 17, storageModuleId: 2, pageType: P.VIEW, route: 'view-bank-details' },
       { title: 'Charges Types', menuId: 13, storageModuleId: 2, pageType: P.VIEW, route: 'view-charges-type' },
       { title: 'Account Groups', menuId: 102, storageModuleId: 2, pageType: P.VIEW, route: 'view-accounting-group' },
@@ -182,7 +257,8 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
       {
         title: 'Subscribers Report',
         leaves: [
-          { title: 'Commitment Chit - Enrolled Subscriber', menuId: 69, storageModuleId: 48, pageType: P.REPORT, route: 'commitment-report' },
+          { title: 'Chit Enrollment Report', menuId: 69, storageModuleId: 48, pageType: P.REPORT, route: 'commitment-report' },
+          { title: 'Cancelled Customers Report', menuId: 69, storageModuleId: 48, pageType: P.REPORT, route: 'cancel-customer-report' },
           { title: 'Ledger', menuId: 61, storageModuleId: 37, pageType: P.VIEW, route: 'customer-ledger' },
           { title: 'Pledge', menuId: 132, storageModuleId: 48, pageType: P.REPORT, route: 'pledge-customer-report' },
           { title: 'Suit Filed', menuId: 133, storageModuleId: 48, pageType: P.REPORT, route: 'suit-file-report' },
@@ -192,22 +268,25 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
         title: 'Payment Report',
         leaves: [
           { title: 'Refund', menuId: 63, storageModuleId: 65, pageType: P.REPORT, route: 'payment-refund-report' },
-          { title: 'Commitment Chit Payments', menuId: 70, storageModuleId: 65, pageType: P.REPORT, route: 'commitment-payment-report' },
-          { title: 'Commitment Chit Pending Payments', menuId: 71, storageModuleId: 65, pageType: P.REPORT, route: 'commitment-pending-report' },
+          { title: 'Prized Chit Payment', menuId: 70, storageModuleId: 65, pageType: P.REPORT, route: 'commitment-payment-report' },
+          { title: 'Prized Chit Pending Payments', menuId: 71, storageModuleId: 65, pageType: P.REPORT, route: 'commitment-pending-report' },
         ],
       },
       {
         title: 'Outstanding Report',
         leaves: [
-          { title: 'Commitment Customer', menuId: 81, storageModuleId: 43, pageType: P.REPORT, route: 'commitmentcustomer-outstanding-report' },
+          { title: 'Customer Outstanding', menuId: 81, storageModuleId: 43, pageType: P.REPORT, route: 'commitmentcustomer-outstanding-report' },
           { title: 'Loan Outstanding', menuId: 93, storageModuleId: 43, pageType: P.REPORT, route: 'loan-customerwise-outstanding-report' },
         ],
       },
       {
         title: 'Collection Report',
         leaves: [
-          { title: 'Commitment Receipt Report', menuId: 82, storageModuleId: 66, pageType: P.REPORT, route: 'commitment-receipt-report' },
+          { title: 'Receipt Report (New / Old)', menuId: 82, storageModuleId: 66, pageType: P.REPORT, route: 'commitment-receipt-report' },
+          { title: 'UTR Receipt Report', menuId: 82, storageModuleId: 66, pageType: P.REPORT, route: 'utr-receipt-report' },
           { title: 'Historical performance (3 / 6 / 12 mo)', menuId: 51, storageModuleId: 66, pageType: P.REPORT, route: 'historical-performance-report' },
+          { title: 'Collection Prediction Report', menuId: 51, storageModuleId: 66, pageType: P.REPORT, route: 'collection-prediction-report' },
+          { title: 'Employee Performance AI', menuId: 145, storageModuleId: 66, pageType: P.REPORT, route: 'employee-performance-ai' },
           { title: 'Business forecast (3 mo vs YoY)', menuId: 51, storageModuleId: 66, pageType: P.REPORT, route: 'business-forecast-report' },
           { title: 'Employee Collection Report', menuId: 145, storageModuleId: 66, pageType: P.REPORT, route: 'employee-collection-report' },
           { title: 'Before Enrollment Receipt Report', menuId: 146, storageModuleId: 66, pageType: P.REPORT, route: 'before-enrol-receipt-report' },
@@ -285,20 +364,15 @@ export const SIDEBAR_PERMISSION_SECTIONS: PermissionSection[] = [
       {
         title: 'Collection',
         leaves: [
-          { title: 'Receipt', menuId: 31, storageModuleId: 37, pageType: P.VIEW, route: 'add-receipt' },
-          { title: 'Advance Receipt (Before Enrollment)', menuId: 120, storageModuleId: 37, pageType: P.VIEW, route: 'add-before-enrol-receipt' },
-          { title: 'Advance Receipt (After Enrollment)', menuId: 58, storageModuleId: 37, pageType: P.VIEW, route: 'add-advanced-receipt' },
           { title: 'Other Charges', menuId: 60, storageModuleId: 37, pageType: P.VIEW, route: 'add-other-receipt-charges' },
-          { title: 'Commitment Chit', menuId: 57, storageModuleId: 37, pageType: P.VIEW, route: 'add-commitment-receipt' },
+          { title: 'Chit', menuId: 57, storageModuleId: 37, pageType: P.VIEW, route: 'add-commitment-receipt' },
         ],
       },
       {
         title: 'Payment',
         leaves: [
-          { title: 'Bidpayment', menuId: 30, storageModuleId: 28, pageType: P.VIEW, route: 'view-auction' },
-          { title: 'Bidpayment Adjustment', menuId: 59, storageModuleId: 37, pageType: P.VIEW, route: 'add-bidpayment-adjustment' },
           { title: 'Refund Enrollment Amount', menuId: 33, storageModuleId: 37, pageType: P.VIEW, route: 'add-enrol-refund-amount' },
-          { title: 'Commitment Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'add-commitment-payment' },
+          { title: 'Prized Payment', menuId: 56, storageModuleId: 28, pageType: P.VIEW, route: 'add-commitment-payment' },
         ],
       },
       {

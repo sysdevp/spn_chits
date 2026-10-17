@@ -58,7 +58,9 @@
               <select
                 #branch_id
                 formControlName="branch_id"
-                (change)="branchChg($event)"
+                class="form-control"
+                [attr.disabled]="true"
+                title="Use Branch Transfer to move customer"
               >
                 <option value="">Select Branch</option>
                 <option *ngFor="let data of branchList" value="{{ data.id }}">
@@ -68,13 +70,22 @@
 
               <div class="ps-2">
                 <a
-                  [routerLink]="['/admin-panel/add-branch']"
-                  target="_blank"
-                  class="btn btn-primary"
+                  [routerLink]="['/admin-panel/branch-transfer-customer']"
+                  class="btn btn-warning text-dark"
+                  title="Transfer customer to another branch"
                 >
-                  <span>+</span>
+                  Transfer
                 </a>
               </div>
+            </div>
+            <div class="col-md-12">
+              <small class="text-muted"
+                >Branch is locked on edit. Use
+                <a [routerLink]="['/admin-panel/branch-transfer-customer']"
+                  >Branch Transfer</a
+                >
+                to move customer with remarks.</small
+              >
             </div>
 
             <div
@@ -636,6 +647,16 @@
               />
             </div>
           </div>
+        </div>
+        <div class="col-md-12 mb-3">
+          <label class="col-form-label font-weight-bold">Upload KYC Documents (Aadhaar front &amp; back, PAN, others)</label>
+          <app-kyc-upload
+            [customerId]="customer_id"
+            [branchId]="UpdateCustomer.getRawValue().branch_id"
+            [aadharNo]="UpdateCustomer.get('adhar_no').value"
+            [panNo]="UpdateCustomer.get('pan_no').value"
+            [showSaveButton]="true"
+          ></app-kyc-upload>
         </div>
       </div>
 

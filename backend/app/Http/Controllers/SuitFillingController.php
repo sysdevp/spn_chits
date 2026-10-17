@@ -42,7 +42,16 @@ class SuitFillingController extends Controller
                 $sql['group_status']=$req->group_status;
             }
 
-            $suitReport=SuiteFilling::where($sql)->get();
+            $suitQuery = SuiteFilling::where($sql);
+            if($req->scheme_id!='' && $req->scheme_id>0){
+                $groupIds = \App\Models\Group::where('scheme_id', $req->scheme_id)->pluck('id')->all();
+                if (!empty($groupIds)) {
+                    $suitQuery->whereIn('group_id', $groupIds);
+                } else {
+                    $suitQuery->whereRaw('1=0');
+                }
+            }
+            $suitReport=$suitQuery->get();
             $data=[];$k=1;
             foreach ($suitReport as $key => $enroll) {
                 $data[$key]['sno']=$k++;

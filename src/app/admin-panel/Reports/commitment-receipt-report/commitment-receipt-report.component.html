@@ -138,9 +138,9 @@
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row" [hidden]="selectionfield">
-      <div class="col-6 my-auto font-weight-bold">Commitment Receipt Report</div>
+      <div class="col-6 my-auto font-weight-bold">Receipt Report</div>
       <div class="col-6 text-right">
-        <a [routerLink]="['/admin-panel/add-commitment-receipt']" class="bg-success border-0 text-white px-3 py-2"> + Add Commitment Receipt</a>
+        <a [routerLink]="['/admin-panel/add-commitment-receipt']" class="bg-success border-0 text-white px-3 py-2"> + Receipts</a>
       </div>
     </div>
     <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
@@ -198,6 +198,18 @@
                 <select #employee_id class="form-control form-control w-100 border-dark" formControlName="employee_id">
                   <option value="">Select Employee</option>
                   <option *ngFor="let data of employeeList" value="{{data.id}}">{{data.first_name}}{{data.last_name}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">New / Old Customer</label>
+              <div class="col-sm-8">
+                <select class="form-control form-control w-100 border-dark" formControlName="customer_status">
+                  <option value="">All Customers</option>
+                  <option value="new">New (still in 1st due)</option>
+                  <option value="old">Old (1st installment completed)</option>
                 </select>
               </div>
             </div>

@@ -9,7 +9,7 @@ class Branch extends Model
 	use SoftDeletes;
 	
     protected $fillable = [
-        'tenant_id', 'head_office_id', 'branch_name','start_date','address_line_1','address_line_2','landmark','branch_code','state_id','district_id','city_id','pincode','branch_wise_penalty','bonus','email_id','phone_no','prize_subscriber_penalty','non_prize_subscriber_penalty','bonus_days','penalty_days','business_agent_target','branch_fd_total_months','remarks','agent_incentive_percent','agent_commission_percent','cgst_percent','sgst_percent','gst_percent'
+        'tenant_id', 'head_office_id', 'branch_name','start_date','address_line_1','address_line_2','landmark','branch_code','state_id','district_id','city_id','pincode','branch_wise_penalty','bonus','email_id','phone_no','prize_subscriber_penalty','non_prize_subscriber_penalty','bonus_days','penalty_days','business_agent_target','branch_fd_total_months','remarks','agent_incentive_percent','agent_commission_percent','cgst_percent','sgst_percent','gst_percent','latitude','longitude','punch_radius_meters'
     ];
 
     public function head_office_det()

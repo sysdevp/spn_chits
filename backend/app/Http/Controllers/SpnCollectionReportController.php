@@ -89,17 +89,21 @@ class SpnCollectionReportController extends Controller
         $paid = (float) Receipt::where('enrollment_id', $enrollmentId)->where('status', 1)->sum('received_amount');
         $pending = max(0, $payable - $paid);
         $today = Carbon::today()->toDateString();
-        $runningMonth = (int) CommitmentAuction::where('enrollment_id', $enrollmentId)
+        $currentAuction = CommitmentAuction::where('enrollment_id', $enrollmentId)
             ->where('auction_date', '<=', $today)
-            ->count();
-        if ($runningMonth <= 0) {
-            $runningMonth = (int) CommitmentAuction::where('enrollment_id', $enrollmentId)->min('installment_no') ?: 0;
-        }
+            ->orderByDesc('auction_date')
+            ->orderByDesc('installment_no')
+            ->first();
+        $dueNo = $currentAuction
+            ? (int) $currentAuction->installment_no
+            : (int) CommitmentAuction::where('enrollment_id', $enrollmentId)->min('installment_no');
+        $runningMonth = $dueNo;
         return [
             'payable' => round($payable, 2),
             'paid' => round($paid, 2),
             'pending' => round($pending, 2),
             'running_month' => $runningMonth,
+            'due_no' => $dueNo,
         ];
     }
 
@@ -153,6 +157,7 @@ class SpnCollectionReportController extends Controller
             'paid' => $money['paid'],
             'overall_pending' => $money['pending'],
             'running_month' => $money['running_month'],
+            'due_no' => $money['due_no'],
         ];
     }
 
@@ -162,7 +167,16 @@ class SpnCollectionReportController extends Controller
         try {
             $branchIds = $this->resolveBranchIds($request);
             $schemeId = !empty($request->scheme_id) ? (int) $request->scheme_id : 0;
+            $dueNo = isset($request->due_no) ? (int) $request->due_no : 0;
+            if ($dueNo <= 0) {
+                return response()->json(['status' => 'Error', 'msg' => 'Due No is required', 'data' => []], 200);
+            }
+            $dueEnrollmentIds = CommitmentAuction::where('installment_no', $dueNo)
+                ->where('auction_date', '<=', Carbon::today()->toDateString())
+                ->pluck('enrollment_id')
+                ->all();
             $enrolls = $this->commitmentEnrollsQuery($branchIds, $schemeId > 0 ? $schemeId : null)
+                ->whereIn('id', $dueEnrollmentIds)
                 ->with(['customer_det', 'branch_det', 'scheme_det', 'slab_due_det', 'collection_agent_det', 'collection_area_det'])
                 ->orderBy('branch_id')
                 ->orderBy('scheme_id')
@@ -175,7 +189,11 @@ class SpnCollectionReportController extends Controller
             $totPending = 0;
             foreach ($enrolls as $enroll) {
                 $row = $this->enrichEnrollmentRow($enroll);
+                if ((int) $row['due_no'] !== $dueNo) {
+                    continue;
+                }
                 $row['sno'] = $i++;
+                $row['due_no'] = $dueNo;
                 $totPayable += $row['payable'];
                 $totPaid += $row['paid'];
                 $totPending += $row['overall_pending'];
@@ -325,6 +343,7 @@ class SpnCollectionReportController extends Controller
                 $row = array_merge($base, [
                     'sno' => $i++,
                     'due_no' => (int) $auc->installment_no,
+                    'running_month' => (int) $auc->installment_no,
                     'due_date' => $auc->auction_date ? date('d-m-Y', strtotime($auc->auction_date)) : '',
                     'due_amount' => round($dueAmt, 2),
                     'current_month_pending' => round($pendingInst, 2),

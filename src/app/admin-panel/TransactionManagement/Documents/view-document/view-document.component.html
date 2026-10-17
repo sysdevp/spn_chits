@@ -14,14 +14,21 @@
         </div>
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">customer Name: </label>
-            <b class="px-1">{{CustomerInfo.name}} </b>
+            <label class="form-label">Customer Name: </label>
+            <b class="px-1">{{ViewDocumentInfo.customer_name || '-'}} <small *ngIf="ViewDocumentInfo.customer_code">({{ViewDocumentInfo.customer_code}})</small></b>
           </div>
         </div>	
         <div class="col-md-6">
           <div class="form-group">
-            <label class="form-label">Group Name : </label>
-            <b class="px-1">{{GroupInfo}} </b>
+            <label class="form-label">Mobile: </label>
+            <b class="px-1">{{ViewDocumentInfo.mobile_no || '-'}}</b>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label class="form-label">KYC Status: </label>
+            <b class="px-1" [style.color]="ViewDocumentInfo.verification_status == 1 ? '#006B3C' : (ViewDocumentInfo.verification_status == 2 ? '#DC2626' : '#B45309')">{{ViewDocumentInfo.verification_label || 'Pending'}}</b>
+            <small *ngIf="ViewDocumentInfo.verification_remarks"> - {{ViewDocumentInfo.verification_remarks}}</small>
           </div>
         </div>
         <div class="col-md-6">
@@ -54,6 +61,24 @@
             <b class="px-1" *ngIf="ViewDocumentInfo.collected_from==1">Customer</b>
             <b class="px-1" *ngIf="ViewDocumentInfo.collected_from==2">Guarantor</b>
           </div>
+        </div>
+      </div>
+      <div class="row border emp_hrm mz-add-cus" *ngIf="ChitInfo.length">
+        <h5 class="col-md-12 py-3 text-center">Chit Details</h5>
+        <div class="col-md-12">
+          <table class="table table-responsive">
+            <thead class="thead-light">
+              <tr><th>Chit / AR No</th><th>Scheme</th><th>Chit Value</th><th>Slab</th><th>Joined</th><th>Pending</th></tr>
+            </thead>
+            <tr *ngFor="let chit of ChitInfo">
+              <td>{{chit.label}}</td>
+              <td>{{chit.scheme}}</td>
+              <td>{{chit.chit_value | number}}</td>
+              <td>{{chit.slab_name}}</td>
+              <td>{{chit.date_introduced}}</td>
+              <td>{{chit.pending_amount | number}}</td>
+            </tr>
+          </table>
         </div>
       </div>
       <div class="row border emp_hrm mz-add-cus" [hidden]="hideDocuments">
@@ -138,7 +163,11 @@
       </div>
     </div>
   </div>
-  <div class="modal-footer"></div>
+  <div class="modal-footer">
+    <input type="text" class="form-control" style="max-width: 320px;" placeholder="Approval remarks (optional)" [(ngModel)]="verifyRemarks" [ngModelOptions]="{standalone: true}" />
+    <button type="button" class="btn btn-success" [disabled]="verifying || ViewDocumentInfo.verification_status == 1" (click)="verify(1)">Approve KYC</button>
+    <button type="button" class="btn btn-danger" [disabled]="verifying || ViewDocumentInfo.verification_status == 2" (click)="verify(2)">Reject</button>
+  </div>
 </ng-template>
 <div class="card maz-vh">
   <div class="card-header">
@@ -165,15 +194,23 @@
               </div>
             </div>
             <div class="form-group row">
-              <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch <span class="error">*</span></label>
+              <label class="col-sm-2 col-md-2 col-3 col-form-label">Select Branch</label>
               <div class="col-sm-10 col-md-7 col-9">
               <select #branch_id class="form-control form-control w-100 border-dark" formControlName="branch_id">
-                <option value="">Select Branch</option>
+                <option value="">All Branches</option>
                 <option *ngFor="let data of branchList" value="{{data.id}}">{{data.branch_name}}</option>
               </select>
-              <div class="col-md-12" *ngIf="submitted && f.branch_id.errors" class="invalid-feedback">
-                <label *ngIf="f.branch_id.errors.required">Branch is required</label>
               </div>
+            </div>
+            <div class="form-group row">
+              <label class="col-sm-2 col-md-2 col-3 col-form-label">KYC Status</label>
+              <div class="col-sm-10 col-md-7 col-9">
+              <select class="form-control form-control w-100 border-dark" formControlName="verification_status">
+                <option value="">All</option>
+                <option value="0">Pending Approval</option>
+                <option value="1">Approved</option>
+                <option value="2">Rejected</option>
+              </select>
               </div>
             </div>
             <div class="form-group row ">
@@ -239,7 +276,8 @@
                     <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('sno')">Sno</th>
                     <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('branch_name')">Branch Name</th>
                     <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('customer_name')">Customer Name</th>
-                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Group Name</th>
+                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('group_name')">Chit Details</th>
+                    <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('verification_status')">KYC Status</th>
                     <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('collected_employee_name')">Collected Employee Name</th>
                     <th class="sorting" rowspan="1" colspan="1" style="width: 0px;" (click)="sortBy('collected_from')">Collected From</th>
                     <th rowspan="1" colspan="1" style="width: 0px;">Actions</th>
@@ -249,8 +287,11 @@
                   <tr role="row" *ngFor="let row of pagedItems; let i = index">
                     <td class="sorting_1">{{row.sno}}</td>
                     <td>{{row.branch_name}}</td>
-                    <td>{{row.customer_name}}</td>
-                    <td>{{row.group_name}}</td>
+                    <td>{{row.customer_name || '-'}} <small *ngIf="row.customer_code">({{row.customer_code}})</small></td>
+                    <td>{{row.group_name || '-'}}</td>
+                    <td>
+                      <span class="badge" [ngClass]="row.verification_status == 1 ? 'badge-success' : (row.verification_status == 2 ? 'badge-danger' : 'badge-warning')">{{row.verification_label || 'Pending'}}</span>
+                    </td>
                     <td>{{row.collected_employee_name}}</td>
                     <td>
                       <span *ngIf="row.collected_from==1">Customer</span>

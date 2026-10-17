@@ -46,20 +46,20 @@ export class DeleteCommitmentReceiptComponent implements OnInit {
         this.userservice.getData(resultData, "delete-commitment-receipt","JSON").subscribe((response: any) => {
           this.SubmitbuttonName = "Submit";
           try {
-             this.appService.showAlert("Commitment Receipt",response.msg, "success");
+             this.appService.showAlert("Receipt",response.msg, "success");
               setTimeout(() => {
                this.router.navigate(['/admin-panel/commitment-receipt-report']);
               }, 300);
             
           } catch (err) {
-            this.appService.showAlert("Commitment Receipt", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Receipt", "Sorry!! Something went wrong!", "error");
           }
         }, (err: any) => {
           if (err.status == 401) {
-            this.appService.showAlert("Commitment Receipt", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Receipt", "Sorry!! Something went wrong!", "error");
           }
           else {
-            this.appService.showAlert("Commitment Receipt", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Receipt", "Sorry!! Something went wrong!", "error");
           }
         });
       }

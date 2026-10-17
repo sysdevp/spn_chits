@@ -1,86 +1,76 @@
-<nav class="navbar navbar-expand-lg align-items-lg-center container-p-x" [ngClass]="currentBg()">
-
-  <!-- Brand demo (see demo.css) -->
-  <a routerLink="/" class="navbar-brand app-brand demo d-lg-none py-0 mr-4">
-    <span class="app-brand-logo demo bg-transparent">
-     
-        <img alt="logo1" class="img-fluid w-75" src="{{favicon}}">  </span>
-    <span class="app-brand-text demo font-weight-normal ml-2 text-white">SPN Chit Funds</span>
-  </a>
-  
-
-  <!-- Sidenav toggle (see demo.css) -->
-  <div class="layout-sidenav-toggle navbar-nav d-lg-none align-items-lg-center mr-auto" *ngIf="sidenavToggle">
-    <a class="nav-item nav-link px-0 mr-lg-4" href="javascript:void(0)" (click)="toggleSidenav()">
-      <i class="ion ion-md-menu text-large align-middle"></i>
-    </a>
-  </div> 
-
-  <button class="navbar-toggler" type="button" (click)="isExpanded = !isExpanded">
-    <span class="navbar-toggler-icon"></span>
+<nav class="spn-internal-header">
+  <button type="button" class="spn-menu-btn" (click)="toggleSidenav()" title="Menu">
+    <i class="ion ion-md-menu"></i>
   </button>
-  <a href="javascript:void(0)" class="layout-sidenav-toggle sidenav-link text-large ml-auto text-white" (click)="toggleSidenav()">
-      <i class="ion ion-md-menu align-middle"></i>
-    </a>
-  <div class="navbar-collapse collapse" [ngbCollapse]="!isExpanded">
-    <!-- Divider -->
-    <hr class="d-lg-none w-100 my-2">
-    <div class="navbar-nav align-items-lg-center ml-auto">
-      <app-customer-history-search variant="navbar" [compact]="true"></app-customer-history-search>
-      <!-- Divider -->
-       <div class="nav-item d-none d-lg-block text-big font-weight-light line-height-1 opacity-25 mr-3 ml-1">|</div>
-      <ul class="navbar-nav">
-        <li class="nav-item">
-          <a
-            class="nav-link text-white py-lg-2"
-            [routerLink]="['/admin-panel', 'dashboard']"
-            routerLinkActive="active"
-            title="Dashboard"
-            ngbTooltip="Dashboard"
-            placement="bottom"
-          >
-            <i class="ion ion-md-home navbar-icon align-middle text-large"></i>
-            <span class="d-lg-none align-middle ml-1">Dashboard</span>
-          </a>
-        </li>
-        <li class="nav-item dropdown" *ngIf="showSubscriberMenu"><a class="nav-link text-white" href="#" data-toggle="dropdown">Subscriber<i class="fa fa-angle-down"></i></a>
-          <ul class="dropdown-menu" role="menu">
-           <li *ngFor="let item of subscriberItems"><a [routerLink]="['/admin-panel', item.route]">{{ item.label }}</a></li>
-          </ul>
-        </li>
-         <li class="nav-item dropdown" *ngIf="showCollectionMenu"><a class="nav-link text-white" href="#" data-toggle="dropdown">Collection<i class="fa fa-angle-down"></i></a>
-          <ul class="dropdown-menu" role="menu">
-           <li *ngFor="let item of collectionItems"><a [routerLink]="['/admin-panel', item.route]">{{ item.label }}</a></li>
-          </ul>
-          </li>
-        <li class="nav-item dropdown" *ngIf="showPaymentMenu"><a class="nav-link text-white" href="#" data-toggle="dropdown">Payment<i class="fa fa-angle-down"></i></a>
-          <ul class="dropdown-menu" role="menu">
-           <li *ngFor="let item of paymentItems"><a [routerLink]="['/admin-panel', item.route]">{{ item.label }}</a></li>
-          </ul>
-          </li>
-          
-            <li class="nav-item dropdown" *ngIf="showAccountsMenu"><a class="nav-link text-white" href="#" data-toggle="dropdown">Accounts<i class="fa fa-angle-down"></i></a>
-              <ul class="dropdown-menu" role="menu">
-               <li *ngFor="let item of accountsItems"><a [routerLink]="['/admin-panel', item.route]">{{ item.label }}</a></li>
-              </ul>
-              </li>
-      </ul>
-     
-      <div ngbDropdown [placement]="isRTL ? 'bottom-left' : 'bottom-right'" class="demo-navbar-user nav-item">
-        <a ngbDropdownToggle class="nav-link" href="javascript:void(0)">
-          <span class="d-inline-flex flex-lg-row-reverse align-items-center align-middle">
-            <img src="{{profileImg}}" alt class="d-block ui-w-30 rounded-circle">
-            <!--<img *ngIf="profileImg==''" src="assets/img/Mazenet.png" alt class="d-block ui-w-30 rounded-circle">
-            <img *ngIf="profileImg!=''" src="{{profileImg}}" alt class="d-block ui-w-30 rounded-circle header-profile-img">-->
-            <!--<span class="px-1 mr-lg-2 ml-2 ml-lg-0">Mazenet</span>-->
-            <span class="px-1 mr-lg-2 ml-2 ml-lg-0">{{loggedUserName}}</span>
-          </span>
+
+  <div class="spn-header-search">
+    <app-customer-history-search variant="navbar" [compact]="true" placeholder="Search by name / mobile / customer code / AR No..."></app-customer-history-search>
+  </div>
+
+  <div class="spn-header-right">
+    <div class="spn-branch">
+      <i class="fas fa-map-marker-alt"></i>
+      <select [value]="headerBranchId" (change)="onHeaderBranch($event)" aria-label="Branch">
+        <option value="0">All Branches</option>
+        <option *ngFor="let b of headerBranches" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+
+    <div class="spn-date">
+      <i class="far fa-calendar-alt"></i>
+      <span>
+        <b>{{ headerDate }}</b>
+        <small>{{ headerDay }}</small>
+      </span>
+    </div>
+
+    <div ngbDropdown [placement]="isRTL ? 'bottom-left' : 'bottom-right'" (openChange)="$event && loadNotifications()">
+      <button type="button" ngbDropdownToggle class="spn-bell" title="Notifications">
+        <i class="far fa-bell"></i>
+        <span class="spn-bell-count" *ngIf="notif.total">{{ notif.total > 99 ? '99+' : notif.total }}</span>
+      </button>
+      <div ngbDropdownMenu class="spn-notif" [class.dropdown-menu-right]="!isRTL">
+        <div class="spn-notif-head">Notifications <a href="javascript:void(0)" (click)="loadNotifications()"><i class="fa fa-refresh"></i></a></div>
+
+        <div class="spn-notif-sec" *ngIf="notif.tasks?.length">Today's tasks</div>
+        <a *ngFor="let t of notif.tasks" class="spn-notif-item" [routerLink]="['/admin-panel', t.route]">
+          <i class="fa fa-check-square-o" [class.text-danger]="t.overdue"></i>
+          <span><b>{{ t.title }}</b><small [class.text-danger]="t.overdue">{{ t.sub }}</small></span>
         </a>
-        <div ngbDropdownMenu [class.dropdown-menu-right]="!isRTL" style="border-left: 4px solid #16a34a;">
-            <a [routerLink]="['/logout']"class="dropdown-item">Log Out</a>
-            <a [routerLink]="['/admin-panel/password-change']"class="dropdown-item">Change Password</a>
-            <!--<a class="dropdown-item">Version : {{version}}</a>-->
+
+        <div class="spn-notif-sec" *ngIf="notif.targets?.length">Today's targets</div>
+        <a *ngFor="let t of notif.targets" class="spn-notif-item" [routerLink]="['/admin-panel', t.route]">
+          <i class="fa fa-bullseye"></i>
+          <span><b>{{ t.title }}</b><small>{{ t.sub }}</small>
+            <span class="spn-notif-bar"><span [style.width.%]="t.pct > 100 ? 100 : t.pct"></span></span></span>
+        </a>
+
+        <div class="spn-notif-sec" *ngIf="notif.approvals?.length">Approvals &amp; requests</div>
+        <a *ngFor="let a of notif.approvals" class="spn-notif-item" [routerLink]="['/admin-panel', a.route]">
+          <i class="fa fa-gavel"></i>
+          <span><b>{{ a.title }}</b></span>
+          <em>{{ a.count }}</em>
+        </a>
+
+        <div class="spn-notif-empty" *ngIf="!notif.tasks?.length && !notif.targets?.length && !notif.approvals?.length">
+          You're all caught up.
         </div>
+        <a class="spn-notif-foot" [routerLink]="['/admin-panel/office-tickets']">Office tickets &amp; wishes →</a>
+      </div>
+    </div>
+
+    <div ngbDropdown [placement]="isRTL ? 'bottom-left' : 'bottom-right'" class="demo-navbar-user">
+      <button type="button" ngbDropdownToggle class="spn-profile">
+        <img [src]="profileImg" alt="">
+        <span>
+          <b>{{ loggedUserName || 'Admin' }}</b>
+          <small>{{ roleLabel }}</small>
+        </span>
+        <i class="fas fa-chevron-down" style="font-size:10px;color:#64748B;"></i>
+      </button>
+      <div ngbDropdownMenu [class.dropdown-menu-right]="!isRTL">
+        <a [routerLink]="['/admin-panel/password-change']" class="dropdown-item">Change Password</a>
+        <a [routerLink]="['/logout']" class="dropdown-item">Log Out</a>
       </div>
     </div>
   </div>

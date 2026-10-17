@@ -727,6 +727,7 @@ export class UpdateEmployeeComponent implements OnInit {
       ifsc_code: ['',[Validators.pattern(this.ifscPattern)]],
       target: ['',[Validators.pattern(this.decimalPattern)]],
       salary: ['', [Validators.required,Validators.pattern(this.decimalPattern)]],
+      day_allowance: ['200', [Validators.pattern(this.decimalPattern)]],
       collection_area_id: [''],
       commission: ['',[Validators.required,Validators.pattern(this.decimalPattern)]],
       incentive: ['',[Validators.required,Validators.pattern(this.decimalPattern)]],
@@ -835,6 +836,7 @@ export class UpdateEmployeeComponent implements OnInit {
             this.UpdateEmployee.get('ifsc_code').setValue(response.data[0].ifsc_code);
             this.UpdateEmployee.get('target').setValue(response.data[0].target);
             this.UpdateEmployee.get('salary').setValue(response.data[0].salary);
+            this.UpdateEmployee.get('day_allowance').setValue(response.data[0].day_allowance != null ? response.data[0].day_allowance : 200);
             this.UpdateEmployee.get('collection_area_id').setValue(response.data[0].collection_area_id);
             this.UpdateEmployee.get('commission').setValue(response.data[0].commission);
             this.UpdateEmployee.get('incentive').setValue(response.data[0].incentive);

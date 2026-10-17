@@ -112,10 +112,11 @@ export class SetEmployeeTargetComponent implements OnInit {
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       employee_id: ['', Validators.required],
-      period_type: ['daily', Validators.required],
+      period_type: ['monthly', Validators.required],
       target_type: ['existing_client_collection', Validators.required],
       period_start: [`${y}-${m}-${d}`, Validators.required],
-      target_amount: ['', [Validators.required]],
+      target_amount: [''],
+      business_value: [''],
       achieved_amount: [0],
       target_label: ['Existing Client Collection'],
       notes: [''],
@@ -182,11 +183,15 @@ export class SetEmployeeTargetComponent implements OnInit {
     });
   }
 
+  amountMissing(): boolean {
+    return !(Number(this.form.get('target_amount').value) > 0) && !(Number(this.form.get('business_value').value) > 0);
+  }
+
   onSubmit() {
     this.submitted = true;
     this.disableBtn = true;
     this.SubmitbuttonName = 'Saving...';
-    if (this.form.invalid) {
+    if (this.form.invalid || this.amountMissing()) {
       this.disableBtn = false;
       this.SubmitbuttonName = 'Save Target';
       return;

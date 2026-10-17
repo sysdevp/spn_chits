@@ -1,0 +1,94 @@
+<div class="card">
+  <div class="card-header font-weight-bold d-flex justify-content-between align-items-center">
+    <span>UTR Receipt Report</span>
+    <button type="button" class="btn btn-sm btn-success" *ngIf="dataList.length" (click)="exportExcel()">Export Excel</button>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="reportForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group col-md-2" [hidden]="!isSuperAdmin">
+          <label>Company</label>
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let company of companyList" [value]="company.id">{{ company.chit_fund_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>Branch</label>
+          <select class="form-control" formControlName="branch_id">
+            <option value="0">All Branches</option>
+            <option *ngFor="let branch of branchList" [value]="branch.id">{{ branch.branch_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>From Date</label>
+          <input type="date" class="form-control" formControlName="from_date" />
+        </div>
+        <div class="form-group col-md-2">
+          <label>To Date</label>
+          <input type="date" class="form-control" formControlName="to_date" />
+        </div>
+        <div class="form-group col-md-2">
+          <label>UTR Number</label>
+          <input type="text" class="form-control" formControlName="utr" placeholder="Search UTR" />
+        </div>
+        <div class="form-group col-md-2">
+          <label>Entry type</label>
+          <select class="form-control" formControlName="entry_mode">
+            <option value="all">All</option>
+            <option value="scanned">Camera / screenshot</option>
+            <option value="manual">Manually typed</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="loading">{{ loading ? 'Loading...' : 'Filter' }}</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="table-responsive mt-3" *ngIf="dataList.length">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>S.No</th><th>Receipt No</th><th>Receipt Date</th><th>Customer</th><th>Mobile</th>
+            <th>Employee</th><th>Branch</th><th>Amount</th><th>UTR</th><th>Txn Date</th><th>Txn Time</th>
+            <th>Entry</th><th>Screenshot</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList">
+            <td>{{ row.sno }}</td>
+            <td>{{ row.receipt_no }}</td>
+            <td>{{ row.receipt_date }}</td>
+            <td>{{ row.customer_name }}</td>
+            <td>{{ row.mobile }}</td>
+            <td>{{ row.employee_name }}</td>
+            <td>{{ row.branch_name }}</td>
+            <td class="text-right">{{ row.amount | number:'1.2-2' }}</td>
+            <td>{{ row.utr }}</td>
+            <td>{{ row.txn_date }}</td>
+            <td>{{ row.txn_time }}</td>
+            <td>
+              <span class="badge" [ngClass]="row.entry_mode === 'manual' ? 'badge-warning' : 'badge-success'">
+                {{ row.entry_mode_label || (row.entry_mode === 'manual' ? 'Manually typed' : 'Camera / screenshot') }}
+              </span>
+            </td>
+            <td>
+              <a *ngIf="row.screenshot" [href]="row.screenshot" target="_blank">View</a>
+              <span *ngIf="!row.screenshot">-</span>
+            </td>
+            <td>{{ row.status }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="font-weight-bold bg-light">
+            <td colspan="7" class="text-right">TOTAL ({{ totals.count }})</td>
+            <td class="text-right">{{ totals.amount | number:'1.2-2' }}</td>
+            <td colspan="6"></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p *ngIf="noData" class="text-muted text-center mt-4">No UTR receipts found for this filter.</p>
+  </div>
+</div>

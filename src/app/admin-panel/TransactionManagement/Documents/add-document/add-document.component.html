@@ -1,62 +1,3 @@
-<ng-template #uploadModal let-c="close" let-d="dismiss">
-  <div class="modal-header without-text d-flex p-2">
-    <h4 class="mb-0 my-auto text-white px-3">Upload Document</h4>
-    <button type="button" class="btn btn-default mx-2 text-white border-white px-3 py-2 rounded-circle" id="myDiv" style="color:#000;" (click)="c('Close click');uploader.clearQueue()">X</button>
-  </div>
-  <div class="ng2-file-upload-drop-zone text-center py-2 px-3" style="border-bottom: 1px solid #8897aa;margin: 10px;"
-    ng2FileDrop
-    [ngClass]="{'ng2-file-upload-file-over': hasBaseDropZoneOver}"
-    (fileOver)="fileOver($event)"
-    [uploader]="uploader">
-    <div class="row">
-      <div class="col-md-12 col-12 d-flex justify-content-center">
-        <label class="btn btn-secondary mr-2">Select file
-          <input type="file" class="sr-only" ng2FileSelect [uploader]="uploader" accept="image/*">
-        </label>
-        <div class="mr-3 text-center service_up">
-          <button type="button" class="progress-resume-link btn btn-primary" (click)="uploadAssetDetails(uploader.queue);c('Close click');uploader.clearQueue()"
-          [disabled]="!uploader.getNotUploadedItems().length" ngbTooltip="Upload all">
-          <i class="icon ion-md-cloud-upload px-2"></i> Upload File</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="media mt-4" [class.d-none]="!uploader?.queue?.length">
-    <div class="row" style="width: 100%;"> 
-      <div class="col-md-12">
-        <div class="media-body align-self-center" style="margin-top: 13px;"> 
-          <div class="progress-container progress">
-            <div class="progress-bar" [ngStyle]="{ 'width': uploader.progress + '%' }"></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-12">
-        <ul class="list-group mt-4" [class.d-none]="!uploader?.queue?.length" >
-          <!-- Files -->
-          <li class="list-group-item" *ngFor="let item of uploader.queue; let i = index;"> 
-            <div class="media">
-              <div class="media-body">
-                <div class="file_n_scrl">
-                  <span *ngIf="item.isSuccess"><i class="ion ion-md-checkmark text-success text-big mr-2"></i></span> 
-                  <span *ngIf="item.isError"><i class="ion ion-md-alert text-danger text-big mr-2"></i></span>
-                  <strong>File {{ item?.file?.name }}</strong>
-                  <span>- <em class="text-muted">{{ item.progress + '%' }}</em></span>
-                  <small class="text-muted" nowrap>
-                  {{ item?.file?.size/1024/1024 | number:'.2' }} MB
-                  </small>
-                </div>
-              </div>
-              <div class="align-self-center ml-3">
-                <button type="button" class="btn btn-sm icon-btn btn-outline-danger" (click)="item.remove()"><i class="ion ion-md-trash"></i></button>
-              </div>
-            </div> 
-          </li>
-        </ul>
-      </div>
-    </div>
-  </div> 
-</ng-template>
-
 <div class="card">
   <div class="card-header">
     <div class="row">
@@ -261,14 +202,17 @@
                   <label *ngIf="document.hasError('required', 'document_no')">Document No is required</label>
                 </div>
               </td>
-              <td class="custom-file">
-                <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' },i,'document')" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
-                  <b *ngIf="(document.get('document_path').value)==''">Choose File</b>
-                  <b class="uploaded-files" *ngIf="(document.get('document_path').value)!=''">Uploaded</b><br/> 
-                  <div class="col-md-12" *ngIf="submitted && document.controls.document_path.errors" class="invalid-feedback">
-                    <label *ngIf="document.hasError('required', 'document_path')">Document Upload is required</label>
-                  </div>
-                </a>
+              <td style="min-width:200px">
+                <label class="btn btn-sm btn-outline-success mb-1" [class.disabled]="rowUpload('document', i).busy">
+                  <i class="fas fa-upload pr-1"></i>{{ document.get('document_path').value ? 'Change File' : 'Choose File' }}
+                  <input type="file" class="d-none" accept="image/*,application/pdf" [disabled]="rowUpload('document', i).busy" (change)="onRowFileSelected($event, i, 'document')">
+                </label>
+                <div class="small text-info" *ngIf="rowUpload('document', i).busy">Uploading {{ rowUpload('document', i).name }}…</div>
+                <div class="small text-success" *ngIf="!rowUpload('document', i).busy && document.get('document_path').value"><i class="fas fa-check pr-1"></i>Uploaded {{ rowUpload('document', i).name }}</div>
+                <div class="small text-danger" *ngIf="rowUpload('document', i).error">{{ rowUpload('document', i).error }}</div>
+                <div class="col-md-12" *ngIf="submitted && document.controls.document_path.errors" class="invalid-feedback">
+                  <label *ngIf="document.hasError('required', 'document_path')">Document Upload is required</label>
+                </div>
               </td>
             </tr>
           </table>
@@ -301,14 +245,17 @@
                   <label *ngIf="asset.hasError('pattern', 'asset_value')">Invalid Asset Value</label>
                 </div>
               </td>
-              <td class="custom-file">
-                <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' },i,'asset')" for="inputGroupFile01" class="white_btn logobtn p-2  text-dark rounded w-100 btn">
-                  <b *ngIf="(asset.get('asset_path').value)==''">Choose File</b>
-                  <b class="uploaded-files" *ngIf="(asset.get('asset_path').value)!=''">Uploaded</b><br/>
-                  <div class="col-md-12" *ngIf="submitted && asset.controls.asset_path.errors" class="invalid-feedback">
-                    <label *ngIf="asset.hasError('required', 'asset_path')">Asset Upload is required</label>
-                  </div>
-                </a>
+              <td style="min-width:200px">
+                <label class="btn btn-sm btn-outline-success mb-1" [class.disabled]="rowUpload('asset', i).busy">
+                  <i class="fas fa-upload pr-1"></i>{{ asset.get('asset_path').value ? 'Change File' : 'Choose File' }}
+                  <input type="file" class="d-none" accept="image/*,application/pdf" [disabled]="rowUpload('asset', i).busy" (change)="onRowFileSelected($event, i, 'asset')">
+                </label>
+                <div class="small text-info" *ngIf="rowUpload('asset', i).busy">Uploading {{ rowUpload('asset', i).name }}…</div>
+                <div class="small text-success" *ngIf="!rowUpload('asset', i).busy && asset.get('asset_path').value"><i class="fas fa-check pr-1"></i>Uploaded {{ rowUpload('asset', i).name }}</div>
+                <div class="small text-danger" *ngIf="rowUpload('asset', i).error">{{ rowUpload('asset', i).error }}</div>
+                <div class="col-md-12" *ngIf="submitted && asset.controls.asset_path.errors" class="invalid-feedback">
+                  <label *ngIf="asset.hasError('required', 'asset_path')">Asset Upload is required</label>
+                </div>
               </td>
             </tr>
           </table>

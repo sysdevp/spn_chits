@@ -1,5 +1,19 @@
 import { Injectable } from '@angular/core';
 import { MenuPermType, ROUTE_MENU, RouteMenuConfig } from '../config/app-menu.config';
+import {
+  AccessAction,
+  ACCESS_PAGE_BY_ID,
+  ACCESS_PAGES_BY_ROUTE,
+  ACCESS_SECTION_BY_KEY,
+  SPN_ACCESS_MODULE_ID,
+} from '../config/spn-access.config';
+
+const ACTION_PERM: { [a: string]: MenuPermType } = {
+  view: 'view_perm',
+  add: 'add_perm',
+  edit: 'edit_perm',
+  delete: 'delete_perm',
+};
 
 @Injectable({
   providedIn: 'root',
@@ -215,6 +229,69 @@ export class MenuPermissionService {
       return this.hasPermissionByTitle(config.title, permType, !!config.useTopPerm && permType === 'add_perm');
     }
     return false;
+  }
+
+  private pageModule(): any {
+    if (!this.permissionList.length) {
+      this.refreshPermissions();
+    }
+    return this.permissionList.find((m: any) => Number(m.menu_id) === SPN_ACCESS_MODULE_ID) || null;
+  }
+
+  /** Role saved with the page-level Security Permissions screen. */
+  hasPageAccessModule(): boolean {
+    return !!this.pageModule();
+  }
+
+  /** Page-level access (spn-access.config ids); older roles fall back to their legacy menu ids. */
+  canPage(pageId: number, action: AccessAction = 'view'): boolean {
+    if (this.canBypassMenuCheck(pageId)) {
+      return true;
+    }
+    const mod = this.pageModule();
+    if (mod) {
+      const rec = (mod.Submenus || []).find((s: any) => Number(s.menu_id) === Number(pageId));
+      return this.isPermEnabled(rec, ACTION_PERM[action]);
+    }
+    const page = ACCESS_PAGE_BY_ID[pageId];
+    if (!page) {
+      return false;
+    }
+    const pairs = page.legacy.length ? page.legacy : (page.fallback || []);
+    if (!pairs.length) {
+      return true;
+    }
+    return pairs.some(([menuId, parentId]) => this.hasPermission(menuId, parentId, ACTION_PERM[action]));
+  }
+
+  canAnyPage(pageIds: number[]): boolean {
+    return pageIds.some((id) => this.canPage(id));
+  }
+
+  /** True when any non-overview page of the section is visible. */
+  canSection(key: string): boolean {
+    const section = ACCESS_SECTION_BY_KEY[key];
+    return !!section && section.pages.some((p) => !p.overview && this.canPage(p.id));
+  }
+
+  /**
+   * Route guard for page-level roles. Returns null when the route is not in the catalogue
+   * or the role still uses legacy permissions (caller falls back to menuId checks).
+   */
+  canPageRoute(path: string, permType: MenuPermType | ''): boolean | null {
+    if (!this.hasPageAccessModule() || this.canBypassMenuCheck()) {
+      return null;
+    }
+    const ids = ACCESS_PAGES_BY_ROUTE[path];
+    if (!ids || !ids.length) {
+      return null;
+    }
+    const wanted = (permType || 'view_perm').replace('_perm', '') as AccessAction;
+    return ids.some((id) => {
+      const page = ACCESS_PAGE_BY_ID[id];
+      const action: AccessAction = page.actions.indexOf(wanted) >= 0 ? wanted : 'view';
+      return this.canPage(id, action);
+    });
   }
 
   /** Used by sidenav: show menu if user has view access (or bypass). */

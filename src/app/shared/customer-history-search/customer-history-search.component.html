@@ -10,7 +10,7 @@
     <input
       type="text"
       class="chs-input"
-      [placeholder]="variant === 'navbar' ? 'Search customer…' : 'Name / Mobile / Code / AR No'"
+      [placeholder]="placeholder || (variant === 'navbar' ? 'Search customer…' : 'Name / Mobile / Code / AR No')"
       [value]="query"
       (input)="onInput($event.target.value)"
       (keydown)="onKeydown($event)"

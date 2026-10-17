@@ -143,7 +143,7 @@ export class EmployeeCollectionReportComponent implements OnInit {
     let cond = {
       "conditions[branch_id]": event.target.value
     }
-    this.userservice.getData(cond, "get-groups", "POST").subscribe((response: any) => {
+    this.userservice.getData({ 'conditions[tenant_id]': this.EmployeeCollectionReport.get('tenant_id').value }, "get-schemes", "POST").subscribe((response: any) => {
       try {
         if (response.status == 'Success') {
           this.groupList = response.data;
@@ -178,7 +178,7 @@ export class EmployeeCollectionReportComponent implements OnInit {
     this.customerList = this.enrollmentList;
     let cond = {
       "conditions[branch_id]": this.EmployeeCollectionReport.get('branch_id').value,
-      "conditions[group_id]": event.target.value,
+      "conditions[scheme_id]": event.target.value,
     }
     this.userservice.getData(cond, "get-enrolled-customers", "POST").subscribe((response: any) => {
       try {
@@ -235,6 +235,7 @@ export class EmployeeCollectionReportComponent implements OnInit {
     }
     this.EmployeeCollectionReport.get('branch_id').setValue('');
     this.EmployeeCollectionReport.get('group_id').setValue('');
+    this.EmployeeCollectionReport.get('scheme_id').setValue('');
     this.EmployeeCollectionReport.get('customer_id').setValue('');
     this.EmployeeCollectionReport.get('employee_id').setValue('');
     this.EmployeeCollectionReport.get('payment_type_id').setValue('');
@@ -599,6 +600,7 @@ export class EmployeeCollectionReportComponent implements OnInit {
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       group_id: [''],
+      scheme_id: [''],
       customer_id: [''],
       employee_id: [''],
       payment_type_id: [''],

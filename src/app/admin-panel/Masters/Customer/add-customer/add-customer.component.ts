@@ -5,6 +5,7 @@ import { Router } from "@angular/router";
 import { UserService } from "../../../../Services/user.service";
 import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { environment } from "../../../../../environments/environment";
+import { KycUploadComponent } from "../kyc-upload/kyc-upload.component";
 
 @Component({
   
@@ -102,6 +103,7 @@ export class AddCustomerComponent implements OnInit {
   @ViewChild("mobile_no") focus9: ElementRef;
   @ViewChild("phone_no") focus10: ElementRef;
   @ViewChild("email_id") focus11: ElementRef;
+  @ViewChild("kycUpload") kycUpload: KycUploadComponent;
   @ViewChild("adhar_no") focus12: ElementRef;
   @ViewChild("pan_no") focus13: ElementRef;
   @ViewChild("license_no") focus14: ElementRef;
@@ -191,6 +193,7 @@ export class AddCustomerComponent implements OnInit {
   chitValueList: any[] = [];
   slabLists: { [index: number]: any[] } = {};
   tempChits: FormArray;
+  showChitSection = false;
   chargesTypeList: any[] = [];
   bankList: any[] = [];
   currentChitDate: any;
@@ -1085,16 +1088,35 @@ export class AddCustomerComponent implements OnInit {
       this.focusFirstInvalidCustomerField();
       return;
     }
+    if (this.kycUpload && this.kycUpload.isUploading()) {
+      this.SubmitbuttonName = "Submit";
+      this.disableBtn = false;
+      this.appService.showAlert("KYC Upload", "Please wait, documents are still uploading", "error");
+      return;
+    }
 
     this.userservice.getData(result, "store-customer", "JSON").subscribe(
       (response: any) => {
         this.SubmitbuttonName = "Submit";
         try {
           if (response.status == "Success") {
-            this.appService.showAlert("Customer", response.msg, "success");
-            setTimeout(() => {
-              this.router.navigate(["/admin-panel/view-customer"]);
-            }, 300);
+            const saved = response.data || {};
+            const finish = (kycOk: boolean) => {
+              this.appService.showAlert(
+                "Customer",
+                kycOk ? response.msg : response.msg + " (KYC documents could not be saved, please add them from Update Customer)",
+                kycOk ? "success" : "error",
+              );
+              setTimeout(() => {
+                const addChit = !this.showChitSection && confirm("Customer saved. Add a chit for this customer now?");
+                this.router.navigate([addChit ? "/admin-panel/add-commitment-chit" : "/admin-panel/view-customer"]);
+              }, 300);
+            };
+            if (this.kycUpload) {
+              this.kycUpload.save(saved.id, saved.branch_id || result.branch_id).subscribe(finish);
+            } else {
+              finish(true);
+            }
           } else {
             this.appService.showAlert("Customer", response.msg, "error");
             this.disableBtn = false;
@@ -1208,8 +1230,8 @@ export class AddCustomerComponent implements OnInit {
       bonus_days: ["", [Validators.pattern(this.numOnlyPattern)]],
       penalty_days: ["", [Validators.pattern(this.numOnlyPattern)]],
     });
-    this.chitPaymentUi = [this.createChitPaymentUiState()];
-    this.tempChits = this.formBuilder.array([this.createChitRow()]);
+    this.chitPaymentUi = this.showChitSection ? [this.createChitPaymentUiState()] : [];
+    this.tempChits = this.formBuilder.array(this.showChitSection ? [this.createChitRow()] : []);
     this.setEnrollManagerValidators();
 
     this.userservice.getData("", "list-charge-types", "POST").subscribe(

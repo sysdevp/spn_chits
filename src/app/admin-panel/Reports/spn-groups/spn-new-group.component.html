@@ -1,0 +1,85 @@
+<div class="sg-hero">
+  <h1>SPN New Group</h1>
+  <p>Form a chit group by branch, scheme, slab and Due No. A group can only hold as many members as the scheme months, and every member must be on the same Due No.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div>
+      <label>Branch</label>
+      <select [(ngModel)]="branchId" (change)="loadCandidates()">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Scheme *</label>
+      <select [(ngModel)]="schemeId" (change)="schemeChg()">
+        <option value="">Select Scheme</option>
+        <option *ngFor="let s of schemeList" [value]="s.id">{{ s.scheme_format || (s.chit_value + ' / ' + s.no_of_months + ' M') }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Slab</label>
+      <select [(ngModel)]="slabId" (change)="loadCandidates()">
+        <option value="">All Slabs</option>
+        <option *ngFor="let s of slabList" [value]="s.id">{{ s.slab_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Due No *</label>
+      <select [(ngModel)]="dueNo" (change)="selected = {}">
+        <option value="">Select Due No</option>
+        <option *ngFor="let d of dueSummary" [value]="d.due_no">Due {{ d.due_no }} ({{ d.count }} free)</option>
+      </select>
+    </div>
+    <div>
+      <label>Group Name</label>
+      <input [(ngModel)]="groupName" placeholder="Leave empty for auto name" />
+    </div>
+    <div>
+      <label>Formation</label>
+      <div class="sg-mode">
+        <button type="button" [class.on]="mode==='auto'" (click)="mode='auto'">Auto</button>
+        <button type="button" [class.on]="mode==='manual'" (click)="mode='manual'">Manual</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sg-chips" *ngIf="dueSummary.length">
+    <span class="sg-chip" *ngFor="let d of dueSummary" [class.on]="d.due_no == dueNo" (click)="pickDue(d.due_no)">Due {{ d.due_no }} · {{ d.count }} free</span>
+  </div>
+  <div class="sg-note" *ngIf="schemeId && !loading && !dueSummary.length">No free chits for this scheme / branch / slab.</div>
+
+  <div *ngIf="schemeId && maxMembers" class="sg-note">
+    Group size limit for this scheme: <b>{{ maxMembers }}</b> members.
+    <span *ngIf="mode==='manual'" class="sg-cap" [class.full]="selectedCount() >= maxMembers">Selected {{ selectedCount() }} / {{ maxMembers }}</span>
+    <span *ngIf="mode==='auto' && dueNo" class="sg-cap">Auto will pick {{ autoCount() }} chits on Due {{ dueNo }}.</span>
+  </div>
+
+  <div style="margin-top: 12px; display: flex; gap: 8px;">
+    <button type="button" class="sg-btn" (click)="save()" [disabled]="saving || !dueNo">{{ saving ? 'Saving...' : 'Create Group' }}</button>
+    <button type="button" class="sg-btn light" (click)="goView()">Group View</button>
+  </div>
+</div>
+
+<div class="sg-card" *ngIf="dueNo">
+  <h5 style="margin: 0 0 10px; font-weight: 800; color: #004D2A;">Free chits on Due {{ dueNo }}</h5>
+  <table class="sg-table">
+    <thead>
+      <tr><th *ngIf="mode==='manual'">Pick</th><th>Customer</th><th>Mobile</th><th>Branch</th><th>Slab</th><th>AR No</th><th>Due No</th></tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let r of visibleCandidates(); let i = index" [style.opacity]="mode==='auto' && i >= maxMembers ? .45 : 1">
+        <td *ngIf="mode==='manual'"><input type="checkbox" [checked]="selected[r.enrollment_id]" (change)="toggle(r)" /></td>
+        <td>{{ r.customer_name }} <small class="text-muted" *ngIf="r.customer_code">({{ r.customer_code }})</small></td>
+        <td>{{ r.mobile }}</td>
+        <td>{{ r.branch_name }}</td>
+        <td>{{ r.slab_name }}</td>
+        <td>{{ r.ar_no }}</td>
+        <td>{{ r.due_no }}</td>
+      </tr>
+      <tr *ngIf="!visibleCandidates().length"><td colspan="7" class="sg-empty">No free chits on this Due No.</td></tr>
+    </tbody>
+  </table>
+</div>

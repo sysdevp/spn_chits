@@ -27,6 +27,7 @@ use Config;
 use DateTime;
 use DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 
 class CustomerController extends Controller
 {
@@ -354,8 +355,11 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
             try {
                 if(isset($request->id)) {   
                     $customer = Customer::find($request->id);
+                    $oldBranchId = (int) ($customer->branch_id ?? 0);
+                    // Branch change is blocked on edit — use store-customer-branch-transfer instead
+                    $newBranchId = $oldBranchId;
                     $customer->tenant_id = isset($request->tenant_id) ? ($request->tenant_id) : 0;
-                    $customer->branch_id = isset($request->branch_id) ? ($request->branch_id) : 0;
+                    $customer->branch_id = $oldBranchId;
                     $customer->scheme_id = isset($request->scheme_id) ? ($request->scheme_id) : 0;
                     $customer->customer_code = isset($request->customer_code) ? ($request->customer_code) : '';
                     $customer->name = isset($request->name) ? ($request->name) : '';
@@ -455,7 +459,6 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
 					}
 					
                     if($customer->save()) {
-						
                         $update_customer = new UpdateCustomer();
                         $update_customer->tenant_id = isset($customer->tenant_id) ? ($customer->tenant_id) : 0;
                         $update_customer->branch_id = isset($customer->branch_id) ? ($customer->branch_id) : 0;
@@ -592,6 +595,250 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
         }
     }
 
+    /**
+     * Transfer customer to another branch with remarks.
+     * Updates customers + chit_details + before_enrol_receipts + receipts + commitment_auctions.
+     */
+    public function store_customer_branch_transfer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_id' => 'required',
+            'to_branch_id' => 'required',
+            'remarks' => 'required|min:3',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => $validator->errors()->first(),
+            ], 200);
+        }
+
+        try {
+            $this->ensureCustomerBranchTransfersTable();
+            $customer = Customer::find($request->customer_id);
+            if (!$customer) {
+                return response()->json(['status' => 'Error', 'msg' => 'Customer not found'], 200);
+            }
+
+            $fromBranchId = (int) ($customer->branch_id ?? 0);
+            $toBranchId = (int) $request->to_branch_id;
+            if ($toBranchId <= 0) {
+                return response()->json(['status' => 'Error', 'msg' => 'Invalid target branch'], 200);
+            }
+            if ($fromBranchId === $toBranchId) {
+                return response()->json(['status' => 'Error', 'msg' => 'Customer is already in the selected branch'], 200);
+            }
+
+            DB::beginTransaction();
+            $customer->branch_id = $toBranchId;
+            $customer->updated_by = isset($request->transferred_by) ? $request->transferred_by : (isset($request->created_by) ? $request->created_by : 0);
+            $customer->save();
+
+            $syncCounts = $this->syncCustomerRelatedBranchIds((int) $customer->id, $toBranchId);
+
+            $transferDate = date('Y-m-d');
+            if (isset($request->transfer_date) && is_array($request->transfer_date) && !empty($request->transfer_date['year'])) {
+                $transferDate = sprintf(
+                    '%04d-%02d-%02d',
+                    (int) $request->transfer_date['year'],
+                    (int) $request->transfer_date['month'],
+                    (int) $request->transfer_date['day']
+                );
+            } elseif (!empty($request->transfer_date) && is_string($request->transfer_date)) {
+                $transferDate = date('Y-m-d', strtotime($request->transfer_date));
+            }
+
+            $transferId = DB::table('customer_branch_transfers')->insertGetId([
+                'tenant_id' => (int) ($customer->tenant_id ?: ($request->tenant_id ?? 0)),
+                'customer_id' => (int) $customer->id,
+                'from_branch_id' => $fromBranchId,
+                'to_branch_id' => $toBranchId,
+                'remarks' => (string) $request->remarks,
+                'transferred_by' => (int) ($request->transferred_by ?? $request->created_by ?? 0),
+                'transfer_date' => $transferDate,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+            DB::commit();
+
+            $fromName = optional(Branch::find($fromBranchId))->branch_name ?: $fromBranchId;
+            $toName = optional(Branch::find($toBranchId))->branch_name ?: $toBranchId;
+
+            return response()->json([
+                'status' => 'Success',
+                'msg' => 'Customer transferred from ' . $fromName . ' to ' . $toName
+                    . '. Related records updated (chits: ' . $syncCounts['chit_details']
+                    . ', before enrol: ' . $syncCounts['before_enrol_receipts']
+                    . ', receipts: ' . $syncCounts['receipts']
+                    . ', auctions: ' . $syncCounts['commitment_auctions'] . ').',
+                'data' => [
+                    'id' => $transferId,
+                    'customer_id' => (int) $customer->id,
+                    'from_branch_id' => $fromBranchId,
+                    'to_branch_id' => $toBranchId,
+                    'sync' => $syncCounts,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            try { DB::rollBack(); } catch (\Exception $ignore) {}
+            \Log::error('store_customer_branch_transfer failed: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Unable to transfer customer',
+                'error' => $e->getMessage(),
+            ], 200);
+        }
+    }
+
+    public function list_customer_branch_transfers(Request $request)
+    {
+        try {
+            $this->ensureCustomerBranchTransfersTable();
+            $query = DB::table('customer_branch_transfers as t')
+                ->leftJoin('customers as c', 'c.id', '=', 't.customer_id')
+                ->leftJoin('branches as fb', 'fb.id', '=', 't.from_branch_id')
+                ->leftJoin('branches as tb', 'tb.id', '=', 't.to_branch_id')
+                ->orderBy('t.transfer_date', 'desc')
+                ->orderBy('t.id', 'desc');
+
+            if (!empty($request->tenant_id)) {
+                $query->where('t.tenant_id', $request->tenant_id);
+            }
+            if (!empty($request->customer_id)) {
+                $query->where('t.customer_id', $request->customer_id);
+            }
+            if (!empty($request->from_branch_id)) {
+                $query->where('t.from_branch_id', $request->from_branch_id);
+            }
+            if (!empty($request->to_branch_id)) {
+                $query->where('t.to_branch_id', $request->to_branch_id);
+            }
+
+            $startDate = '';
+            $endDate = '';
+            if (isset($request->start_date) && is_array($request->start_date) && !empty($request->start_date['year'])) {
+                $startDate = sprintf(
+                    '%04d-%02d-%02d',
+                    (int) $request->start_date['year'],
+                    (int) $request->start_date['month'],
+                    (int) $request->start_date['day']
+                );
+            } elseif (!empty($request->start_date) && is_string($request->start_date)) {
+                $startDate = date('Y-m-d', strtotime($request->start_date));
+            }
+            if (isset($request->end_date) && is_array($request->end_date) && !empty($request->end_date['year'])) {
+                $endDate = sprintf(
+                    '%04d-%02d-%02d',
+                    (int) $request->end_date['year'],
+                    (int) $request->end_date['month'],
+                    (int) $request->end_date['day']
+                );
+            } elseif (!empty($request->end_date) && is_string($request->end_date)) {
+                $endDate = date('Y-m-d', strtotime($request->end_date));
+            }
+            if ($startDate !== '' && $endDate !== '') {
+                $query->whereBetween('t.transfer_date', [$startDate, $endDate]);
+            } elseif ($startDate !== '') {
+                $query->whereDate('t.transfer_date', '>=', $startDate);
+            } elseif ($endDate !== '') {
+                $query->whereDate('t.transfer_date', '<=', $endDate);
+            }
+
+            $rows = $query->select(
+                't.*',
+                'c.name as customer_first_name',
+                'c.last_name as customer_last_name',
+                'c.customer_code',
+                'c.mobile_no',
+                'fb.branch_name as from_branch_name',
+                'tb.branch_name as to_branch_name'
+            )->limit(1000)->get();
+
+            $data = [];
+            $i = 1;
+            foreach ($rows as $row) {
+                $data[] = [
+                    'sno' => $i++,
+                    'id' => (int) $row->id,
+                    'customer_id' => (int) $row->customer_id,
+                    'customer_name' => trim(($row->customer_first_name ?? '') . ' ' . ($row->customer_last_name ?? '')),
+                    'customer_code' => $row->customer_code ?? '',
+                    'mobile_no' => $row->mobile_no ?? '',
+                    'from_branch_id' => (int) $row->from_branch_id,
+                    'from_branch_name' => $row->from_branch_name ?? '',
+                    'to_branch_id' => (int) $row->to_branch_id,
+                    'to_branch_name' => $row->to_branch_name ?? '',
+                    'remarks' => $row->remarks ?? '',
+                    'transfer_date' => (!empty($row->transfer_date) && $row->transfer_date != '0000-00-00')
+                        ? date('d-m-Y', strtotime($row->transfer_date))
+                        : '',
+                    'transfer_date_raw' => $row->transfer_date,
+                    'transferred_by' => (int) ($row->transferred_by ?? 0),
+                ];
+            }
+
+            return response()->json(['status' => 'Success', 'msg' => '', 'data' => $data], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => 'Unable to load branch transfer report',
+                'error' => $e->getMessage(),
+            ], 200);
+        }
+    }
+
+    private function ensureCustomerBranchTransfersTable()
+    {
+        if (Schema::hasTable('customer_branch_transfers')) {
+            return;
+        }
+        Schema::create('customer_branch_transfers', function ($table) {
+            $table->bigIncrements('id');
+            $table->integer('tenant_id')->default(0);
+            $table->integer('customer_id')->default(0);
+            $table->integer('from_branch_id')->default(0);
+            $table->integer('to_branch_id')->default(0);
+            $table->text('remarks')->nullable();
+            $table->integer('transferred_by')->default(0);
+            $table->date('transfer_date')->nullable();
+            $table->timestamps();
+            $table->index(['tenant_id', 'transfer_date']);
+            $table->index(['customer_id']);
+        });
+    }
+
+    /**
+     * When a customer moves branch, keep related transactional rows on the same branch_id.
+     */
+    private function syncCustomerRelatedBranchIds(int $customerId, int $newBranchId): array
+    {
+        $counts = [
+            'chit_details' => 0,
+            'before_enrol_receipts' => 0,
+            'receipts' => 0,
+            'commitment_auctions' => 0,
+        ];
+
+        $counts['chit_details'] = ChitDetail::where('customer_id', $customerId)
+            ->update(['branch_id' => $newBranchId]);
+
+        $counts['before_enrol_receipts'] = BeforeEnrolReceipt::where('customer_id', $customerId)
+            ->update(['branch_id' => $newBranchId]);
+
+        $counts['receipts'] = Receipt::where('customer_id', $customerId)
+            ->update(['branch_id' => $newBranchId]);
+
+        $enrollmentIds = ChitDetail::where('customer_id', $customerId)->pluck('id');
+        $counts['commitment_auctions'] = CommitmentAuction::where(function ($q) use ($customerId, $enrollmentIds) {
+            $q->where('customer_id', $customerId);
+            if ($enrollmentIds->isNotEmpty()) {
+                $q->orWhereIn('enrollment_id', $enrollmentIds);
+            }
+        })->update(['branch_id' => $newBranchId]);
+
+        return $counts;
+    }
+
     public function get_customers(Request $request) {
         try {
             $cond = $request->conditions; 
@@ -631,6 +878,9 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
                 $customer->is_delete = '0';
 				//$customer->saluation = 'mister';
                 $customer->introducer_info = [];
+                // Static placeholders until the customer score formula is finalized.
+                $customer->remarks = 'Remarks pending review';
+                $customer->customer_score = 75;
                 $customercount=ChitDetail::where('customer_id',$customer->id)->count();
                 if($customercount>0){
                     $customer->is_delete = '1';
@@ -1305,11 +1555,21 @@ https://bit.ly/4dpVmGi - SPN Chits Pvt Ltd";
             $cond = [];
             if($request->branch_id > 0){
                 $cond['branch_id'] = $request->branch_id; 
-                $enrolls = ChitDetail::where($cond)->where('chit_type','!=',1)->where('customer_id','!=',1)->where('chit_type',3)->get();
+                $enrolls = ChitDetail::where($cond)->where('chit_type','!=',1)->where('customer_id','!=',1)->where('chit_type',3);
             }
             if($request->branch_id == 0){
-                $enrolls = ChitDetail::where('chit_type','!=',1)->where('customer_id','!=',1)->where('chit_type',3)->get();
+                $enrolls = ChitDetail::where('chit_type','!=',1)->where('customer_id','!=',1)->where('chit_type',3);
             }
+            if (!empty($request->scheme_id)) {
+                $enrolls = $enrolls->where('scheme_id', $request->scheme_id);
+            }
+            if (!empty($request->slab_id)) {
+                $enrolls = $enrolls->where('slab_id', $request->slab_id);
+            }
+            if (!empty($request->area_id)) {
+                $enrolls = $enrolls->where('collection_area_id', $request->area_id);
+            }
+            $enrolls = $enrolls->get();
             $b=1;     
             $tot_chit_value = 0;
             $grand_total_chit_value = 0; 
@@ -2269,7 +2529,15 @@ $grandchitstotal=0;
         else { 
 		 
             try { 
-			
+                $code = trim((string) $request->family_code);
+                if ($code === '') {
+                    return response()->json(['status' => 'Error', 'msg' => 'Family code is required'], 200);
+                }
+                if (FamilyCode::where('tenant_id', $request->tenant_id)->where('family_code', $code)->exists()) {
+                    return response()->json(['status' => 'Error', 'msg' => 'Family code "' . $code . '" already exists'], 200);
+                }
+                $request->merge(['family_code' => $code]);
+
                 $sms = new FamilyCode();                
                 $sms->tenant_id = isset($request->tenant_id) ? ($request->tenant_id) : 0;
                 $sms->branch_id = isset($request->branch_id) ? ($request->branch_id) : 0;
@@ -2307,9 +2575,19 @@ $grandchitstotal=0;
             try {
                 if(isset($request->id)) {
                     $holiday = FamilyCode::find($request->id); 
+                    if (!$holiday) {
+                        return response()->json(['status' => 'Error', 'msg' => \Lang::get('api.record_not_identified')], 200);
+                    }
+                    $code = trim((string) $request->family_code);
+                    if ($code === '') {
+                        return response()->json(['status' => 'Error', 'msg' => 'Family code is required'], 200);
+                    }
+                    if (FamilyCode::where('tenant_id', $request->tenant_id)->where('family_code', $code)->where('id', '!=', $holiday->id)->exists()) {
+                        return response()->json(['status' => 'Error', 'msg' => 'Family code "' . $code . '" already exists'], 200);
+                    }
                     $holiday->branch_id = isset($request->branch_id) ? ($request->branch_id) : 0;
 					$holiday->tenant_id = isset($request->tenant_id) ? ($request->tenant_id) : 0;
-                    $holiday->family_code = isset($request->family_code) ? ($request->family_code) : 0;   
+                    $holiday->family_code = $code;
                     $holiday->updated_by = isset($request->updated_by) ? ($request->updated_by) : 0;
                     if($holiday->save()) {
                         $response['status'] = "Success";
@@ -2366,14 +2644,22 @@ $grandchitstotal=0;
 	public function list_family_codes(Request $request) {
         try {
 			
-            $smss = FamilyCode::where('status','=',1)->orderBy('id','desc')->get();
-            
+            $q = FamilyCode::where('status','=',1);
+            if (!empty($request->tenant_id)) {
+                $q->where('tenant_id', $request->tenant_id);
+            }
+            if (!empty($request->branch_id)) {
+                $q->where('branch_id', $request->branch_id);
+            }
+            $smss = $q->orderBy('id','desc')->get();
+            $members = Customer::whereIn('family_code', $smss->pluck('id'))
+                ->groupBy('family_code')->select('family_code', DB::raw('COUNT(*) as cnt'))->pluck('cnt', 'family_code');
+
             $i=1;
             foreach($smss as $sms) {
                 $sms->sno = $i;
-				$sms->branch_name = isset($sms->branch_det) ? ($sms->branch_det->branch_name) : [];
-                $sms->family_code = $sms->family_code;
-               
+				$sms->branch_name = isset($sms->branch_det) ? ($sms->branch_det->branch_name) : '';
+                $sms->member_count = (int) ($members[$sms->id] ?? 0);
                 $i++;
             }
 			$issue_date = date('Y-m-d') ;
@@ -2613,11 +2899,11 @@ $grandchitstotal=0;
 	 public function get_customers_view(Request $request) {
         try {
             $cond = $request->conditions; 
-            $is_for_edit = isset($request->for_edit) ? ($request->for_edit) : 0; 
-            $customers = DB::table('customers')->select('name','id','mobile_no','branch_id','scheme_id','customer_code','last_name','address_line_1','address_line_2','city_id','district_id','pincode')->where('is_customer','=',1)->where('status','=',1)->where($cond)->orderBy('name','asc')->get();
-            if($is_for_edit) {
-                $customers = DB::table('customers')->select('name','id','mobile_no','branch_id','scheme_id','customer_code','last_name','address_line_1','address_line_2','city_id','district_id','pincode')->where('is_customer','=',1)->where('status','=',1)->where($cond)->orderBy('name','asc')->get();
-            } 
+            $customerQuery = DB::table('customers')->select('name','id','mobile_no','branch_id','scheme_id','customer_code','last_name','address_line_1','address_line_2','city_id','district_id','pincode','photo','status','created_at')->where('is_customer','=',1)->where($cond);
+            if (empty($request->include_inactive)) {
+                $customerQuery->where('status','=',1);
+            }
+            $customers = $customerQuery->orderBy('name','asc')->get();
             $i=1;
             foreach($customers as $customer) {
                 $customer->sno = $i;
@@ -2625,6 +2911,7 @@ $grandchitstotal=0;
 				$customer->name = $customer->name . ' ' . $customer->last_name;
                 $customer->mobile_no = $customer->mobile_no;
                 $customer->id = $customer->id;
+                $customer->photo_url = (!empty($customer->photo)) ? env('APP_URL').Storage::url('app/uploads/customer_photos/'.$customer->photo) : '';
                 $branch_name = Branch::where('id','=',$customer->branch_id)->pluck('branch_name');
                 $customer->branch_name = $branch_name[0];
 				$customer->address_line_1 = $customer->address_line_1;
@@ -2848,13 +3135,13 @@ $grandchitstotal=0;
 }
 
     /**
-     * Customer ID: SPN-{branch_code}-0001, next number per branch.
+     * Customer ID: SPN-{branch_code}-1000, then 1001, per branch.
      */
     private function generateBranchCustomerCode($branchId, $tenantId = null)
     {
         $branch = Branch::find($branchId);
         if (!$branch) {
-            $fallbackId = Customer::max('id') ?: 1;
+            $fallbackId = max(((int) Customer::max('id')) + 1, 1000);
             return Config::get('constants.auto_codes.customer') . sprintf('%05d', $fallbackId);
         }
 
@@ -2880,7 +3167,12 @@ $grandchitstotal=0;
             }
         }
 
-        return $prefix . sprintf('%04d', $maxSeq + 1);
+        $next = $maxSeq + 1;
+        if ($next < 1000) {
+            $next = 1000;
+        }
+
+        return $prefix . sprintf('%04d', $next);
     }
 
     public function mobile_customer_file_upload(Request $request)
@@ -2928,6 +3220,83 @@ $grandchitstotal=0;
             $detail->document_type = $doc['document_type'] ?? ($doc['document_name'] ?? 'Document');
             $detail->status = 1;
             $detail->save();
+        }
+    }
+
+    /**
+     * Customer birthday report: today / upcoming / completed (past in current year).
+     */
+    public function customer_birthday_report(Request $request)
+    {
+        try {
+            $tenantId = $request->tenant_id ?: ($request->conditions['tenant_id'] ?? null);
+            $branchId = $request->branch_id ?: ($request->conditions['branch_id'] ?? null);
+            if (empty($tenantId) || empty($branchId)) {
+                return response()->json(['status' => 'Error', 'msg' => 'tenant_id and branch_id are required'], 200);
+            }
+
+            $todayMd = date('m-d');
+            $year = (int) date('Y');
+
+            $query = Customer::where('tenant_id', $tenantId)
+                ->where('branch_id', $branchId)
+                ->where('status', 1)
+                ->whereNotNull('dob')
+                ->where('dob', '!=', '0000-00-00')
+                ->where('dob', '!=', '');
+
+            $customers = $query->orderByRaw('DATE_FORMAT(dob, "%m-%d")')->get();
+
+            $today = [];
+            $upcoming = [];
+            $completed = [];
+            $iToday = 1;
+            $iUp = 1;
+            $iDone = 1;
+
+            foreach ($customers as $c) {
+                $dob = $c->dob;
+                if (!$dob || $dob === '0000-00-00') {
+                    continue;
+                }
+                $md = date('m-d', strtotime($dob));
+                $row = [
+                    'id' => $c->id,
+                    'customer_id' => $c->id,
+                    'customer_name' => trim(($c->name ?? '') . ' ' . ($c->last_name ?? '')),
+                    'mobile_no' => $c->mobile_no ?? '',
+                    'email' => $c->email ?? ($c->email_id ?? ''),
+                    'customer_code' => $c->customer_code ?? ($c->cus_code ?? ''),
+                    'dob' => date('d/m/Y', strtotime($dob)),
+                    'dob_md' => $md,
+                ];
+                if ($md === $todayMd) {
+                    $row['sno'] = $iToday++;
+                    $today[] = $row;
+                } elseif ($md > $todayMd) {
+                    $row['sno'] = $iUp++;
+                    $upcoming[] = $row;
+                } else {
+                    $row['sno'] = $iDone++;
+                    $completed[] = $row;
+                }
+            }
+
+            return response()->json([
+                'status' => 'Success',
+                'msg' => '',
+                'data' => [
+                    'today' => $today,
+                    'upcoming' => $upcoming,
+                    'completed' => $completed,
+                    'year' => $year,
+                ],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'Error',
+                'msg' => $e->getMessage(),
+            ], 200);
         }
     }
     

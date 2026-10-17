@@ -45,6 +45,10 @@ class BranchController extends Controller
                 $branch->district_id = isset($request->district_id) ? ($request->district_id) : '0';
                 $branch->city_id = isset($request->city_id) ? ($request->city_id) : '0';
                 $branch->pincode = isset($request->pincode) ? ($request->pincode) : '0';
+                $branch->latitude = isset($request->latitude) ? $request->latitude : null;
+                $branch->longitude = isset($request->longitude) ? $request->longitude : null;
+                $radius = isset($request->punch_radius_meters) ? (int) $request->punch_radius_meters : 50;
+                $branch->punch_radius_meters = in_array($radius, [50, 100], true) ? $radius : 50;
                 $branch->branch_wise_penalty = isset($request->branch_wise_penalty) ? ($request->branch_wise_penalty) : '0';
                 $branch->bonus = isset($request->bonus) ? ($request->bonus) : '0';
                 $branch->email_id = isset($request->email_id) ? ($request->email_id) : '0';
@@ -371,6 +375,10 @@ public function get_branches(Request $request) {
                     $branch->district_id = isset($request->district_id) ? ($request->district_id) : '0';
                     $branch->city_id = isset($request->city_id) ? ($request->city_id) : '0';
                     $branch->pincode = isset($request->pincode) ? ($request->pincode) : '0';
+                    $branch->latitude = isset($request->latitude) ? $request->latitude : null;
+                    $branch->longitude = isset($request->longitude) ? $request->longitude : null;
+                    $radius = isset($request->punch_radius_meters) ? (int) $request->punch_radius_meters : 50;
+                    $branch->punch_radius_meters = in_array($radius, [50, 100], true) ? $radius : 50;
                     $branch->branch_wise_penalty = isset($request->branch_wise_penalty) ? ($request->branch_wise_penalty) : '0';
                     $branch->bonus = isset($request->bonus) ? ($request->bonus) : '0';
                     $branch->email_id = isset($request->email_id) ? ($request->email_id) : '0';

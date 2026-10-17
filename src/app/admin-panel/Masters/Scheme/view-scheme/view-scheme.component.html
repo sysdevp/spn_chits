@@ -1,110 +1,156 @@
 <ng-template #uploadModal let-c="close" let-d="dismiss">
 	<div class="modal-header without-text">
 		<h5 class="float-left px-2 py-2 text-white mb-0">Scheme Detail</h5>
-		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
+		<button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
 	</div>
 	<div class="modal-body">
     <div class="card-body">
       <form class="bs-example form-horizontal">
         <div class="row">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Chit Value : </label>
-              <b class="px-1">{{ViewSchemeInfo.chit_value}} </b>
-            </div>
-          </div>	
-		      <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">No of Auctions: </label>
-              <b class="px-1">{{ViewSchemeInfo.no_of_months}} </b>
-            </div>
-		      </div>
-		      <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">No of Members : </label>
-              <b class="px-1">{{ViewSchemeInfo.members}}  </b>
-            </div>
-          </div>
-           <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Due Amount: </label>
-              <b class="px-1">{{ViewSchemeInfo.monthly_due}}</b>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Registration Fee : </label>
-              <b class="px-1">{{ViewSchemeInfo.register_fees}}  </b>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Enrollment Fee : </label>
-              <b class="px-1">{{ViewSchemeInfo.enrollment_fees}}  </b>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Chit Letter : </label>
-              <b class="px-1">{{ViewSchemeInfo.chit_letter}}  </b>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="form-label">Short Term : </label>
-              <b class="px-1">{{ViewSchemeInfo.short_term}}  </b>
-            </div>
-          </div>
-         
-	      </div>
-		  </form>
-		</div>
+          <div class="col-md-6"><div class="form-group"><label>Chit Value : </label><b class="px-1">{{ViewSchemeInfo.chit_value}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>No of Auctions: </label><b class="px-1">{{ViewSchemeInfo.no_of_months}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>No of Members : </label><b class="px-1">{{ViewSchemeInfo.members}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Due Amount: </label><b class="px-1">{{ViewSchemeInfo.monthly_due}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Registration Fee : </label><b class="px-1">{{ViewSchemeInfo.register_fees}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Enrollment Fee : </label><b class="px-1">{{ViewSchemeInfo.enrollment_fees}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Chit Letter : </label><b class="px-1">{{ViewSchemeInfo.chit_letter}}</b></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Short Term : </label><b class="px-1">{{ViewSchemeInfo.short_term}}</b></div></div>
+        </div>
+      </form>
+    </div>
 	</div>
 	<div class="modal-footer"></div>
 </ng-template>
 
-<div class="card maz-vh">
-  <div class="card-header">
-    <div class="row">
-      <div class="col-6 my-auto font-weight-bold">Scheme Detail</div>
-        <div class="col-6 text-right">
-          <a [routerLink]="['/admin-panel/add-scheme']" class="bg-success border-0 text-white px-3 py-2"> + Add Scheme </a>
+<div class="sch" [hidden]="TableHidden">
+  <div class="sch-hero">
+    <div class="sch-hero-copy">
+      <div class="sch-crumb">Dashboard / Chit / Schemes</div>
+      <div class="sch-title">
+        <div class="sch-ico"><i class="fas fa-layer-group"></i></div>
+        <div>
+          <h1>Schemes</h1>
+          <p>Manage and configure all chit schemes</p>
         </div>
       </div>
     </div>
-    <div class="card-body">
-      <div [hidden]="TableHidden">
-        <table id="dtable"  class="row-border hover">
-          <thead>
-            <tr> 
-              <th>Sno</th>
-              <th>Chit Value</th>
-              <th>Scheme Format</th>
-              <th>Registration Fee</th>
-              <th>Due Amount</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-        <tbody>
-          <tr *ngFor="let row of dataList;">
-            <td>{{row.sno}}</td>
-            <td>{{row.chit_value}}</td>
-            <td>{{row.scheme_format}}</td>
-            <td>{{row.register_fees}}</td>
-            <td>{{row.monthly_due}}</td>
-            <td>  
-              <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Scheme"><i class="fas fa-eye text-success"></i></a>
-              <a [routerLink]="['/admin-panel/update-scheme/'+row.id]" title="Edit Scheme"><i class="fas fa-edit text-primary mx-2"></i></a>
-              <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-scheme/'+row.id]" title="Delete Scheme"><i class="fas fa-trash-alt text-danger"></i></a>
-              <!--<a *ngIf="row.status==1" (click)="changeStatus(row.id,0)" style="margin-left:5%;cursor:pointer;" title="Deactivate Scheme"><i class="fas fa-check-circle text-success"></i></a>
-              <a *ngIf="row.status==0" (click)="changeStatus(row.id,1)" style="margin-left:5%;cursor:pointer;" title="Activate Scheme"><i class="fas fa-ban text-danger"></i></a>-->
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div *ngIf="TableHidden==true" class="table-loader" > 
-      <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
+    <div class="sch-actions">
+      <label class="sch-btn white" title="Import">
+        <i class="fas fa-download"></i> Import
+        <input type="file" accept=".xlsx,.xls,.csv" (change)="onImportFile($event)" hidden>
+      </label>
+      <button type="button" class="sch-btn white" (click)="exportSchemes()"><i class="fas fa-upload"></i> Export</button>
+      <a class="sch-btn green" [routerLink]="['/admin-panel/add-scheme']"><i class="fas fa-plus"></i> Add Scheme</a>
     </div>
   </div>
+
+  <div class="sch-filters">
+    <div class="sch-field">
+      <label>Search</label>
+      <input type="text" placeholder="Search by scheme name, amount, format..." [(ngModel)]="searchText">
+    </div>
+    <div class="sch-field">
+      <label>Chit Value Range</label>
+      <select [(ngModel)]="valueRange">
+        <option value="">All Ranges</option>
+        <option value="below-1l">Below ₹1,00,000</option>
+        <option value="1l-5l">₹1,00,000 – ₹5,00,000</option>
+        <option value="5l-10l">₹5,00,000 – ₹10,00,000</option>
+        <option value="above-10l">Above ₹10,00,000</option>
+      </select>
+    </div>
+    <div class="sch-field">
+      <label>Scheme Format</label>
+      <select [(ngModel)]="formatFilter">
+        <option value="">All Formats</option>
+        <option *ngFor="let format of formats" [value]="format">{{ format }}</option>
+      </select>
+    </div>
+    <div class="sch-field">
+      <label>Status</label>
+      <select [(ngModel)]="statusFilter">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>
+    <button type="button" class="sch-btn green" (click)="applyFilters()"><i class="fas fa-search"></i> Search</button>
+    <button type="button" class="sch-btn white" (click)="resetFilters()"><i class="fas fa-sync-alt"></i> Reset</button>
+  </div>
+
+  <div class="sch-kpis">
+    <div class="sch-kpi green">
+      <i class="fas fa-coins"></i>
+      <div><span>Total Schemes</span><b>{{ totalSchemes }}</b><small>Active chit schemes</small></div>
+    </div>
+    <div class="sch-kpi blue">
+      <i class="fas fa-chart-bar"></i>
+      <div><span>Total Chit Value</span><b>{{ money(totalChitValue, 0) }}</b><small>Across all schemes</small></div>
+    </div>
+    <div class="sch-kpi gold">
+      <i class="fas fa-user-plus"></i>
+      <div><span>Average Registration Fee</span><b>{{ money(avgRegister, 0) }}</b><small>Per scheme (Avg)</small></div>
+    </div>
+    <div class="sch-kpi violet">
+      <i class="fas fa-rupee-sign"></i>
+      <div><span>Average Due Amount</span><b>{{ money(avgDue, 0) }}</b><small>Per installment (Avg)</small></div>
+    </div>
+  </div>
+
+  <div class="sch-table-card">
+    <div class="sch-table-head">
+      <h3><i class="fas fa-list"></i> Scheme Details</h3>
+      <div>
+        <label>Show</label>
+        <select [value]="pageSize" (change)="setPageSize($event)">
+          <option [value]="10">10</option>
+          <option [value]="25">25</option>
+          <option [value]="50">50</option>
+        </select>
+        <label>entries</label>
+      </div>
+    </div>
+    <table class="sch-table">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Chit Value</th>
+          <th>Scheme Format</th>
+          <th>Registration Fee</th>
+          <th>Due Amount</th>
+          <th>Status</th>
+          <th>Created Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of pageRows; let i = index">
+          <td>{{ showingFrom() + i }}</td>
+          <td>{{ money(row.chit_value, 0) }}</td>
+          <td>{{ schemeFormat(row) }}</td>
+          <td>{{ money(row.register_fees, 0) }}</td>
+          <td>{{ money(row.monthly_due, 2) }}</td>
+          <td><span class="pill" [class.off]="statusLabel(row) === 'Inactive'">{{ statusLabel(row) }}</span></td>
+          <td>{{ formatDate(row.created_at) }}</td>
+          <td class="sch-actions-cell">
+            <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)" title="View Scheme"><i class="fas fa-eye" style="color:#18A957;"></i></a>
+            <a [routerLink]="['/admin-panel/update-scheme/'+row.id]" title="Edit Scheme"><i class="fas fa-edit" style="color:#1687E8;"></i></a>
+            <a *ngIf="row.is_delete==0" [routerLink]="['/admin-panel/delete-scheme/'+row.id]" title="Delete Scheme"><i class="fas fa-trash-alt" style="color:#EF476F;"></i></a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="sch-empty" *ngIf="!pageRows.length">No schemes match these filters.</div>
+    <div class="sch-foot">
+      <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filtered.length }} entries</span>
+      <div class="pager">
+        <button type="button" (click)="goPage(page - 1)">&lt;</button>
+        <button type="button" *ngFor="let n of pages()" [class.on]="n === page" (click)="goPage(n)">{{ n }}</button>
+        <button type="button" (click)="goPage(page + 1)">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div *ngIf="TableHidden" class="table-loader">
+  <img style="width: 120px;margin: 20% auto;display: block;" src="assets/img/loading.gif"/>
 </div>

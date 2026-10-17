@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SPN Chits – 34 Point Change Guide (Prized flow, Auction, Accounts, HR)</title>
+<style>
+  @page { size: A4; margin: 14mm 12mm; }
+  body { font-family: "Segoe UI", Arial, sans-serif; color: #10233f; font-size: 11.5px; line-height: 1.5; }
+  h1 { color: #0b6b3a; font-size: 24px; margin: 0 0 4px; }
+  h2 { color: #fff; background: #0b6b3a; padding: 6px 10px; font-size: 15px; margin: 22px 0 10px; border-radius: 4px; page-break-after: avoid; }
+  .sub { color: #555; margin-bottom: 14px; }
+  .pt { border: 1px solid #d7e5dc; border-left: 5px solid #18A957; border-radius: 4px; padding: 8px 10px; margin: 0 0 9px; page-break-inside: avoid; }
+  .pt h3 { margin: 0 0 4px; font-size: 13px; color: #0b6b3a; }
+  .pt .req { color: #6b4e00; background: #fff8e1; padding: 3px 6px; border-radius: 3px; margin-bottom: 5px; font-style: italic; }
+  .lbl { font-weight: 700; color: #10233f; }
+  code { background: #eef5f0; padding: 1px 4px; border-radius: 3px; font-size: 10.5px; }
+  ul { margin: 3px 0 0 18px; padding: 0; }
+  li { margin: 1px 0; }
+  table.toc { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+  table.toc td, table.toc th { border: 1px solid #d7e5dc; padding: 3px 6px; text-align: left; }
+  table.toc th { background: #eef5f0; }
+  .note { background: #eef5f0; border: 1px solid #c8dccf; padding: 8px 10px; border-radius: 4px; }
+  .warn { background: #fff8e1; border: 1px solid #f1d98a; padding: 8px 10px; border-radius: 4px; }
+  .flow { font-weight: 700; color: #0b6b3a; }
+</style>
+</head>
+<body>
+
+<h1>SPN Chits – 34 Point Change Guide</h1>
+<div class="sub">Prized payment approval flow, SPN Auction, reports, cash box, accounts and HR allowances. Menu paths are from the left sidebar; URLs are relative to <code>/admin-panel/</code>.</div>
+
+<div class="note">
+  <b>Before you start</b>
+  <ul>
+    <li>After a deploy, log out and log in again so the new menus are loaded.</li>
+    <li>New tables and columns (<code>cash_box_entries</code>, <code>employee_allowances</code>, <code>employees.day_allowance</code>, customer score overrides, payment desk approval columns) are created automatically the first time the page is opened. No manual SQL is needed.</li>
+    <li>New menus follow the existing security permissions (HR &rarr; Security Permissions).</li>
+  </ul>
+</div>
+
+<h2>Summary by area</h2>
+<table class="toc">
+  <tr><th>Area</th><th>Points</th></tr>
+  <tr><td>Prized status on profile and tags</td><td>1, 2, 9, 20</td></tr>
+  <tr><td>Prized / final / closed payment approval flow</td><td>3, 4, 5, 6, 7, 8, 14, 28</td></tr>
+  <tr><td>SPN Auction menu and reports</td><td>11, 12, 13, 21, 22</td></tr>
+  <tr><td>Reports</td><td>10, 15, 18, 19, 24</td></tr>
+  <tr><td>Customer profile and enrolment</td><td>16, 17</td></tr>
+  <tr><td>Accounts, cash box, income and expenses</td><td>23, 25, 30, 33, 34</td></tr>
+  <tr><td>Top bar, notifications, approvals trail</td><td>26, 27, 29</td></tr>
+  <tr><td>HR allowances</td><td>31, 32</td></tr>
+</table>
+
+<h2>Prized status and tags (points 1, 2, 9, 20)</h2>
+
+<div class="pt"><h3>1) Prized status between name and score card</h3>
+<div class="req">between name and score card ( show prized status )</div>
+<span class="lbl">Where:</span> Customer profile / ledger.<br>
+<span class="lbl">How it works:</span> A <b>Prized Status</b> box now sits between the customer name and the score card. It lists the prized and non-prized enrolments of the customer.</div>
+
+<div class="pt"><h3>2) Slab view – prized red, non-prized green</h3>
+<div class="req">in slab view ( account information ) &gt; if prized red color, non prized green color fonts</div>
+<span class="lbl">Where:</span> Customer ledger &rarr; Account Information.<br>
+<span class="lbl">How it works:</span> In the enrolment selector and slab name, prized enrolments show in <b style="color:#DC2626">red</b> and non-prized in <b style="color:#15803D">green</b>, with a tag.</div>
+
+<div class="pt"><h3>9) Once prized, not shown again in the same chit</h3>
+<div class="req">once prized no need shown in again same chit</div>
+<span class="lbl">How it works:</span> In <b>Prized Payment</b> &rarr; create request, enrolments that are already prized are hidden from the customer list. The backend also blocks a duplicate prized request for the same enrolment.</div>
+
+<div class="pt"><h3>20) "SPN Prized" tag everywhere</h3>
+<div class="req">once marked as prized please show that enrollment as SPN prized tag in all areas</div>
+<span class="lbl">How it works:</span> Wherever an enrolment / slab label is printed (slab + AR number labels, commitment enrolment names, reports, desk lists), prized enrolments get a red <b>SPN Prized</b> tag. Prized status is <code>chit_details.prized_status = 1</code>, set when Corporate Chit Admin approves a prized request.</div>
+
+<h2>Prized payment approval flow (points 3 – 8, 14, 28)</h2>
+<div class="note"><span class="flow">Request (web or customer app) &rarr; Corporate Chit Admin approves and assigns a field employee &rarr; field verification in the employee mobile app &rarr; Accounts approves and pays out &rarr; Paid.</span><br>
+For <b>final / closed</b> payments the order is: Chit Admin &rarr; Accounts payout &rarr; field verification <i>after</i> payout.</div>
+
+<div class="pt"><h3>3) Prized allotment on the first page; submit for Corporate Chit Admin approval</h3>
+<div class="req">prized allotment will come in 1st page itself ( submit name change as corporate chit admin approval )</div>
+<span class="lbl">Where:</span> SPN Chit Payment &rarr; <b>Prized Payment</b> &rarr; New request (URL <code>payment-priced</code>).<br>
+<span class="lbl">How it works:</span> Pick the customer and the allotment form (month, amount, charges, reason, remarks, documents) opens on the same page. Buttons: <b>Save as Draft</b> and <b>Submit for Corporate Chit Admin Approval</b>. Customer history is behind a "Show full customer history" toggle.</div>
+
+<div class="pt"><h3>4) Corporate Chit Admin assigns a field verification member</h3>
+<div class="req">corporate chit admin will move to field verification member set in their login approval report ( only set )</div>
+<span class="lbl">Where:</span> SPN Chit Payment &rarr; <b>Pending Approval</b> &rarr; tab <b>Chit admin</b>.<br>
+<span class="lbl">How it works:</span> Each row has an employee drop-down (employees of that branch) and remarks. <b>Approve &amp; Assign</b> marks the enrolment prized and moves it to field verification. Reject needs remarks.</div>
+
+<div class="pt"><h3>5) Field verification in the employee mobile app</h3>
+<div class="req">field verification will done by mobile app and selected employee mobile app</div>
+<span class="lbl">How it works:</span> The assigned employee sees the task through API <code>mobile-field-payment-tasks</code> (with <code>employee_id</code>) and submits photos + location pins through <code>field-submit-payment-desk</code>. On the web, the <b>Assigned to me</b> tab shows the same list.</div>
+<div class="warn"><b>Mobile app action needed:</b> the employee app source is not in this repository. The app must call the two APIs above to list and submit field verifications.</div>
+
+<div class="pt"><h3>6, 7) Accounts department checks, approves and pays out</h3>
+<div class="req">once field employee completed ( payment move to account department ) / account department will check and approve and payout</div>
+<span class="lbl">Where:</span> SPN Account Management &rarr; Payments Done &rarr; <b>Accounts Payout Approval</b> (URL <code>payment-accounts-payout</code>).<br>
+<span class="lbl">How it works:</span> After field verification the request moves to Accounts. Enter payout mode, date, UTR / transaction number (not needed for Cash), bank and remarks, then <b>Approve &amp; Payout</b>. Cash payouts are also queued in <b>Cash Box Approvals</b> (point 30).</div>
+
+<div class="pt"><h3>8) Final and closed payments – same flow, field verification after payout</h3>
+<div class="req">for final and close, same as above ( after payout then only field verification )</div>
+<span class="lbl">Where:</span> SPN Chit Payment &rarr; <b>Final Closed Payment</b>.<br>
+<span class="lbl">How it works:</span> Chit Admin approves and assigns the employee &rarr; Accounts pays out &rarr; then the field employee verifies.</div>
+
+<div class="pt"><h3>14) Customer app payment requests now show in the web app</h3>
+<div class="req">payment request by customer app is not showing in web app please check</div>
+<span class="lbl">Cause:</span> there was no backend endpoint for customer-app payment requests.<br>
+<span class="lbl">Fix:</span> new public API <code>customer-payment-request</code>. Tenant, branch and customer are filled from the enrolment, the request is marked <b>From customer app</b> and goes straight to Corporate Chit Admin. The Pending Approval page has a "From customer app" counter.</div>
+<div class="warn"><b>Customer app action needed:</b> the customer app must post to <code>customer-payment-request</code> (or <code>store-payment-desk</code> with <code>source=customer_app</code>).</div>
+
+<div class="pt"><h3>28) Payments done shown in SPN Account Management</h3>
+<div class="req">Payments is done shown in SPN Account management ( final payment, prized payment, refund payment )</div>
+<span class="lbl">Where:</span> SPN Account Management &rarr; <b>Payments Done</b>: Prized Payment, Final Payment, Refund Payment, Accounts Payout Approval. "Priced" is renamed to "Prized" in the menu.</div>
+
+<h2>SPN Auction (points 11, 12, 13, 21, 22)</h2>
+
+<div class="pt"><h3>11) SPN Auction main menu</h3>
+<div class="req">SPN Auction ( main menu ) -&gt; prized show group, prized show report</div>
+<span class="lbl">Where:</span> New left-menu section <b>SPN Auction</b>: Prized Show Group, Prized Show Report, Auction Report (Scheme-wise). These links were moved out of SPN Chit Payment.</div>
+
+<div class="pt"><h3>12) Prized Show Group – due number fixed</h3>
+<div class="req">admin-panel/prized-show-group ( due no not showing )</div>
+<span class="lbl">How it works:</span> The member list now shows the running <b>Due No</b> (latest installment whose auction date is today or earlier) and the SPN Prized tag.</div>
+
+<div class="pt"><h3>13, 21) Prized Show Report – more details, month-wise view</h3>
+<div class="req">prized-show-report need more details / action group of month show -&gt; customer prized month wise view</div>
+<span class="lbl">Where:</span> SPN Auction &rarr; <b>Prized Show Report</b>.<br>
+<span class="lbl">How it works:</span> Filters for group and month number, three views (Groups, <b>Month-wise</b>, Table), six KPI cards (including paid out and months still to prize). Each row shows auction date, customer code, mobile, branch, due no, joined date, amount the customer paid, payout status / mode / date and who marked it. CSV export.</div>
+
+<div class="pt"><h3>22) Auction report – scheme-wise, by month or auction date; branch dashboard</h3>
+<div class="req">auction show report -&gt; month and auction date they will see scheme wise reports ( who all are prized and prized amount ) ( dashboard also in branch level logins )</div>
+<span class="lbl">Where:</span> SPN Auction &rarr; <b>Auction Report (Scheme-wise)</b> (URL <code>spn-auction-report</code>).<br>
+<span class="lbl">How it works:</span> Filter by branch, scheme, month or a single auction date. Shows who is prized, prized amount, paid out and yet to pay, with scheme-wise and month-wise bars. Branch logins see only their branch.<br>
+<span class="lbl">Dashboard:</span> every dashboard (including branch logins) shows an <b>SPN Auction · this month</b> strip with prized count, amount, paid out and top schemes. Click it to open the report.</div>
+
+<h2>Reports (points 10, 15, 18, 19, 24)</h2>
+
+<div class="pt"><h3>10) Completed – payment not given</h3>
+<div class="req">once the due is completed and full due amount is collected ( if the payment is not given, please give one report ) … ( branch, scheme filter )</div>
+<span class="lbl">Where:</span> SPN Chit Payment &rarr; <b>Completed – Payment Not Given</b> (URL <code>completed-not-paid-report</code>).<br>
+<span class="lbl">How it works:</span> Lists enrolments where receipts cover every installment but no payout has been made. Columns: total the customer paid, last month's due, amount we give (chit value), <b>difference</b> (we give − customer paid), given so far, pending payout, days waiting and the payout request status. Filters: branch, scheme, search, "include already paid". KPI cards and CSV export.</div>
+
+<div class="pt"><h3>15) Group View – month and year filter</h3>
+<div class="req">group view please add month and year filter</div>
+<span class="lbl">Where:</span> SPN Group View.<br>
+<span class="lbl">How it works:</span> New <b>Month</b> and <b>Year</b> filters (by the date the group was formed).</div>
+
+<div class="pt"><h3>18) Final closed report and promised report are separate</h3>
+<div class="req">final closed report and promised report both are different please show in 2 reports</div>
+<span class="lbl">Where:</span> SPN Chit Payment &rarr; <b>Promised Report (Calendar)</b> (URL <code>commitment-promise-report</code>) and <b>Final Closed Report</b> (URL <code>final-closed-report</code>).</div>
+
+<div class="pt"><h3>19) Calendar view of the promised report</h3>
+<div class="req">calendar view wise promised reports ( show in calendar there showing all details )</div>
+<span class="lbl">How it works:</span> Both reports open in <b>Calendar view</b>. Each day shows the customers due that day (green = paid, red = not paid). Click a day to see the full details below it. A <b>Table view</b> is also available. KPIs: count, scheme value, due, collected, paid / not paid. Excel export.</div>
+
+<div class="pt"><h3>24) Old reports in the new design</h3>
+<div class="req">some reports are showing old looks please change as new design</div>
+<span class="lbl">How it works:</span> A global theme now gives every legacy report page the new look: a green hero header, filter panel, rounded tables and highlighted totals rows. New pages built in this batch use the SPN report design (hero, KPI tiles, bars).</div>
+
+<h2>Customer profile and enrolment (points 16, 17)</h2>
+
+<div class="pt"><h3>16) Customer score edit (admin only, with remarks)</h3>
+<div class="req">customer score edit option in customer profile ( only in admin ) ( remarks )</div>
+<span class="lbl">Where:</span> Customer profile &rarr; score card &rarr; pencil icon (visible only for admin logins).<br>
+<span class="lbl">How it works:</span> Enter a score (0–1000) and the remarks (required), then save. A "Manual" badge shows and every change is logged with who changed it. "Reset to system score" removes the override. The Customer Category report also uses the manual score.</div>
+
+<div class="pt"><h3>17) Due date filled automatically from the date of joining</h3>
+<div class="req">date of joining, due date will automatically come 1st due completion date</div>
+<span class="lbl">Where:</span> New SPN / commitment enrolment form.<br>
+<span class="lbl">How it works:</span> Choosing the Date Of Joining fills the Due Date (1st due completion date) with the same date. It can still be changed manually.</div>
+
+<h2>Accounts, cash box, income and expenses (points 23, 25, 30, 33, 34)</h2>
+
+<div class="pt"><h3>23) Petty cash branch report (new design)</h3>
+<div class="req">in accounts menu ( petty cash creations for branch report, ( new look design in all pages )</div>
+<span class="lbl">Where:</span> SPN Account Management &rarr; Branch Reports &rarr; <b>Petty Cash Branch Report</b>.<br>
+<span class="lbl">How it works:</span> Branch-wise petty cash income, expense and balance, expense heads as bars (click a head to filter), and every entry. Filters: branch, date range, income/expense. CSV.</div>
+
+<div class="pt"><h3>25) Branch-wise income &amp; expenses with AI insights</h3>
+<div class="req">branch wise income and expenses in same report and using AI please give proper reports</div>
+<span class="lbl">Where:</span> SPN Account Management &rarr; Branch Reports &rarr; <b>Branch Income &amp; Expense (AI)</b>.<br>
+<span class="lbl">How it works:</span> For each branch: income (collections, RF, other charges, petty income, approved my-cash) and expenses (petty expenses, prized / final / refund payouts, allowances). Shows net, expense % of income, change vs the previous period of the same length, and the top expense head, with a details drill-down. <b>AI insights</b> are generated automatically, for example: the top branch, branches spending more than they earn, high expense ratio, income drops or growth over 15%, expense jumps over 25%, and the company average per day.</div>
+
+<div class="pt"><h3>30) My Cash Box with admin approvals</h3>
+<div class="req">my cash box -&gt; reports, payout all are approvals from here ( admin will approve ) then only move the amount in cash box, if the cash is collected in receipt it will added in cash box</div>
+<span class="lbl">Where:</span> SPN Account Management &rarr; My Cash Box &rarr; <b>My Cash Box</b> and <b>Cash Box Approvals</b>.<br>
+<span class="lbl">How it works:</span>
+<ul>
+  <li>Receipt collections (and RF, other charges, petty income) are added to the cash box automatically.</li>
+  <li>Payouts approved by Accounts, and any manual <b>+ Cash entry</b> (cash in / out), go to <b>Cash Box Approvals</b> first. They change the cash box balance only after an admin approves them.</li>
+  <li>Each approval shows <b>who requested</b> it and <b>who approved / rejected</b> it, with time and remarks. Rejecting needs remarks.</li>
+</ul></div>
+
+<div class="pt"><h3>33) Income cash box – collection cash, RF cash, my cash</h3>
+<div class="req">income cash box ( collection cash, rf cash, my cash ) box, need separate wise report in single page and filters</div>
+<span class="lbl">Where:</span> My Cash Box &rarr; <b>Income Cash Box Report</b>.<br>
+<span class="lbl">How it works:</span> Separate boxes for Collection cash, RF cash, My cash and Other (cash and bank amounts shown). A day-wise table shows each box, total income, out and running balance. Filters: branch, date range, Cash / Bank. Click a box to filter the ledger. CSV.</div>
+
+<div class="pt"><h3>34) My Day report</h3>
+<div class="req">my day report ( client will design this report ) ( expenses and income ) ( cash or bank ) ( branch )</div>
+<span class="lbl">Where:</span> My Cash Box &rarr; <b>My Day Report</b>.<br>
+<span class="lbl">How it works:</span> For one day and branch: income heads and expense heads, each split into Cash and Bank, with net cash in hand and net bank. All entries of the day are listed below. Prev / Next day buttons, Print and CSV. The layout is ready to be adjusted to the client's design.</div>
+
+<h2>Top bar, notifications, approvals (points 26, 27, 29)</h2>
+
+<div class="pt"><h3>26) Top bar cleaned up</h3>
+<div class="req">top bar no need menus ( subscriber, collection, payments .. etc no need ) please give the proper remaining items in alignment</div>
+<span class="lbl">How it works:</span> The Subscriber / Collection / Payment / Accounts drop-downs were removed. The top bar is now: menu button, search, and on the right side the branch, date, notifications bell and profile, all aligned.</div>
+
+<div class="pt"><h3>27) Notifications – tasks and today's targets</h3>
+<div class="req">notifications ( like task and today targets ) like that</div>
+<span class="lbl">How it works:</span> The bell shows a red count and opens a panel with:
+<ul>
+  <li><b>Today's tasks</b> of the logged-in employee, with overdue tasks in red.</li>
+  <li><b>Today's targets</b>, showing achieved vs target and a progress bar.</li>
+  <li><b>Approvals &amp; requests</b>: payments waiting for Chit Admin, field verification or Accounts; field verifications assigned to you; cash box entries to approve; leave requests; and open office tickets.</li>
+</ul>
+Each item opens the related page. The panel refreshes every 2 minutes.</div>
+
+<div class="pt"><h3>29) Who requested and who approved – in approvals</h3>
+<div class="req">approvals will design on who is requested and who is approved in all approvals</div>
+<span class="lbl">How it works:</span> The requested-by / approved-by trail (name and time) now shows in:
+<ul>
+  <li>Payment desk: prized, final and refund (chit admin, field employee and accounts are named).</li>
+  <li>Cash Box Approvals.</li>
+  <li>Leave / Permission / OD requests.</li>
+  <li>Refund Approval.</li>
+  <li>SPN Eligibility Approval (shows requested by).</li>
+</ul></div>
+
+<h2>HR allowances (points 31, 32)</h2>
+
+<div class="pt"><h3>31) Day allowance column and daily ₹200 report</h3>
+<div class="req">in employee creation -&gt; day allowance column please, daily 200 allowance in one report</div>
+<span class="lbl">Where:</span> Employee create / edit form has a new <b>Day Allowance (₹ / day)</b> field (default 200). Report: SPN HR Department &rarr; <b>Day Allowance (₹200/day)</b>.<br>
+<span class="lbl">How it works:</span> Every <b>present</b> day in attendance earns the employee's day allowance. Use the day-wise view to select unpaid days and <b>Mark selected as paid</b>. The employee-wise view shows days, earned, paid and to-pay, and the rate can be edited there. Filters: branch, employee, date range. CSV.</div>
+
+<div class="pt"><h3>32) Petrol allowance screen and reports</h3>
+<div class="req">petrol allowance given like that expenses separate screen and proper reports ( month wise, day wise with employee )</div>
+<span class="lbl">Where:</span> SPN HR Department &rarr; <b>Petrol Allowance</b>.<br>
+<span class="lbl">How it works:</span> <b>+ Petrol entry</b>: employee, date, KM × rate (or a direct amount), mode and remarks. Edit or delete entries. Reports: <b>Day-wise</b>, <b>Employee-wise</b> (days, KM, amount) and <b>Month-wise</b>. Paid allowances count as expenses in Branch Income &amp; Expense and My Day.</div>
+
+<h2>New URLs at a glance</h2>
+<table class="toc">
+  <tr><th>Page</th><th>URL</th></tr>
+  <tr><td>Accounts Payout Approval</td><td><code>payment-accounts-payout</code></td></tr>
+  <tr><td>Auction Report (Scheme-wise)</td><td><code>spn-auction-report</code></td></tr>
+  <tr><td>Completed – Payment Not Given</td><td><code>completed-not-paid-report</code></td></tr>
+  <tr><td>Promised Report (Calendar) / Final Closed Report</td><td><code>commitment-promise-report</code> / <code>final-closed-report</code></td></tr>
+  <tr><td>My Cash Box / Cash Box Approvals / Income Cash Box</td><td><code>my-cash-box</code> / <code>cash-box-approvals</code> / <code>income-cash-box-report</code></td></tr>
+  <tr><td>My Day Report</td><td><code>my-day-report</code></td></tr>
+  <tr><td>Branch Income &amp; Expense (AI)</td><td><code>branch-income-expense-report</code></td></tr>
+  <tr><td>Petty Cash Branch Report</td><td><code>petty-cash-branch-report</code></td></tr>
+  <tr><td>Day Allowance / Petrol Allowance</td><td><code>day-allowance-report</code> / <code>petrol-allowance</code></td></tr>
+</table>
+
+</body>
+</html>

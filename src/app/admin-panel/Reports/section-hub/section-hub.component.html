@@ -1,0 +1,168 @@
+<div class="hub" *ngIf="cfg; else unknown">
+
+  <!-- Banner -->
+  <div class="hub-hero">
+    <div class="hub-hero-ico"><i [ngClass]="cfg.icon"></i></div>
+    <div class="hub-hero-copy">
+      <h1>SPN <span>{{ cfg.word }}</span></h1>
+      <p class="hub-tag">{{ cfg.tagline }}</p>
+      <div class="hub-chips">
+        <span *ngFor="let c of cfg.chips">{{ c }}</span>
+      </div>
+    </div>
+    <div class="hub-hero-side">
+      <div class="hub-slogan"><div *ngFor="let s of cfg.slogan">{{ s }}</div></div>
+      <div class="hub-filter">
+        <select [(ngModel)]="branchId" (change)="load()">
+          <option value="">All Branches</option>
+          <option *ngFor="let b of branches" [value]="b.id">{{ b.branch_name }}</option>
+        </select>
+        <button type="button" (click)="load()" [disabled]="loading"><i class="fa fa-refresh" [class.fa-spin]="loading"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hub-error" *ngIf="error">{{ error }}</div>
+
+  <!-- KPI cards -->
+  <div class="hub-kpis" *ngIf="data">
+    <div class="hub-kpi" *ngFor="let k of data.kpis; let i = index" [ngClass]="tones[i % tones.length]">
+      <div class="hub-kpi-ico"><i [ngClass]="cfg.icon"></i></div>
+      <div>
+        <div class="hub-kpi-label">{{ k.label }}</div>
+        <div class="hub-kpi-value">{{ fmt(k.value, k.money) }}</div>
+        <div class="hub-kpi-sub">{{ k.sub }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick actions -->
+  <div class="hub-actions" *ngIf="cfg.actions.length">
+    <a *ngFor="let a of cfg.actions; let i = index" class="hub-action" [ngClass]="tones[i % tones.length]"
+       [routerLink]="link(a.route)" [queryParams]="a.qp">
+      <i [ngClass]="a.icon"></i>
+      <span>{{ a.label }}</span>
+    </a>
+  </div>
+
+  <!-- Report categories (Reports section) -->
+  <div class="hub-report-grid" *ngIf="cfg.reportGroups">
+    <div class="hub-panel hub-report" *ngFor="let g of cfg.reportGroups; let i = index" [ngClass]="tones[i % tones.length]">
+      <div class="hub-panel-head"><h3><i [ngClass]="g.icon"></i> {{ g.title }}</h3></div>
+      <a *ngFor="let l of g.links" [routerLink]="link(l.route)" [queryParams]="l.qp">
+        <span>{{ l.label }}</span><i class="fa fa-angle-right"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="hub-loading" *ngIf="loading && !data"><i class="fa fa-spinner fa-spin"></i> Loading...</div>
+
+  <!-- Charts -->
+  <div class="hub-charts" *ngIf="data">
+    <div class="hub-panel">
+      <div class="hub-panel-head"><h3>{{ data.branch.title }}</h3></div>
+      <div class="hub-bars" *ngIf="data.branch.rows.length; else noData">
+        <div class="hub-bar" *ngFor="let r of data.branch.rows; let i = index" [title]="(r.name || r.label) + ': ' + fmt(r.value, data.branch.money)">
+          <div class="hub-bar-val">{{ short(r.value, data.branch.money) }}</div>
+          <div class="hub-bar-track">
+            <div class="hub-bar-fill" [style.height]="barHeight(r.value, data.branch.rows)" [style.background]="palette[i % palette.length]"></div>
+          </div>
+          <div class="hub-bar-label">{{ r.label }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hub-panel">
+      <div class="hub-panel-head"><h3>{{ data.donut.title }}</h3></div>
+      <div class="hub-donut-wrap" *ngIf="total(data.donut.rows); else noData">
+        <div class="hub-donut" [ngStyle]="donutStyle(data.donut.rows)">
+          <div class="hub-donut-hole">
+            <b>{{ short(total(data.donut.rows), data.donut.money) }}</b>
+            <small>Total</small>
+          </div>
+        </div>
+        <ul class="hub-legend">
+          <li *ngFor="let r of data.donut.rows; let i = index">
+            <i [style.background]="palette[i % palette.length]"></i>
+            <span>{{ r.label }}</span>
+            <b>{{ fmt(r.value, data.donut.money) }} <small>({{ pct(r.value, data.donut.rows) }}%)</small></b>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="hub-panel">
+      <div class="hub-panel-head"><h3>{{ data.trend.title }}</h3></div>
+      <div *ngIf="data.trend.rows.length && total(data.trend.rows); else noData">
+        <svg viewBox="0 0 300 130" class="hub-line">
+          <defs>
+            <linearGradient id="hubArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#16A34A" stop-opacity="0.35"></stop>
+              <stop offset="100%" stop-color="#16A34A" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="10" y1="105" x2="290" y2="105" stroke="#E2E8F0"></line>
+          <polygon [attr.points]="areaPoints(data.trend.rows)" fill="url(#hubArea)"></polygon>
+          <polyline [attr.points]="linePoints(data.trend.rows)" fill="none" stroke="#16A34A" stroke-width="2.5"></polyline>
+          <ng-container *ngFor="let r of data.trend.rows; let i = index">
+            <circle [attr.cx]="pointX(i, data.trend.rows)" [attr.cy]="pointY(r.value, data.trend.rows)" r="3.5" fill="#fff" stroke="#16A34A" stroke-width="2"></circle>
+            <text [attr.x]="pointX(i, data.trend.rows)" [attr.y]="pointY(r.value, data.trend.rows) - 7" text-anchor="middle" class="hub-line-val">{{ short(r.value, data.trend.money) }}</text>
+            <text [attr.x]="pointX(i, data.trend.rows)" y="122" text-anchor="middle" class="hub-line-lbl">{{ r.label }}</text>
+          </ng-container>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Records -->
+  <ng-container *ngIf="data && data.table && data.table.columns.length">
+    <ng-container *ngTemplateOutlet="tableTpl; context: { $implicit: data.table, idx: 0 }"></ng-container>
+  </ng-container>
+  <ng-container *ngIf="data && data.extra_tables">
+    <ng-container *ngFor="let t of data.extra_tables; let ti = index">
+      <ng-container *ngIf="t && t.columns && t.columns.length">
+        <ng-container *ngTemplateOutlet="tableTpl; context: { $implicit: t, idx: ti + 1 }"></ng-container>
+      </ng-container>
+    </ng-container>
+  </ng-container>
+</div>
+
+<ng-template #tableTpl let-t let-idx="idx">
+  <div class="hub-panel hub-table">
+    <div class="hub-panel-head">
+      <h3>{{ t.title }}</h3>
+      <div class="hub-table-tools">
+        <button type="button" class="hub-btn-light" (click)="exportCsv(t, idx)"><i class="fa fa-file-excel-o"></i> Export</button>
+        <a *ngIf="t.route" class="hub-viewall" [routerLink]="link(t.route)">View All <i class="fa fa-arrow-right"></i></a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>S.No</th>
+            <th *ngFor="let c of t.columns">{{ c.label }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of t.rows; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td *ngFor="let c of t.columns">
+              <ng-container [ngSwitch]="c.type">
+                <span *ngSwitchCase="'money'" class="hub-money">{{ fmt(r[c.key], true) }}</span>
+                <span *ngSwitchCase="'status'" class="hub-pill" [ngClass]="statusClass(r[c.key])">{{ r[c.key] }}</span>
+                <span *ngSwitchDefault>{{ r[c.key] === 0 ? 0 : (r[c.key] || '-') }}</span>
+              </ng-container>
+            </td>
+          </tr>
+          <tr *ngIf="!t.rows.length">
+            <td [attr.colspan]="t.columns.length + 1" class="hub-empty">No records yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #noData><div class="hub-empty">No data for this period</div></ng-template>
+<ng-template #unknown><div class="hub-empty">Section not found.</div></ng-template>

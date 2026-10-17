@@ -1,0 +1,151 @@
+<div class="psg-page">
+  <div class="psg-hero">
+    <div>
+      <div class="psg-kicker">Payments · Action</div>
+      <h1>Prized Show Group</h1>
+      <p>Build one display group from scheme-wise customers. Each month pick one prized customer and amount for show only. This never updates customer ledger or payment screens.</p>
+    </div>
+    <div *ngIf="view === 'list'">
+      <button type="button" class="psg-btn green" (click)="openCreate()">+ Create Group</button>
+    </div>
+    <div *ngIf="view !== 'list'">
+      <button type="button" class="psg-btn white" (click)="backToList()">Back to list</button>
+    </div>
+  </div>
+
+  <div class="psg-card" *ngIf="view === 'list'">
+    <div class="note">Display only. Monthly prized selection is for board / notice use and the Prized Show Report.</div>
+    <div class="empty" *ngIf="loading">Loading groups...</div>
+    <div class="empty" *ngIf="!loading && !groups.length">No show groups yet. Create one from a scheme.</div>
+    <table *ngIf="!loading && groups.length">
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Group</th>
+          <th>Scheme</th>
+          <th>Chit Value</th>
+          <th>Members</th>
+          <th>Months marked</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let row of groups">
+          <td>{{row.sno}}</td>
+          <td><b>{{row.group_name}}</b></td>
+          <td>{{row.scheme_name}}</td>
+          <td>{{money(row.chit_value)}}</td>
+          <td><span class="pill blue">{{row.member_count}}</span></td>
+          <td><span class="pill" [ngClass]="row.marked_count ? 'green' : 'gold'">{{row.marked_count}} / {{row.months}}</span></td>
+          <td class="actions">
+            <button type="button" class="psg-btn soft" (click)="openMark(row)">Mark prized</button>
+            <button type="button" class="psg-btn rose" (click)="deleteGroup(row)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="psg-card" *ngIf="view === 'form'">
+    <div class="note">Choose one scheme, then tick the customers who belong in this show group.</div>
+    <div class="psg-form grid-3">
+      <div>
+        <label>Group name</label>
+        <input type="text" [(ngModel)]="form.group_name" placeholder="Ex: LT 10L Show Group A">
+      </div>
+      <div>
+        <label>Scheme</label>
+        <select [(ngModel)]="form.scheme_id" (ngModelChange)="onSchemeChange()">
+          <option value="">Select scheme</option>
+          <option *ngFor="let scheme of schemes" [value]="scheme.id">{{schemeLabel(scheme)}}</option>
+        </select>
+      </div>
+      <div>
+        <label>Remarks</label>
+        <input type="text" [(ngModel)]="form.remarks" placeholder="Optional">
+      </div>
+    </div>
+
+    <div style="margin-top:14px;" *ngIf="form.scheme_id">
+      <div class="note">
+        Choose branch and due no, then tick customers. Use Select all shown after filtering one due no.
+      </div>
+      <div class="psg-filters" style="margin-bottom:10px;">
+        <div>
+          <label>Branch name</label>
+          <select [(ngModel)]="branchFilter">
+            <option value="">All branches</option>
+            <option *ngFor="let name of branchOptions()" [value]="name">{{name}}</option>
+          </select>
+        </div>
+        <div>
+          <label>Due no</label>
+          <select [(ngModel)]="dueNoFilter">
+            <option value="">All due nos</option>
+            <option *ngFor="let due of dueNoOptions()" [value]="due">Due No {{due}}</option>
+          </select>
+        </div>
+        <div>
+          <label>Search</label>
+          <input type="text" [(ngModel)]="customerSearch" placeholder="Name / mobile / AR / code">
+        </div>
+        <button type="button" class="psg-btn soft" (click)="selectAllVisible(true)">Select all shown</button>
+        <button type="button" class="psg-btn white" (click)="selectAllVisible(false)">Clear selected</button>
+        <button type="button" class="psg-btn white" (click)="resetCustomerFilters()">Reset filters</button>
+        <span class="muted">Shown: {{visibleCustomers().length}} · Selected: {{selectedMembers().length}}</span>
+      </div>
+
+      <div class="members" *ngIf="visibleCustomers().length; else noCust">
+        <label class="member" *ngFor="let row of visibleCustomers()">
+          <input type="checkbox" [checked]="isSelected(row)" (change)="toggleCustomer(row, $event.target.checked)">
+          <div>
+            <b>{{row.customer_name || 'Customer'}}</b>
+            <span class="spn-prized-tag sm" *ngIf="row.prized_status == 1">SPN Prized</span>
+            <span>
+              <b style="color:#1687E8;">{{row.branch_name || '-'}}</b>
+              · Due No {{rowDueNo(row) || '-'}}
+              · {{row.customer_code || '-'}}
+              · {{row.mobile || '-'}}
+              · AR {{row.ar_no || '-'}}
+            </span>
+          </div>
+        </label>
+      </div>
+      <ng-template #noCust><div class="empty">No customers match these branch / due no filters.</div></ng-template>
+    </div>
+
+    <div style="margin-top:14px;">
+      <button type="button" class="psg-btn green" [disabled]="saving" (click)="saveGroup()">{{saving ? 'Saving...' : 'Save show group'}}</button>
+    </div>
+  </div>
+
+  <div *ngIf="view === 'mark' && activeGroup">
+    <div class="psg-card">
+      <div class="grid-3">
+        <div><div class="muted">Group</div><b>{{activeGroup.group_name}}</b></div>
+        <div><div class="muted">Scheme</div><b>{{activeGroup.scheme_name}}</b></div>
+        <div><div class="muted">Chit value</div><b>{{money(activeGroup.chit_value)}}</b></div>
+      </div>
+      <div class="note" style="margin-top:12px;margin-bottom:0;">One prized customer per month. Same customer cannot be prized again in another month. Ledger stays untouched.</div>
+    </div>
+
+    <div class="month-grid">
+      <div class="month-card" *ngFor="let row of activeGroup.schedule" [class.marked]="row.is_marked">
+        <h4>Month {{row.month_no}}</h4>
+        <div class="muted" *ngIf="row.is_marked" style="margin-bottom:8px;">
+          Current: {{row.customer_name}} · {{money(row.amount)}}
+        </div>
+        <select [(ngModel)]="markDraft[row.month_no].enrollment_id">
+          <option value="">Select prized customer</option>
+          <option *ngFor="let m of availableMembers(row.month_no)" [value]="m.enrollment_id">
+            {{m.customer_name}} · Due No {{m.due_no || '-'}} · AR {{m.ar_no || '-'}}
+          </option>
+        </select>
+        <input type="number" [(ngModel)]="markDraft[row.month_no].amount" placeholder="Prized amount">
+        <input type="text" [(ngModel)]="markDraft[row.month_no].remarks" placeholder="Remarks (optional)">
+        <button type="button" class="psg-btn green" style="width:100%;margin-bottom:6px;" (click)="saveMonth(row.month_no)">Save month</button>
+        <button type="button" class="psg-btn rose" style="width:100%;" *ngIf="row.is_marked" (click)="clearMonth(row.month_no)">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>

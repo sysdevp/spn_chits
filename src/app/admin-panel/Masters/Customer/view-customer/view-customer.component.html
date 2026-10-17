@@ -581,81 +581,39 @@
   <div class="card-body">
     <div [hidden]="TableHidden">
       <form
-        class="bs-example form-horizontal"
+        class="cust-filters"
         [formGroup]="viewCustomer"
         (ngSubmit)="onSubmit()"
       >
-        <div class="form-group row" [hidden]="!isSuperAdmin">
-          <label class="col-sm-2 col-md-2 col-3 col-form-label"
-            >Company Name <span class="error">*</span></label
-          >
-          <div class="col-sm-10 col-md-7 col-9">
-            <select
-              #tenant_id
-              class="form-control form-control w-100 border-dark"
-              formControlName="tenant_id"
-              (change)="companyChg($event)"
-            >
-              <option value="">Select Company</option>
-              <option *ngFor="let data of companyList" value="{{ data.id }}">
-                {{ data.chit_fund_name }}
-              </option>
-            </select>
-            <div
-              class="col-md-12"
-              *ngIf="submitted && f.tenant_id.errors"
-              class="invalid-feedback"
-            >
-              <label *ngIf="f.tenant_id.errors.required"
-                >Company is required</label
-              >
-            </div>
-          </div>
+        <div class="cust-field" [hidden]="!isSuperAdmin">
+          <label>Company</label>
+          <select #tenant_id formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let data of companyList" value="{{ data.id }}">{{ data.chit_fund_name }}</option>
+          </select>
         </div>
-        <div class="form-group row">
-          <label class="col-sm-2 col-md-2 col-3 col-form-label"
-            >Select Branch <span class="error">*</span></label
-          >
-          <div class="col-sm-10 col-md-7 col-9">
-            <select
-              #branch_id
-              class="form-control form-control w-100 border-dark"
-              formControlName="branch_id"
-            >
-              <option value="">Select Branch</option>
-              <option *ngFor="let data of branchList" value="{{ data.id }}">
-                {{ data.branch_name }}
-              </option>
-            </select>
-            <div
-              class="col-md-12"
-              *ngIf="submitted && f.branch_id.errors"
-              class="invalid-feedback"
-            >
-              <label *ngIf="f.branch_id.errors.required"
-                >Branch is required</label
-              >
-            </div>
-          </div>
+        <div class="cust-field">
+          <label>Branch</label>
+          <select #branch_id formControlName="branch_id">
+            <option value="">Select Branch</option>
+            <option *ngFor="let data of branchList" value="{{ data.id }}">{{ data.branch_name }}</option>
+          </select>
         </div>
-        <div class="form-group row">
-          <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
-            <button
-              type="submit"
-              class="btn btn-primary mr-1"
-              [disabled]="disableBtn"
-            >
-              {{ SubmitbuttonName }}
-            </button>
-            <button
-              type="button"
-              class="btn btn-danger mr-1"
-              (click)="resetCustomer()"
-            >
-              Reset
-            </button>
-          </div>
+        <div class="cust-field">
+          <label>Search</label>
+          <input type="text" placeholder="Name / mobile / customer code" [(ngModel)]="customerSearch" [ngModelOptions]="{standalone: true}">
         </div>
+        <div class="cust-field">
+          <label>Status</label>
+          <select [(ngModel)]="customerStatus" [ngModelOptions]="{standalone: true}">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
+        <button type="submit" class="cust-btn green" [disabled]="disableBtn">{{ SubmitbuttonName }}</button>
+        <button type="button" class="cust-btn green" (click)="applyCustomerFilters()"><i class="fas fa-search"></i> Search</button>
+        <button type="button" class="cust-btn white" (click)="resetCustomer()">Reset</button>
       </form>
 
       <!--<table id="dtable"  class="row-border hover">
@@ -704,18 +662,6 @@
             entries
           </label>
         </div>
-        <div class="dataTables_filter">
-          <label>
-            Search:<input
-              type="search"
-              class=""
-              placeholder=""
-              aria-controls="dtable"
-              (keyup)="filterChg($event.target.value)"
-            />
-            <!-- <input [(ngModel)]="searchText" placeholder="" class="" aria-controls="dtable" > -->
-          </label>
-        </div>
         <table
           class="row-border hover dataTable no-footer"
           role="grid"
@@ -742,6 +688,7 @@
               >
                 Customer Code
               </th>
+              <th rowspan="1" colspan="1">Photo</th>
               <th
                 class="sorting"
                 rowspan="1"
@@ -751,6 +698,8 @@
               >
                 Customer Name
               </th>
+              <th rowspan="1" colspan="1">Branch</th>
+              <th rowspan="1" colspan="1">Status</th>
               <th
                 class="sorting"
                 rowspan="1"
@@ -768,11 +717,19 @@
               <td class="sorting_1">{{ row.sno }}</td>
 
               <td>{{ row.customer_code }}</td>
+              <td>
+                <img *ngIf="row.photo_url" class="cust-photo" [src]="row.photo_url" alt="">
+                <span *ngIf="!row.photo_url" class="cust-photo empty">{{ (row.name || 'C').charAt(0) }}</span>
+              </td>
               <td>{{ row.name }}</td>
+              <td>{{ row.branch_name }}</td>
+              <td><span class="cust-pill" [class.off]="row.status == 0">{{ row.status == 0 ? 'Inactive' : 'Active' }}</span></td>
               <td>{{ row.mobile_no }}</td>
               <td>
                 <a
+                  class="cust-view"
                   href="javascript:void(0)"
+                  title="View customer"
                   (click)="
                     open(
                       $event,
@@ -781,8 +738,8 @@
                       row.id
                     )
                   "
-                  ><i class="fas fa-eye text-success"></i
-                ></a>
+                  ><i class="fas fa-id-card"></i> View
+                </a>
                 <a
                   [routerLink]="['/admin-panel/update-customer/' + row.id]"
                   target="_blank"

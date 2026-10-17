@@ -52,6 +52,17 @@
             </div>
           </div>
         </div>
+        <div class="col-6">
+          <div class="form-group row">
+            <label class="col-sm-4">Due No <span class="error">*</span></label>
+            <div class="col-sm-8">
+              <input #due_no type="number" min="1" class="form-control w-100 border-dark" formControlName="due_no" placeholder="e.g. 4"/>
+              <div *ngIf="submitted && f.due_no.errors" class="invalid-feedback">
+                <label *ngIf="f.due_no.errors.required">Due No is required</label>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="form-group row">
         <div class="offset-md-2 offset-sm-2 col-sm-10 col-md-7 col-12">
@@ -135,6 +146,7 @@
           <th class="bg-secondary text-white">Paid</th>
           <th class="bg-secondary text-white">Overall Pending</th>
           <th class="bg-secondary text-white">Running Month</th>
+          <th class="bg-secondary text-white">Due No</th>
           <th class="bg-secondary text-white">Agent</th>
           <th class="bg-secondary text-white">Area</th>
         </tr>
@@ -150,6 +162,7 @@
           <td>{{row.paid}}</td>
           <td>{{row.overall_pending}}</td>
           <td>{{row.running_month}}</td>
+          <td>{{row.due_no}}</td>
           <td>{{row.collection_agent}}</td>
           <td>{{row.collection_area}}</td>
         </tr>

@@ -27,6 +27,8 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
   companyList: any[];
   branchList: any[];
   groupList: any[];
+  schemeList: any[] = [];
+  slabList: any[] = [];
   isSuperAdmin:boolean;
   submitted: boolean;
   disableBtn: boolean;
@@ -86,15 +88,28 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
   branchChg(event) {
    
     this.groupList = [];
+    this.schemeList = [];
+    this.slabList = [];
     let cond = {
       "conditions[branch_id]": event.target.value
     }
-    this.userservice.getData(cond, "get-groups", "POST").subscribe((response: any) => {
+    let tenantId = this.CommitmentcustomerOutstandingReport.get('tenant_id').value;
+    this.userservice.getData({ 'conditions[tenant_id]': tenantId }, "get-schemes", "POST").subscribe((response: any) => {
       try {
         if (response.status == 'Success') {
-          this.groupList = response.data;
+          this.schemeList = response.data;
         } else {
-          this.groupList = [];
+          this.schemeList = [];
+        }
+      } catch (err) { }
+    }, (err: any) => { });
+
+    this.userservice.getData({ 'conditions[tenant_id]': tenantId }, "get-slab-dues", "POST").subscribe((response: any) => {
+      try {
+        if (response.status == 'Success') {
+          this.slabList = response.data;
+        } else {
+          this.slabList = [];
         }
       } catch (err) { }
     }, (err: any) => { });
@@ -130,6 +145,14 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
       this.branchList = [];
     }
     this.CommitmentcustomerOutstandingReport.get('branch_id').setValue('');
+    if (this.CommitmentcustomerOutstandingReport.get('scheme_id')) {
+      this.CommitmentcustomerOutstandingReport.get('scheme_id').setValue('');
+    }
+    if (this.CommitmentcustomerOutstandingReport.get('slab_id')) {
+      this.CommitmentcustomerOutstandingReport.get('slab_id').setValue('');
+    }
+    this.schemeList = [];
+    this.slabList = [];
   }
 
   onSubmit() {
@@ -210,7 +233,7 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
           },0);*/
         } else {
           this.nodataFoundMessage = false;
-          this.appService.showAlert("Commitmentcustomer Outstanding Report", response.msg, "error");
+          this.appService.showAlert("Customer Outstanding Report", response.msg, "error");
         }
       }
         else{
@@ -218,16 +241,16 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
           this.nodataFoundMessage=false;
         }
       } catch (err) {console.log(err)
-        this.appService.showAlert("Commitmentcustomer Outstanding Report", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Customer Outstanding Report", 'Sorry!! Something went wrong!', "error");
       }
     }, (err: any) => {console.log(err)
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitmentcustomer Outstanding Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Customer Outstanding Report", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitmentcustomer Outstanding Report", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Customer Outstanding Report", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -312,6 +335,7 @@ export class CommitmentcustomerOutstandingComponent implements OnInit {
     this.CommitmentcustomerOutstandingReport = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
+      scheme_id: [''],
       slab_id: [''],
       area_id: [''],
       prized_status: [''],

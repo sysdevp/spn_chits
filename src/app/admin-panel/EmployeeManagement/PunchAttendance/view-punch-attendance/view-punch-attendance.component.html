@@ -1,27 +1,280 @@
+<ng-template #photoModal let-c="close">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">{{ photoTitle }}</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body text-center">
+    <img *ngIf="photoUrl" [src]="photoUrl" alt="Punch photo" style="max-width:100%;max-height:70vh;border-radius:8px;" />
+  </div>
+</ng-template>
+
 <ng-template #mapModal let-c="close">
   <div class="modal-header without-text">
-    <h5 class="float-left px-2 py-2 text-white mb-0">Punch Location</h5>
+    <h5 class="float-left px-2 py-2 text-white mb-0">
+      {{ selected && selected.live_location_view ? 'Live Location' : 'Punch Location' }}
+    </h5>
     <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
   </div>
   <div class="modal-body" *ngIf="selected">
     <p class="mb-2">
-      <strong>{{selected.employee_name}}</strong> · {{selected.att_view_date}}<br>
-      Check In: {{selected.check_in_time || '-'}} &nbsp; Check Out: {{selected.check_out_time || '-'}}
+      <strong>{{selected.employee_name}}</strong>
+      <span *ngIf="selected.att_view_date"> · {{selected.att_view_date}}</span>
+      <br>
+      Check In: {{selected.check_in_time || '-'}}
+      <span *ngIf="selected.check_out_time !== undefined"> &nbsp; Check Out: {{selected.check_out_time || '-'}}</span>
+      <br *ngIf="selected.live_location_view">
+      <span *ngIf="selected.live_location_view" class="text-success">
+        Last live update: {{selected.live_location_view}}
+      </span>
+      <br *ngIf="selected.outside_office == 1">
+      <span *ngIf="selected.outside_office == 1" class="text-danger font-weight-bold">
+        Outside office punch
+        <span *ngIf="selected.punch_distance_meters != null"> · {{selected.punch_distance_meters}} m</span>
+        <span *ngIf="selected.outside_office_remarks"> · {{selected.outside_office_remarks}}</span>
+      </span>
     </p>
     <div *ngIf="mapUrl">
       <iframe [src]="mapUrl" width="100%" height="360" frameborder="0" style="border:0" allowfullscreen></iframe>
     </div>
     <div *ngIf="!mapUrl" class="text-center py-4">No GPS location recorded for this punch.</div>
+    <div class="mt-2" *ngIf="selected.maps_link || selected.latitude || selected.check_in_latitude">
+      <button type="button" class="btn btn-sm btn-outline-success" (click)="openExternalMaps(selected)">
+        Open in Google Maps
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #routeModal let-c="close">
+  <div class="modal-header without-text">
+    <h5 class="float-left px-2 py-2 text-white mb-0">Travel History · Login to Logout</h5>
+    <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3" (click)="c('Close click')">X</button>
+  </div>
+  <div class="modal-body" *ngIf="routeRow">
+    <div class="d-flex flex-wrap align-items-center mb-2">
+      <strong class="mr-3">{{ routeRow.employee_name }}</strong>
+      <span class="text-muted mr-3">{{ routeRow.att_view_date }}</span>
+      <span class="badge badge-secondary mr-2">{{ routeWindow }}</span>
+      <span class="badge badge-success mr-2">KM {{ routeKm | number:'1.2-2' }}</span>
+      <span class="badge badge-primary mr-2">Points {{ routeTrail.length }}</span>
+      <span class="badge badge-warning">Receipts {{ routeReceipts.length }}</span>
+    </div>
+    <div *ngIf="routeLoading" class="text-muted text-center py-4">Loading travel history…</div>
+    <ng-container *ngIf="!routeLoading">
+      <iframe *ngIf="routeMapHtml" [src]="routeMapHtml" width="100%" height="400" frameborder="0" style="border:1px solid #c8e6d0;border-radius:8px"></iframe>
+      <div *ngIf="!routeMapHtml" class="alert alert-warning mb-0">
+        No GPS trail recorded between check-in and check-out for this employee.
+        The employee app must stay logged in with location set to <b>Allow all the time</b>;
+        older app versions stop sending GPS when the app is minimised or the screen is locked.
+      </div>
+      <div class="table-responsive mt-3" *ngIf="routeTrail.length" style="max-height:260px;overflow:auto">
+        <table class="table table-sm table-bordered bg-white mb-0">
+          <thead>
+            <tr><th>#</th><th>Time</th><th>Type</th><th>Location</th><th>Stayed</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of routeTrail; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ p.time }}</td>
+              <td>
+                <span *ngIf="p.source == 'check_in'" class="badge badge-success">Check-in</span>
+                <span *ngIf="p.source == 'check_out'" class="badge badge-danger">Check-out</span>
+                <span *ngIf="p.source == 'gps'" class="badge badge-light">GPS</span>
+              </td>
+              <td>{{ p.location_name && p.source == 'gps' ? p.location_name : (p.latitude | number:'1.5-5') + ', ' + (p.longitude | number:'1.5-5') }}</td>
+              <td>{{ stayLabel(p.stay_minutes) }}</td>
+              <td><a href="javascript:void(0)" (click)="openExternalMaps(p)" title="Open in Google Maps"><i class="fas fa-external-link-alt"></i></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
   </div>
 </ng-template>
 
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row">
-      <div class="col-6 my-auto font-weight-bold">Attendance Login Time & Map</div>
+      <div class="col-6 my-auto font-weight-bold">{{ showMaps ? 'Live Tracking and Punch Map' : 'Attendance (In / Out)' }}</div>
+      <div class="col-6 text-right">
+        <button *ngIf="showMaps" type="button" class="btn btn-sm btn-success mr-1" (click)="loadLive()" [disabled]="liveLoading || liveRefreshing">
+          {{ liveRefreshing || liveLoading ? 'Refreshing…' : 'Refresh Live Map' }}
+        </button>
+        <a *ngIf="!showMaps" class="btn btn-sm btn-outline-success mr-1" [routerLink]="['/admin-panel/view-punch-attendance']"><i class="fas fa-map-marker-alt"></i> Open Live Map</a>
+        <button *ngIf="!showMaps" type="button" class="btn btn-sm btn-outline-secondary mr-1" (click)="exportCsv()">Excel</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="applyFilters()">Search</button>
+      </div>
     </div>
   </div>
   <div class="card-body">
+
+    <div class="row mb-3">
+      <div class="col-md-2">
+        <label class="mb-1">Branch</label>
+        <select class="form-control" [(ngModel)]="filterBranchId" (change)="branchChg()">
+          <option value="">All Branches</option>
+          <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="mb-1">Employee</label>
+        <select class="form-control" [(ngModel)]="filterEmployeeId">
+          <option value="">All Employees</option>
+          <option *ngFor="let e of employeeList" [value]="e.id">{{ empName(e) }}</option>
+        </select>
+      </div>
+      <div class="col-md-2" *ngIf="!showMaps">
+        <label class="mb-1">View</label>
+        <select class="form-control" [(ngModel)]="viewType">
+          <option value="day">Day wise</option>
+          <option value="month">Month wise</option>
+          <option value="range">From - To date</option>
+        </select>
+      </div>
+      <div class="col-md-2" *ngIf="!showMaps && viewType === 'day'">
+        <label class="mb-1">Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterDay" />
+      </div>
+      <div class="col-md-2" *ngIf="!showMaps && viewType === 'month'">
+        <label class="mb-1">Month</label>
+        <input type="month" class="form-control" [(ngModel)]="filterMonth" />
+      </div>
+      <div class="col-md-2" *ngIf="showMaps || viewType === 'range'">
+        <label class="mb-1">From Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterFromDate" />
+      </div>
+      <div class="col-md-2" *ngIf="showMaps || viewType === 'range'">
+        <label class="mb-1">To Date</label>
+        <input type="date" class="form-control" [(ngModel)]="filterToDate" />
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-primary w-100" (click)="applyFilters()">Apply Filters</button>
+      </div>
+    </div>
+
+    <div class="row mb-3" *ngIf="!showMaps">
+      <div class="col-md-3"><div class="live-card mb-0"><div class="live-meta">Employees</div><h4 class="mb-0">{{ uniqueEmployees() }}</h4></div></div>
+      <div class="col-md-3"><div class="live-card mb-0"><div class="live-meta">Punched In</div><h4 class="mb-0 text-success">{{ presentCount() }}</h4></div></div>
+      <div class="col-md-3"><div class="live-card mb-0"><div class="live-meta">Punched Out</div><h4 class="mb-0">{{ checkedOutCount() }}</h4></div></div>
+      <div class="col-md-3"><div class="live-card mb-0"><div class="live-meta">Outside Office</div><h4 class="mb-0" style="color:#ea580c">{{ outsideCount() }}</h4></div></div>
+    </div>
+
+    <div class="live-card mt-3" *ngIf="showMaps">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <strong>Road Map / KM Tracking</strong>
+          <span class="live-meta ml-2">
+            Route of employee travel · receipt pins · feedback pins · {{ travelKm | number:'1.2-2' }} KM
+          </span>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-success" (click)="loadTravelMap()" [disabled]="travelLoading">
+          {{ travelLoading ? 'Loading…' : 'Refresh Route' }}
+        </button>
+      </div>
+      <div class="row mb-2">
+        <div class="col-md-3"><span class="badge badge-success">KM {{ travelKm | number:'1.2-2' }}</span></div>
+        <div class="col-md-3"><span class="badge badge-primary">Trail points {{ travelTrail.length }}</span></div>
+        <div class="col-md-3"><span class="badge badge-warning">Receipt pins {{ receiptPins.length }}</span></div>
+        <div class="col-md-3"><span class="badge badge-info">Feedback pins {{ feedbackPins.length }}</span></div>
+      </div>
+      <div *ngIf="travelLoading" class="text-muted py-3 text-center">Loading travel route…</div>
+      <iframe *ngIf="!travelLoading && travelMapHtml" [src]="travelMapHtml" width="100%" height="420" frameborder="0" style="border:1px solid #c8e6d0;border-radius:8px"></iframe>
+      <div *ngIf="!travelLoading && !travelMapHtml" class="text-muted text-center py-3">
+        No travel / receipt GPS for selected filters. Ask employees to stay logged in with GPS on.
+      </div>
+      <div class="table-responsive mt-3" *ngIf="travelEmployees.length">
+        <table class="table table-sm table-bordered bg-white mb-0">
+          <thead>
+            <tr><th>#</th><th>Employee</th><th>KM Travelled</th><th>GPS Points</th><th>First Seen</th><th>Last Seen</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of travelEmployees; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ e.employee_name }}</td>
+              <td><strong>{{ e.km | number:'1.2-2' }}</strong></td>
+              <td>{{ e.points }}</td>
+              <td>{{ e.first_at | slice:11:16 }}</td>
+              <td>{{ e.last_at | slice:11:16 }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-responsive mt-3" *ngIf="receiptPins.length">
+        <table class="table table-sm table-bordered bg-white mb-0">
+          <thead>
+            <tr><th>#</th><th>Receipt No</th><th>Customer</th><th>Amount</th><th>Location</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of receiptPins; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>{{ p.receipt_no }}</td>
+              <td>{{ p.customer_name }}</td>
+              <td>{{ p.amount }}</td>
+              <td>{{ p.location_name || (p.latitude + ', ' + p.longitude) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="live-card" *ngIf="showMaps">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <div>
+          <span class="live-badge"></span>
+          <strong>Live Employee Tracking</strong>
+          <span class="live-meta ml-2">(GPS always-on for logged-in office mobiles · auto refresh 30s)</span>
+        </div>
+        <span class="live-meta" *ngIf="liveAsOf">As of {{ liveAsOf }}</span>
+      </div>
+
+      <div *ngIf="liveLoading" class="text-muted py-3 text-center">Loading live locations…</div>
+
+      <div *ngIf="!liveLoading">
+        <table class="table table-sm table-bordered live-table mb-0 bg-white" *ngIf="liveList.length">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Employee</th>
+              <th>Branch</th>
+              <th>Check In</th>
+              <th>Last Location Update</th>
+              <th>Place</th>
+              <th>Live Map</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of liveList; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td>
+                <span class="live-badge"></span>{{ row.employee_name }}
+              </td>
+              <td>{{ row.branch_name || '-' }}</td>
+              <td>{{ row.check_in_time || '-' }}</td>
+              <td>{{ row.live_location_view || '-' }}</td>
+              <td>
+                <a href="javascript:void(0)" (click)="openMap(mapModal, row)" *ngIf="row.location_name || row.latitude">
+                  {{ row.location_name || 'View on map' }}
+                </a>
+                <span *ngIf="!row.location_name && !row.latitude">-</span>
+              </td>
+              <td>
+                <a href="javascript:void(0)" (click)="openMap(mapModal, row)" title="View live map">
+                  <i class="fas fa-map-marker-alt text-success"></i> View
+                </a>
+                <a class="ml-2" href="javascript:void(0)" (click)="openExternalMaps(row)" title="Open Google Maps">
+                  <i class="fas fa-external-link-alt"></i>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="!liveList.length" class="text-muted text-center py-3">
+          No employees currently checked in with a live location.
+        </div>
+      </div>
+    </div>
+
+    <h6 class="font-weight-bold mb-2">Attendance Report</h6>
     <div [hidden]="TableHidden">
       <table class="table table-striped table-bordered">
         <thead>
@@ -31,27 +284,66 @@
             <th>Employee</th>
             <th>Branch</th>
             <th>Check In</th>
+            <th>Login Photo</th>
             <th>Check Out</th>
+            <th>Logout Photo</th>
             <th>Status</th>
-            <th>Map</th>
+            <th>Outside Office</th>
+            <th>Approval</th>
+            <th *ngIf="showMaps">Map</th>
+            <th *ngIf="showMaps">Travel Route</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let row of dataList; let i = index">
+          <tr *ngFor="let row of dataList; let i = index" [class.outside-office-row]="row.outside_office == 1 || row.punch_status == 'pending_approval'">
             <td>{{i + 1}}</td>
             <td>{{row.att_view_date}}</td>
             <td>{{row.employee_name}}</td>
             <td>{{row.branch_name}}</td>
             <td>{{row.check_in_time || '-'}}</td>
+            <td>
+              <a *ngIf="row.check_in_photo_url" href="javascript:void(0)" (click)="openPhoto(row.check_in_photo_url, 'Login Photo')">
+                <img [src]="row.check_in_photo_url" alt="Login" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />
+              </a>
+              <span *ngIf="!row.check_in_photo_url">-</span>
+            </td>
             <td>{{row.check_out_time || '-'}}</td>
+            <td>
+              <a *ngIf="row.check_out_photo_url" href="javascript:void(0)" (click)="openPhoto(row.check_out_photo_url, 'Logout Photo')">
+                <img [src]="row.check_out_photo_url" alt="Logout" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />
+              </a>
+              <span *ngIf="!row.check_out_photo_url">-</span>
+            </td>
             <td>{{row.punch_status}}</td>
             <td>
+              <span *ngIf="row.outside_office == 1" class="badge-outside" title="{{row.outside_office_remarks}}">
+                Outside
+                <span *ngIf="row.punch_distance_meters != null"> ({{row.punch_distance_meters}} m)</span>
+              </span>
+              <div *ngIf="row.outside_office_remarks" class="small text-muted">{{row.outside_office_remarks}}</div>
+              <span *ngIf="row.outside_office != 1">-</span>
+            </td>
+            <td>
+              <span *ngIf="row.outside_approval_status == 'pending' || row.punch_status == 'pending_approval'">
+                <button type="button" class="btn btn-xs btn-success mr-1" (click)="approveOutside(row)">Approve</button>
+                <button type="button" class="btn btn-xs btn-danger" (click)="rejectOutside(row)">Reject</button>
+              </span>
+              <span *ngIf="row.outside_approval_status && row.outside_approval_status != 'pending'">{{row.outside_approval_status}}</span>
+              <span *ngIf="!row.outside_approval_status && row.punch_status != 'pending_approval'">-</span>
+            </td>
+            <td *ngIf="showMaps">
               <a *ngIf="row.map_url" (click)="openMap(mapModal, row)" title="View map"><i class="fas fa-map-marker-alt text-success"></i></a>
               <span *ngIf="!row.map_url">-</span>
             </td>
+            <td *ngIf="showMaps">
+              <button *ngIf="row.check_in_time" type="button" class="btn btn-xs btn-outline-success" (click)="openRoute(routeModal, row)">
+                <i class="fas fa-route"></i> Route
+              </button>
+              <span *ngIf="!row.check_in_time">-</span>
+            </td>
           </tr>
           <tr *ngIf="dataList.length==0">
-            <td colspan="8" class="text-center">No punch records found</td>
+            <td colspan="13" class="text-center">No punch records found</td>
           </tr>
         </tbody>
       </table>

@@ -3,7 +3,7 @@ import { Component, Input, HostBinding } from '@angular/core';
 @Component({
   selector: 'sidenav-menu', // tslint:disable-line
   template: `
-<a href="#" class="sidenav-link sidenav-toggle" [ngClass]="linkClass">
+<a href="javascript:void(0)" class="sidenav-link sidenav-toggle" [ngClass]="linkClass" (click)="$event.preventDefault()">
   <i class="sidenav-icon" *ngIf="icon" [ngClass]="icon"></i>
   <div [innerHTML]="text"></div>
   <div *ngIf="badge" class="ml-auto pl-1"><div class="badge" [ngClass]="badgeClass">{{badge}}</div></div>

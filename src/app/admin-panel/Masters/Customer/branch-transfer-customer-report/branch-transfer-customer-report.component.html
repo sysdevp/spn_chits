@@ -1,0 +1,75 @@
+<div class="container-fluid flex-grow-1 container-p-y">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="font-weight-bold mb-0">Branch Transfer Customer Report</h4>
+    <a [routerLink]="['/admin-panel/branch-transfer-customer']" class="btn btn-success"
+      >+ Transfer Customer</a
+    >
+  </div>
+
+  <div class="card mb-3">
+    <div class="card-body">
+      <form [formGroup]="FilterForm" (ngSubmit)="onSubmit()" class="row">
+        <div class="col-md-3 mb-2">
+          <label>From Branch</label>
+          <select class="form-control" formControlName="from_branch_id">
+            <option value="">All</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <div class="col-md-3 mb-2">
+          <label>To Branch</label>
+          <select class="form-control" formControlName="to_branch_id">
+            <option value="">All</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <div class="col-md-2 mb-2">
+          <label>Start Date</label>
+          <input type="date" class="form-control" formControlName="start_date" />
+        </div>
+        <div class="col-md-2 mb-2">
+          <label>End Date</label>
+          <input type="date" class="form-control" formControlName="end_date" />
+        </div>
+        <div class="col-md-2 mb-2 d-flex align-items-end">
+          <button type="submit" class="btn btn-primary btn-block">{{ SubmitbuttonName }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body table-responsive" *ngIf="!TableHidden">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>SNo</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Code</th>
+            <th>Mobile</th>
+            <th>From Branch</th>
+            <th>To Branch</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of dataList">
+            <td>{{ row.sno }}</td>
+            <td>{{ row.transfer_date }}</td>
+            <td>{{ row.customer_name }}</td>
+            <td>{{ row.customer_code }}</td>
+            <td>{{ row.mobile_no }}</td>
+            <td>{{ row.from_branch_name }}</td>
+            <td>{{ row.to_branch_name }}</td>
+            <td>{{ row.remarks }}</td>
+          </tr>
+          <tr *ngIf="dataList.length === 0">
+            <td colspan="8" class="text-center">No branch transfers found</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="TableHidden" class="p-4 text-center">Loading...</div>
+  </div>
+</div>

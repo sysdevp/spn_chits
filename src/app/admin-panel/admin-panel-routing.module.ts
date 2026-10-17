@@ -62,6 +62,8 @@ import { DeleteCollectionAreaComponent } from './Masters/CollectionArea/delete-c
 import { AddCustomerComponent } from './Masters/Customer/add-customer/add-customer.component';
 import { UpdateCustomerComponent } from './Masters/Customer/update-customer/update-customer.component';
 import { ViewCustomerComponent } from './Masters/Customer/view-customer/view-customer.component';
+import { BranchTransferCustomerComponent } from './Masters/Customer/branch-transfer-customer/branch-transfer-customer.component';
+import { BranchTransferCustomerReportComponent } from './Masters/Customer/branch-transfer-customer-report/branch-transfer-customer-report.component';
 import { DeleteCustomerComponent } from './Masters/Customer/delete-customer/delete-customer.component';
 //Designation
 import { AddDesignationComponent } from './Masters/Designation/add-designation/add-designation.component';
@@ -178,12 +180,12 @@ import { AddReceiptComponent } from './SubscriberManagement/Receipts/add-receipt
 import { UpdateReceiptComponent } from './SubscriberManagement/Receipts/update-receipt/update-receipt.component';
 import { ViewReceiptComponent } from './SubscriberManagement/Receipts/view-receipt/view-receipt.component';
 import { DeleteReceiptComponent } from './SubscriberManagement/Receipts/delete-receipt/delete-receipt.component';
-//Commitment Chit
+//Chit
 import { AddCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/add-commitment-chit/add-commitment-chit.component';
 import { UpdateCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/update-commitment-chit/update-commitment-chit.component';
 import { DeleteCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/delete-commitment-chit/delete-commitment-chit.component';
 import { ViewCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/view-commitment-chit/view-commitment-chit.component';
-//Commitment Payment
+//Prized Payment
 import { AddCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/add-commitment-payment/add-commitment-payment.component';
 import { DeleteCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/delete-commitment-payment/delete-commitment-payment.component';
 import { UpdateCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/update-commitment-payment/update-commitment-payment.component';
@@ -214,6 +216,23 @@ import { UpdateEmployeeAttendanceComponent } from './EmployeeManagement/Employee
 import { ViewEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/view-employee-attendance/view-employee-attendance.component';
 import { DeleteEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/delete-employee-attendance/delete-employee-attendance.component';
 import { ViewLeaveRequestsComponent } from './EmployeeManagement/LeaveRequests/view-leave-requests/view-leave-requests.component';
+import { OfficeTicketsComponent } from './EmployeeManagement/OfficeTickets/office-tickets.component';
+import { PaymentDeskComponent } from './Reports/payment-desk/payment-desk.component';
+import { PrizedShowGroupComponent } from './Reports/prized-show-group/prized-show-group.component';
+import { PrizedShowReportComponent } from './Reports/prized-show-report/prized-show-report.component';
+import { SpnAuctionReportComponent } from './Reports/spn-auction-report/spn-auction-report.component';
+import { CompletedNotPaidReportComponent } from './Reports/completed-not-paid-report/completed-not-paid-report.component';
+import { CashBoxComponent } from './Reports/cash-box/cash-box.component';
+import { MyDayReportComponent } from './Reports/my-day-report/my-day-report.component';
+import { BranchIncomeExpenseComponent } from './Reports/branch-income-expense/branch-income-expense.component';
+import { PettyCashBranchReportComponent } from './Reports/petty-cash-branch-report/petty-cash-branch-report.component';
+import { EmployeeAllowanceComponent } from './EmployeeManagement/Allowance/employee-allowance.component';
+import { CustomerCategoryReportComponent } from './Reports/customer-category-report/customer-category-report.component';
+import { SpnNewGroupComponent } from './Reports/spn-groups/spn-new-group.component';
+import { SpnGroupViewComponent } from './Reports/spn-groups/spn-group-view.component';
+import { EmployeeAdvanceComponent } from './EmployeeManagement/EmployeeAdvance/employee-advance.component';
+import { SectionHubComponent } from './Reports/section-hub/section-hub.component';
+import { BranchOverviewComponent } from './Reports/section-hub/branch-overview.component';
 import { ViewPunchAttendanceComponent } from './EmployeeManagement/PunchAttendance/view-punch-attendance/view-punch-attendance.component';
 //Employee Login
 import { AddEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/add-employee-login/add-employee-login.component';
@@ -259,6 +278,7 @@ import { AddPaymentSlabComponent } from './Masters/Slab/PaymentSlab/add-payment-
 import { UpdatePaymentSlabComponent } from './Masters/Slab/PaymentSlab/update-payment-slab/update-payment-slab.component';
 import { ViewPaymentSlabComponent } from './Masters/Slab/PaymentSlab/view-payment-slab/view-payment-slab.component';
 import { DeletePaymentSlabComponent } from './Masters/Slab/PaymentSlab/delete-payment-slab/delete-payment-slab.component';
+import { DueVsPaymentsComponent } from './Masters/Slab/due-vs-payments/due-vs-payments.component';
 //Dynamic Menu
 import { AddDynamicMenuComponent } from './MenuManager/add-dynamic-menu/add-dynamic-menu.component';
 import { UpdateDynamicMenuComponent } from './MenuManager/update-dynamic-menu/update-dynamic-menu.component';
@@ -271,7 +291,7 @@ import { ViewPermissionComponent } from './SecurityPermission/view-permission/vi
 import { DeletePermissionComponent } from './SecurityPermission/delete-permission/delete-permission.component';
 //Payment Refund Report
 import { PaymentRefundReportComponent } from './Reports/payment-refund-report/payment-refund-report.component';
-//Commitment Payment Report
+//Prized Payment Report
 import { CommitmentPaymentReportComponent } from './Reports/commitment-payment-report/commitment-payment-report/commitment-payment-report.component';
 //Commisson Payment Report
 import { CommissionPaymentReportComponent } from './Reports/commission-payment-report/commission-payment-report/commission-payment-report.component';
@@ -285,7 +305,7 @@ import { BusinessAgentReportComponent } from './Reports/business-agent/business-
 //Day Closing Report
 import { DayClosingReportComponent } from './Reports/DayClosingReport/day-closing-report/day-closing-report.component';
 import { ViewDayClosingComponent } from './Reports/DayClosingReport/view-day-closing/view-day-closing.component';
-//Commitment Receipt Report
+//Receipt Report
 import { AddCommitmentReceiptComponent } from './SubscriberManagement/CommitmentReceipts/add-commitment-receipt/add-commitment-receipt.component';
 import { DeleteCommitmentReceiptComponent } from './SubscriberManagement/CommitmentReceipts/delete-commitment-receipt/delete-commitment-receipt.component';
 //Bid Payment Adjustment
@@ -301,6 +321,7 @@ import { AdvancedReceiptReportComponent } from './Reports/advanced-receipt/advan
 import { AvailableAdvanceAmountReportComponent } from './Reports/available-advance-amount/available-advance-amount-report/available-advance-amount-report.component';
 //Interested Customer Report
 import { InterestedCustomerReportComponent } from './Reports/interested-customer/interested-customer-report/interested-customer-report.component';
+import { CustomerAppLeadsReportComponent } from './Reports/customer-app-leads/customer-app-leads-report/customer-app-leads-report.component';
 //Collection Area Mapping
 import { AddCollectionAreaMappingComponent } from './EmployeeManagement/Collection-area-mapping/add-collection-area-mapping/add-collection-area-mapping.component';
 import { UpdateCollectionAreaMappingComponent } from './EmployeeManagement/Collection-area-mapping/update-collection-area-mapping/update-collection-area-mapping.component';
@@ -313,7 +334,7 @@ import { DeleteOtherReceiptChargesComponent } from './SubscriberManagement/other
 import { ViewOtherReceiptChargesComponent } from './SubscriberManagement/otherReceiptCharges/view-other-receipt-charges/view-other-receipt-charges.component';
 //Other Receipt Charges Report
 import { OtherReceiptChargesReportComponent } from './Reports/other-Receipt-Charges/other-receipt-charges-report/other-receipt-charges-report.component';
-//Commitment Pending Report
+//Prized Pending Payment Report
 import { CommitmentPendingReportComponent } from './Reports/commitment-pending/commitment-pending-report/commitment-pending-report.component';
 import { SchemeWisePayablePendingReportComponent } from './Reports/spn-collection-reports/scheme-wise-payable-pending/scheme-wise-payable-pending-report.component';
 import { NextMonthCollectionReportComponent } from './Reports/spn-collection-reports/next-month-collection/next-month-collection-report.component';
@@ -322,6 +343,7 @@ import { DueNoCustomerReportComponent } from './Reports/spn-collection-reports/d
 import { CommitmentEligibilityApprovalComponent } from './Reports/commitment-eligibility-approval/commitment-eligibility-approval.component';
 //Customer Ledger
 import { CustomerLedgerComponent } from './TransactionManagement/customer-ledger/customer-ledger.component';
+import { CustomerScoreRulesComponent } from './settings/customer-score-rules/customer-score-rules.component';
 import { AddDuplicateReceiptComponent } from './SubscriberManagement/DuplicateReceipt/add-duplicate-receipt/add-duplicate-receipt.component';
 //Password Change
 import { PasswordChangeComponent } from './EmployeeManagement/PasswordChange/password-change/password-change.component';
@@ -338,9 +360,9 @@ import { UpdateFeedbackComponent } from './SubscriberManagement/CollectionActivi
 import { ViewFeedbackComponent } from './SubscriberManagement/CollectionActivity/view-feedback/view-feedback.component';
 import { DeleteFeedbackComponent } from './SubscriberManagement/CollectionActivity/delete-feedback/delete-feedback.component';
 
-//Commitmentcustomer Outstanding Report
+//Customer Outstanding Report
 import { CommitmentcustomerOutstandingComponent } from './Reports/OutstandingReport/commitmentcustomer-outstanding-report/commitmentcustomer-outstanding/commitmentcustomer-outstanding.component';
-//Commitment Receipt Report
+//Receipt Report
 import { CommitmentReceiptReportComponent } from './Reports/commitment-receipt-report/commitment-receipt-report.component';
 
   //Loan Module
@@ -586,6 +608,12 @@ import { RefundTransferReportComponent } from './Reports/refund-transfer-report/
 import { TransferCustomerDetailsReportComponent } from './Reports/transfer-customer-details-report/transfer-customer-details-report.component';
 import { AuctionReportFinalComponent } from './Reports/auction-report-final/auction-report-final.component';
 import { CommitmentReportComponent } from './Reports/commitment-report/commitment-report/commitment-report.component';
+import { CommitmentPromiseReportComponent } from './Reports/commitment-promise-report/commitment-promise-report.component';
+import { UtrReceiptReportComponent } from './Reports/utr-receipt-report/utr-receipt-report.component';
+import { CollectionPredictionReportComponent } from './Reports/collection-prediction-report/collection-prediction-report.component';
+import { EmployeePerformanceAiComponent } from './Reports/employee-performance-ai/employee-performance-ai.component';
+import { RefundApprovalComponent } from './Reports/refund-approval/refund-approval.component';
+import { DocumentPreparationComponent } from './Reports/document-preparation/document-preparation.component';
 
 import { CashbookComponent } from './Reports/cashbook/cashbook.component';
 import { BankbookComponent } from './Reports/bankbook/bankbook.component';
@@ -651,8 +679,10 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'delete-collection-area/:id', component: DeleteCollectionAreaComponent,canActivate: [AuthGuardService],data: {menuId: 10, parentMenuId: 2, permType:'delete_perm'}},  
   //Customer
   { path: 'add-customer', component: AddCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'add_perm'}},  
-  { path: 'update-customer/:id', component: UpdateCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'edit_perm'}}, 
-  { path: 'view-customer', component: ViewCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'view_perm'}}, 
+  { path: 'update-customer/:id', component: UpdateCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'edit_perm'}},
+  { path: 'view-customer', component: ViewCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'view_perm'}},
+  { path: 'branch-transfer-customer', component: BranchTransferCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'edit_perm'}},
+  { path: 'branch-transfer-customer-report', component: BranchTransferCustomerReportComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'view_perm'}},
   { path: 'delete-customer/:id', component: DeleteCustomerComponent,canActivate: [AuthGuardService],data: {menuId: 5, parentMenuId: 28, permType:'delete_perm'}}, 
   //Designation
   { path: 'add-designation', component: AddDesignationComponent,canActivate: [AuthGuardService],data: {menuId: 12, parentMenuId: 2, permType:'add_perm'}},  
@@ -748,6 +778,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'add-payment-slab', component: AddPaymentSlabComponent,canActivate: [AuthGuardService],data: {menuId: 24, parentMenuId: 2, permType:'add_perm'}},
   { path: 'update-payment-slab/:id', component: UpdatePaymentSlabComponent,canActivate: [AuthGuardService],data: {menuId: 24, parentMenuId: 2, permType:'edit_perm'}},
   { path: 'view-payment-slab', component: ViewPaymentSlabComponent,canActivate: [AuthGuardService],data: {menuId: 24, parentMenuId: 2, permType:'view_perm'}},
+  { path: 'due-vs-payments', component: DueVsPaymentsComponent, canActivate: [AuthGuardService] },
   { path: 'delete-payment-slab/:id', component: DeletePaymentSlabComponent,canActivate: [AuthGuardService],data: {menuId: 24, parentMenuId: 2, permType:'delete_perm'}},
   //Tenant
   /*{ path: 'add-tenant', component: AddTenantComponent,canActivate: [AuthGuardService],data: {menuId: 54, parentMenuId: 2, permType:'add_perm'}},
@@ -796,8 +827,34 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   //Employee Attendance
   { path: 'add-employee-attendance', component: AddEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'add_perm'}},
   { path: 'update-employee-attendance/:branchId/:attYear/:attMonth/:attDate', component: UpdateEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'edit_perm'}},
-  { path: 'view-employee-attendance', component: ViewEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
+  { path: 'view-employee-attendance', component: ViewPunchAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm', mode: 'attendance'}},
   { path: 'view-leave-requests', component: ViewLeaveRequestsComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
+  { path: 'office-tickets', component: OfficeTicketsComponent, canActivate: [AuthGuardService], data: { menuId: 35, parentMenuId: 34, permType: 'view_perm' } },
+  { path: 'payment-dashboard', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'dashboard' } },
+  { path: 'payment-priced', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'prized' } },
+  { path: 'payment-closed', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'closed' } },
+  { path: 'payment-refund-desk', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'refund' } },
+  { path: 'payment-pending-approvals', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'pending' } },
+  { path: 'payment-accounts-payout', component: PaymentDeskComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm', desk: 'pending', stage: 'accounts' } },
+  { path: 'prized-show-group', component: PrizedShowGroupComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm' } },
+  { path: 'prized-show-report', component: PrizedShowReportComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm' } },
+  { path: 'completed-not-paid-report', component: CompletedNotPaidReportComponent, canActivate: [AuthGuardService], data: { menuId: 71, parentMenuId: 65, permType: 'view_perm' } },
+  { path: 'my-cash-box', component: CashBoxComponent, canActivate: [AuthGuardService], data: { menuId: 148, parentMenuId: 67, permType: 'view_perm', tab: 'box' } },
+  { path: 'cash-box-approvals', component: CashBoxComponent, canActivate: [AuthGuardService], data: { menuId: 148, parentMenuId: 67, permType: 'view_perm', tab: 'approvals' } },
+  { path: 'income-cash-box-report', component: CashBoxComponent, canActivate: [AuthGuardService], data: { menuId: 148, parentMenuId: 67, permType: 'view_perm', tab: 'income' } },
+  { path: 'my-day-report', component: MyDayReportComponent, canActivate: [AuthGuardService], data: { menuId: 148, parentMenuId: 67, permType: 'view_perm' } },
+  { path: 'branch-income-expense-report', component: BranchIncomeExpenseComponent, canActivate: [AuthGuardService], data: { menuId: 105, parentMenuId: 67, permType: 'view_perm' } },
+  { path: 'petty-cash-branch-report', component: PettyCashBranchReportComponent, canActivate: [AuthGuardService], data: { menuId: 26, parentMenuId: 62, permType: 'view_perm' } },
+  { path: 'day-allowance-report', component: EmployeeAllowanceComponent, canActivate: [AuthGuardService], data: { menuId: 101, parentMenuId: 34, permType: 'view_perm', mode: 'day' } },
+  { path: 'petrol-allowance', component: EmployeeAllowanceComponent, canActivate: [AuthGuardService], data: { menuId: 101, parentMenuId: 34, permType: 'view_perm', mode: 'petrol' } },
+  { path: 'spn-auction-report', component: SpnAuctionReportComponent, canActivate: [AuthGuardService], data: { menuId: 56, parentMenuId: 28, permType: 'view_perm' } },
+  { path: 'customer-category-report', component: CustomerCategoryReportComponent, canActivate: [AuthGuardService], data: { menuId: 32, parentMenuId: 28, permType: 'view_perm' } },
+  { path: 'spn-new-group', component: SpnNewGroupComponent, canActivate: [AuthGuardService], data: { menuId: 8, parentMenuId: 2, permType: 'add_perm' } },
+  { path: 'spn-group-view', component: SpnGroupViewComponent, canActivate: [AuthGuardService], data: { menuId: 8, parentMenuId: 2, permType: 'view_perm' } },
+  { path: 'employee-advance', component: EmployeeAdvanceComponent, canActivate: [AuthGuardService], data: { menuId: 101, parentMenuId: 34, permType: 'view_perm' } },
+  { path: 'hub/:section', component: SectionHubComponent, canActivate: [AuthGuardService] },
+  { path: 'branch-overview', component: BranchOverviewComponent, canActivate: [AuthGuardService] },
+  { path: 'branch-overview/:id', component: BranchOverviewComponent, canActivate: [AuthGuardService] },
   { path: 'view-punch-attendance', component: ViewPunchAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'view_perm'}},
   { path: 'delete-employee-attendance/:id', component: DeleteEmployeeAttendanceComponent,canActivate: [AuthGuardService],data: {menuId: 35, parentMenuId: 34, permType:'delete_perm'}},
   //Employee Login
@@ -835,7 +892,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'vacant-report', component: VacantReportComponent,canActivate: [AuthGuardService],data: {menuId: 49, parentMenuId: 42, permType:'add_perm'}},
   { path: 'auction-report', component: AuctionReportComponent,canActivate: [AuthGuardService],data: {menuId: 64, parentMenuId: 42, permType:'add_perm'}},
   { path: 'receipt-report', component: ReceiptReportComponent,canActivate: [AuthGuardService],data: {menuId: 51, parentMenuId: 42, permType:'add_perm'}},
-   //Commitment Chit
+   //Chit
    { path: 'add-commitment-chit', component: AddCommitmentChitComponent,canActivate: [AuthGuardService],data: {menuId: 32, parentMenuId: 28, permType:'add_perm'}},
    { path: 'update-commitment-chit/:id', component: UpdateCommitmentChitComponent,canActivate: [AuthGuardService],data: {menuId: 32, parentMenuId: 28, permType:'edit_perm'}},
    { path: 'delete-commitment-chit/:id', component: DeleteCommitmentChitComponent,canActivate: [AuthGuardService],data: {menuId: 32, parentMenuId: 28, permType:'view_perm'}},
@@ -859,7 +916,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'update-permission', component: UpdatePermissionComponent,canActivate: [AuthGuardService],data: {menuId: 53, parentMenuId: 0, permType:'edit_perm'}},
  // { path: 'view-permissions', component: ViewPermissionComponent,canActivate: [AuthGuardService],data: {menuId: 6, parentMenuId: 0, permType:'add_perm'}},
  // { path: 'delete-permission/:id', component: DeletePermissionComponent,canActivate: [AuthGuardService],data: {menuId: 6, parentMenuId: 0, permType:'add_perm'}},
-  //Commitment Payment
+  //Prized Payment
   { path: 'add-commitment-payment', component: AddCommitmentPaymentComponent,canActivate: [AuthGuardService],data: {menuId: 56, parentMenuId: 28, permType:'add_perm'}},
   { path: 'update-commitment-payment/:id', component: UpdateCommitmentPaymentComponent,canActivate: [AuthGuardService],data: {menuId: 56, parentMenuId: 28, permType:'edit_perm'}},
   { path: 'view-commitment-payment', component: ViewCommitmentPaymentComponent,canActivate: [AuthGuardService],data: {menuId: 56, parentMenuId: 28, permType:'view_perm'}},
@@ -872,6 +929,13 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
  //Commitment  Report
  { path: 'commitment-payment-report', component: CommitmentPaymentReportComponent,canActivate: [AuthGuardService],data: {menuId: 70, parentMenuId: 42, permType:'add_perm'}}, 
  { path: 'commitment-pending-report', component: CommitmentPendingReportComponent,canActivate: [AuthGuardService],data: {menuId: 71, parentMenuId: 65, permType:'view_perm'}}, 
+ { path: 'commitment-promise-report', component: CommitmentPromiseReportComponent,canActivate: [AuthGuardService],data: {menuId: 71, parentMenuId: 65, permType:'view_perm', mode: 'promised'}},
+ { path: 'final-closed-report', component: CommitmentPromiseReportComponent,canActivate: [AuthGuardService],data: {menuId: 71, parentMenuId: 65, permType:'view_perm', mode: 'final'}},
+ { path: 'utr-receipt-report', component: UtrReceiptReportComponent,canActivate: [AuthGuardService],data: {menuId: 82, parentMenuId: 66, permType:'view_perm'}},
+ { path: 'collection-prediction-report', component: CollectionPredictionReportComponent, canActivate: [AuthGuardService], data: { routeKey: 'collection-prediction-report', permType: 'view_perm' } },
+ { path: 'employee-performance-ai', component: EmployeePerformanceAiComponent, canActivate: [AuthGuardService], data: { routeKey: 'employee-performance-ai', permType: 'view_perm' } },
+ { path: 'refund-approval', component: RefundApprovalComponent,canActivate: [AuthGuardService],data: {menuId: 109, parentMenuId: 37, permType:'view_perm'}},
+ { path: 'document-preparation', component: DocumentPreparationComponent,canActivate: [AuthGuardService],data: {menuId: 56, parentMenuId: 28, permType:'view_perm'}},
  { path: 'scheme-wise-payable-pending-report', component: SchemeWisePayablePendingReportComponent,canActivate: [AuthGuardService],data: {menuId: 164, parentMenuId: 168, permType:'view_perm'}},
  { path: 'next-month-collection-report', component: NextMonthCollectionReportComponent,canActivate: [AuthGuardService],data: {menuId: 165, parentMenuId: 168, permType:'view_perm'}},
  { path: 'this-month-unpaid-report', component: ThisMonthUnpaidReportComponent,canActivate: [AuthGuardService],data: {menuId: 166, parentMenuId: 168, permType:'view_perm'}},
@@ -890,7 +954,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   //Day Closing Report
   { path: 'day-closing-report', component: DayClosingReportComponent,canActivate: [AuthGuardService],data: {menuId: 75, parentMenuId: 42, permType:'add_perm'}},
   { path: 'view-day-closing', component: ViewDayClosingComponent},
-  //Commitment Receipt Report
+  //Receipt Report
   { path: 'add-commitment-receipt', component: AddCommitmentReceiptComponent,canActivate: [AuthGuardService],data: {menuId: 57, parentMenuId: 37, permType:'add_perm'}},
   { path: 'delete-commitment-receipt/:receipt_no', component: DeleteCommitmentReceiptComponent,canActivate: [AuthGuardService],data: {menuId: 57, parentMenuId: 37, permType:'delete_perm'}},
   //BidPayment Adjustment
@@ -907,6 +971,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 
   //Available Advance Amount Report
   { path: 'interested-customer-report', component: InterestedCustomerReportComponent},
+  { path: 'customer-app-leads-report', component: CustomerAppLeadsReportComponent},
   //Collection Area Mapping
   { path: 'add-collection-area-mapping', component: AddCollectionAreaMappingComponent,canActivate: [AuthGuardService],data: {menuId: 55, parentMenuId: 34, permType:'add_perm'}},
   { path: 'update-collection-area-mapping/:id', component: UpdateCollectionAreaMappingComponent,canActivate: [AuthGuardService],data: {menuId: 55, parentMenuId: 34, permType:'edit_perm'}},
@@ -921,6 +986,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'other-receipt-charges-report', component: OtherReceiptChargesReportComponent,canActivate: [AuthGuardService],data: {menuId: 74, parentMenuId: 42, permType:'add_perm'}},
   //Customer Ledger 
   { path: 'customer-ledger', component: CustomerLedgerComponent,canActivate: [AuthGuardService],data: { routeKey: 'customer-ledger' }},
+  { path: 'customer-score-rules', component: CustomerScoreRulesComponent, canActivate: [AuthGuardService] },
   { path: 'add-duplicate-receipt', component: AddDuplicateReceiptComponent},
   { path: 'password-change', component: PasswordChangeComponent},
   //Receipt Print
@@ -938,9 +1004,9 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
   { path: 'view-feed-back', component: ViewFeedbackComponent,canActivate: [AuthGuardService],data: {menuId: 80, parentMenuId: 28, permType:'view_perm'}},  
   { path: 'delete-feed-back/:id', component: DeleteFeedbackComponent,canActivate: [AuthGuardService],data: {menuId: 80, parentMenuId: 28, permType:'delete_perm'}},  
  
-  //Commitmentcustomer Outstanding Report     
+  //Customer Outstanding Report     
   { path: 'commitmentcustomer-outstanding-report', component: CommitmentcustomerOutstandingComponent,canActivate: [AuthGuardService],data: {menuId: 81, parentMenuId: 42, permType:'add_perm'}}, 
-  //Commitment Receipt Report     
+  //Receipt Report     
   { path: 'commitment-receipt-report', component: CommitmentReceiptReportComponent,canActivate: [AuthGuardService],data: {menuId: 82, parentMenuId: 42, permType:'add_perm'}},
   
   //Loan Module     
@@ -1191,6 +1257,7 @@ import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 { path: 'auction-report-final', component: AuctionReportFinalComponent},
 { path: 'commitment-report', component: CommitmentReportComponent, canActivate: [AuthGuardService], data: { menuId: 69, parentMenuId: 48, permType: 'view_perm' }},
 { path: 'cash-book', component: CashbookComponent},
+{ path: 'cashbook', component: CashbookComponent},
 { path: 'bank-book', component: BankbookComponent},
 ])],
 

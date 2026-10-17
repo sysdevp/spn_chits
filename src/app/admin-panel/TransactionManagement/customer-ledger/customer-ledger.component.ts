@@ -9,6 +9,8 @@ import {saveAs} from 'file-saver';
 import {ExcelService} from '../../../Services/excel.service';
 import  XLSX from 'xlsx';
 import { enrolNameWithAr, formatSlabWithArNo, slabLabelFromRow } from '../../../utils/enrollment-display.util';
+import { calculateCustomerScore, CustomerScoreResult, LATE_DAYS_PER_INSTALLMENT, scoreGrade } from '../../settings/customer-score.rules';
+import { isAdminLogin } from '../../../utils/login-role.util';
 
 @Component({
   
@@ -20,7 +22,7 @@ import { enrolNameWithAr, formatSlabWithArNo, slabLabelFromRow } from '../../../
     .stmt-toolbar select { min-width: 280px; padding: 6px 10px; border: 1px solid #ced4da; border-radius: 4px; }
     #customerStatementPrint { background: #fff; color: #1a1a2e; font-family: 'Segoe UI', Tahoma, sans-serif; }
     .stmt-sheet { border: 1px solid #dfe6ee; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-    .stmt-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 28px; background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); color: #fff; }
+    .stmt-head { display: flex; justify-content: space-between; align-items: flex-start; padding: 24px 28px; background: linear-gradient(135deg, #006B3C 0%, #004D2A 100%); color: #fff; }
     .stmt-head-left h2 { margin: 0 0 4px; font-size: 22px; font-weight: 700; letter-spacing: .3px; }
     .stmt-head-left p { margin: 0; opacity: .9; font-size: 13px; }
     .stmt-head-right { text-align: right; }
@@ -33,26 +35,53 @@ import { enrolNameWithAr, formatSlabWithArNo, slabLabelFromRow } from '../../../
     .stmt-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding: 20px 28px; }
     .stmt-metric { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; }
     .stmt-metric label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .35px; color: #64748b; margin-bottom: 4px; }
-    .stmt-metric .val { font-size: 17px; font-weight: 700; color: #0f766e; }
+    .stmt-metric .val { font-size: 17px; font-weight: 700; color: #006B3C; }
     .stmt-metric.highlight { background: #ecfdf5; border-color: #6ee7b7; }
     .stmt-metric.warn .val { color: #b45309; }
+    .score-panel { margin: 0 28px 20px; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; background: #fff; }
+    .score-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .score-num { font-size: 28px; font-weight: 800; color: #061A35; line-height: 1; }
+    .score-grade { font-size: 14px; font-weight: 700; margin-top: 4px; }
+    .score-meta { color: #64748B; font-size: 12px; margin-top: 8px; }
+    .score-link { font-size: 12px; color: #006B3C; font-weight: 700; }
+    .grade-excellent { color: #006B3C; }
+    .grade-good { color: #008A4C; }
+    .grade-medium { color: #B8860B; }
+    .grade-bad { color: #DC2626; }
     .stmt-table-wrap { padding: 0 28px 24px; overflow-x: auto; }
     .stmt-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .stmt-table thead th { background: #0f766e; color: #fff; padding: 10px 8px; text-align: left; font-weight: 600; white-space: nowrap; }
+    .stmt-table thead th { background: #006B3C; color: #fff; padding: 10px 8px; text-align: left; font-weight: 600; white-space: nowrap; }
     .stmt-table tbody td { padding: 9px 8px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
     .stmt-table tbody tr:nth-child(even) { background: #f8fafc; }
     .stmt-table tbody tr:hover { background: #ecfdf5; }
-    .stmt-table tfoot td { padding: 10px 8px; font-weight: 700; background: #f1f5f9; border-top: 2px solid #0f766e; color: #0f172a; }
+    .stmt-table tfoot td { padding: 10px 8px; font-weight: 700; background: #f1f5f9; border-top: 2px solid #006B3C; color: #0f172a; }
     .stmt-empty { padding: 32px; text-align: center; color: #64748b; font-style: italic; }
     .stmt-badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
     .stmt-badge.prized { background: #dcfce7; color: #166534; }
     .stmt-badge.not-prized { background: #fef3c7; color: #92400e; }
     .acct-section { padding: 0 28px 24px; }
-    .acct-section h4 { font-size: 15px; font-weight: 700; color: #0f766e; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
-    .acct-section-title { font-size: 18px; font-weight: 700; color: #0f766e; margin: 20px 0 12px; }
-    .stmt-link { color: #0f766e; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .acct-section h4 { font-size: 15px; font-weight: 700; color: #006B3C; margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+    .acct-section-title { font-size: 18px; font-weight: 700; color: #006B3C; margin: 20px 0 12px; }
+    .stmt-link { color: #006B3C; font-weight: 600; cursor: pointer; text-decoration: none; }
     .stmt-link:hover { text-decoration: underline; }
     .enrollment-card { margin-bottom: 16px; }
+    .customer-insights { display: flex; justify-content: flex-end; align-items: center; gap: 16px; }
+    .customer-remarks { max-width: 220px; color: #475569; font-size: 13px; text-align: right; }
+    .customer-score { width: 82px; height: 82px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #ecfdf5; border: 4px solid #34d399; color: #047857; box-shadow: 0 3px 12px rgba(0,107,60,.2); }
+    .customer-score strong { font-size: 22px; line-height: 1; }
+    .customer-score span { margin-top: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; text-align: center; }
+    .customer-score.grade-excellent { background: #ecfdf5; border-color: #006B3C; color: #006B3C; }
+    .customer-score.grade-good { background: #f0fdf4; border-color: #008A4C; color: #008A4C; }
+    .customer-score.grade-medium { background: #fffbeb; border-color: #D4A017; color: #92400E; }
+    .customer-score.grade-bad { background: #fef2f2; border-color: #DC2626; color: #DC2626; }
+    .customer-score-note { margin: 8px 0 14px; color: #475569; font-size: 13px; }
+    .customer-score .score-manual { font-size: 9px; font-weight: 700; }
+    .prized-status-box .ps-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b; margin-bottom: 4px; }
+    .prized-status-box .ps-sub { font-size: 12px; color: #475569; margin-top: 4px; }
+    .prized-status-box .ps-list span { display: inline-block; font-size: 11px; color: #DC2626; margin-right: 8px; }
+    .score-edit-box { border: 1px solid #bbf7d0; background: #f0fdf4; border-radius: 8px; padding: 12px; margin: 8px 0; }
+    .customer-score-note a { color: #006B3C; font-weight: 700; }
+    @media (max-width: 767px) { .customer-insights { justify-content: flex-start; margin-top: 16px; } }
     @media print {
       .stmt-toolbar, .no-print { display: none !important; }
       #customerStatementPrint, #accountInfoPrint { box-shadow: none; }
@@ -207,7 +236,19 @@ export class CustomerLedgerComponent implements OnInit {
   accountTotalMonths: number;
   accountRunningMonth: number;
   accountPaidAmount: any;
+  paymentScore: CustomerScoreResult = null;
+  scoreOverride: any = null;
+  scoreLogs: any[] = [];
+  scoreEditOpen = false;
+  scoreEditValue: any = '';
+  scoreEditRemarks = '';
+  isAdminUser = isAdminLogin();
+  accountPrized = false;
+  scoreEnrollmentCount = 0;
+  private scoreRequestId = 0;
   accountPendingAmount: any;
+  remarks: any;
+  customerScore: any;
   accountCompanyReleased: any;
   accountCompanyPending: any;
   commitmentPaymentList: any[];
@@ -421,6 +462,7 @@ export class CustomerLedgerComponent implements OnInit {
           this.communicationAddress_1=response.data[0].communication_address_line_1;
           this.communicationAddress_2=response.data[0].communication_address_line_2;
           this.relationship=response.data[0].relationship_info;
+          this.remarks=response.data[0].remarks;
 
       }else {
           //this.CustomerDetailList = [];
@@ -500,6 +542,8 @@ export class CustomerLedgerComponent implements OnInit {
             row.slab_name = this.formatEnrollmentSlab(row);
             return row;
           });
+          this.loadCustomerScore();
+          this.loadScoreOverride();
          /*  this.ticketNo=response.data[0].ticket_no;
           this.chitValue=response.data[0].chit_value;
           //this.chitValue=response.data[0].chit_value;
@@ -512,6 +556,8 @@ export class CustomerLedgerComponent implements OnInit {
           this.pendingInstallment=response.data[0].pending_inst; */
       }else {
           this.enrollmentInfo = [];
+          this.paymentScore = null;
+          this.customerScore = null;
         }
       }  catch (err) { }
     }, (err: any) => {  });
@@ -597,7 +643,7 @@ export class CustomerLedgerComponent implements OnInit {
     this.userservice.getData(cond2, "get-enrolls-for-customer-ledger-without-trash", "POST").subscribe((response: any) => {
       try { 
         if (response.status == 'Success') { 
-          // Customer statement should show only Commitment Chits
+          // Customer statement should show only Chits
           this.enrolList = (response.data || [])
             .filter((e: any) => Number(e.chit_type) === 3)
             .map((e: any) => {
@@ -722,6 +768,7 @@ export class CustomerLedgerComponent implements OnInit {
         this.accountPendingAmount = parseFloat(enrol.pending_amount || 0);
         this.accountSlabName = this.formatEnrollmentSlab(enrol);
       }
+      this.accountPrized = !!(enrol && Number(enrol.prized_status) === 1);
 
       const cond = { "conditions[id]": enrolId };
       const cond1 = { "conditions[enrollment_id]": enrolId };
@@ -828,6 +875,118 @@ export class CustomerLedgerComponent implements OnInit {
         return summary || data[0] || data['0'] || null;
       }
       return null;
+    }
+
+    loadCustomerScore() {
+      const enrolls = this.enrollmentInfo || [];
+      const requestId = ++this.scoreRequestId;
+      this.scoreEnrollmentCount = enrolls.length;
+      if (!enrolls.length) {
+        this.paymentScore = null;
+        this.customerScore = null;
+        return;
+      }
+      let paid = 0;
+      let pending = 0;
+      enrolls.forEach((enrol: any) => {
+        paid += parseFloat(enrol.paid_amount || 0);
+        pending += parseFloat(enrol.pending_amount || 0);
+      });
+      let waiting = enrolls.length;
+      let lateInstallments = 0;
+      let lateDays = 0;
+      const finish = () => {
+        waiting--;
+        if (waiting > 0 || requestId !== this.scoreRequestId) {
+          return;
+        }
+        this.paymentScore = calculateCustomerScore({
+          paid: paid,
+          pending: pending,
+          lateInstallments: lateInstallments,
+          lateDays: lateDays
+        });
+        this.customerScore = this.paymentScore.score;
+      };
+      enrolls.forEach((enrol: any) => {
+        this.userservice.getData({ 'conditions[id]': enrol.id }, 'auction-wise-to-be-collected', 'POST').subscribe((response: any) => {
+          const summary = this.extractToBeCollectedSummary(response);
+          const rows = summary && summary.pending_details ? summary.pending_details : [];
+          rows.forEach((row: any) => {
+            const pendingAmt = parseFloat(row.inst_amt_wise_pending || 0);
+            let days = parseInt(row.pending_days, 10);
+            if (isNaN(days)) {
+              days = this.getAccountPendingDays(row);
+            }
+            if (pendingAmt > 0 && days > 0) {
+              lateInstallments++;
+              lateDays += Math.min(days, LATE_DAYS_PER_INSTALLMENT);
+            }
+          });
+          finish();
+        }, () => finish());
+      });
+    }
+
+    scoreGradeClass(grade: string): string {
+      return 'grade-' + (grade || '').toLowerCase();
+    }
+
+    prizedEnrollments(): any[] {
+      return (this.enrollmentInfo || []).filter((e: any) => Number(e.prized_status) === 1);
+    }
+
+    isEnrolPrized(enrolId: any): boolean {
+      const enrol = (this.enrollmentInfo || []).find((e: any) => String(e.id) === String(enrolId));
+      return !!(enrol && Number(enrol.prized_status) === 1);
+    }
+
+    get displayScore(): any {
+      if (this.scoreOverride) {
+        const score = Number(this.scoreOverride.score);
+        return { score: score, grade: scoreGrade(score), manual: true };
+      }
+      return this.paymentScore ? { score: this.paymentScore.score, grade: this.paymentScore.grade, manual: false } : null;
+    }
+
+    loadScoreOverride() {
+      this.scoreOverride = null;
+      this.scoreLogs = [];
+      if (!this.custid) {
+        return;
+      }
+      this.userservice.getData({ customer_id: this.custid }, 'get-customer-score-override', 'JSON').subscribe((res: any) => {
+        this.scoreOverride = res && res.status === 'Success' ? res.data : null;
+        this.scoreLogs = res && res.logs ? res.logs : [];
+      });
+    }
+
+    openScoreEdit() {
+      const current = this.displayScore;
+      this.scoreEditValue = current ? current.score : '';
+      this.scoreEditRemarks = '';
+      this.scoreEditOpen = true;
+    }
+
+    saveScoreOverride(clear = false) {
+      if (!this.scoreEditRemarks.trim()) {
+        this.appService.showAlert('Customer Score', 'Remarks are required', 'error');
+        return;
+      }
+      this.userservice.getData({
+        customer_id: this.custid,
+        score: this.scoreEditValue,
+        system_score: this.paymentScore ? this.paymentScore.score : '',
+        remarks: this.scoreEditRemarks,
+        clear: clear ? 1 : 0,
+        updated_by: localStorage.getItem('logged_employee_id')
+      }, 'save-customer-score-override', 'JSON').subscribe((res: any) => {
+        this.appService.showAlert('Customer Score', res.msg || 'Saved', res.status === 'Success' ? 'success' : 'error');
+        if (res.status === 'Success') {
+          this.scoreEditOpen = false;
+          this.loadScoreOverride();
+        }
+      });
     }
 
     getAccountDueAmount(row: any): number {

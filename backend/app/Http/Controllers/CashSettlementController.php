@@ -55,6 +55,9 @@ class CashSettlementController extends Controller
                 $cashsettlement->remarks = isset($request->remarks) ? ($request->remarks) : '0' ;
                 $cashsettlement->created_by = isset($request->created_by) ? ($request->created_by) : 0;
                 $cashsettlement->status = isset($request->status) ? ($request->status) : 1;
+                if (\Schema::hasColumn('cash_settlements', 'is_approved')) {
+                    $cashsettlement->is_approved = 0;
+                }
                 if($cashsettlement->save()) {
                     $response['status'] = 'Success';
                     $response['msg'] = \Lang::get('api.success_cash_settlement_added');

@@ -316,26 +316,26 @@ export class AddCommitmentChitComponent implements OnInit {
       this.SubmitbuttonName = "Submit";
       try {
         if (response.status == 'Success') {
-          this.appService.showAlert("Commitment Chit",response.msg, "success");
+          this.appService.showAlert("Chit",response.msg, "success");
           setTimeout(() => {
             this.router.navigate(['/admin-panel/view-commitment-chit']);
           }, 300);
         } else {
-          this.appService.showAlert("Commitment Chit", response.msg, "error");
+          this.appService.showAlert("Chit", response.msg, "error");
           this.disableBtn = false;
         }
       } catch (err) {
-        this.appService.showAlert("Commitment Chit", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Chit", 'Sorry!! Something went wrong!', "error");
         this.disableBtn = false;
       } 
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Chit", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Chit", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Chit", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Chit", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -358,6 +358,14 @@ export class AddCommitmentChitComponent implements OnInit {
       collection_area_id:['', Validators.required],
       collection_pin:[''],
       created_by: [''],
+    });
+    let autoDue: any = null;
+    this.AddCommitmentChit.get('date_introduced').valueChanges.subscribe((joined: any) => {
+      const due = this.AddCommitmentChit.get('due_date');
+      if (joined && (!due.value || due.value === autoDue)) {
+        autoDue = joined && typeof joined === 'object' ? { ...joined } : joined;
+        due.setValue(autoDue);
+      }
     });
     this.setEnrollManagerValidators();
     this.introListShow = false;

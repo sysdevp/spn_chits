@@ -72,7 +72,7 @@
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row" [hidden]="selectionfield">
-      <div class="col-6 my-auto font-weight-bold">Commitment Payment Report</div>
+      <div class="col-6 my-auto font-weight-bold">Prized Payment Report</div>
       <div class="col-6 text-right">&nbsp;</div>
     </div>
     <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
@@ -258,7 +258,7 @@
               <td *ngIf="row.payment_for==4">Advance Return Amount</td>
               <td *ngIf="row.payment_for==5">Chit Amount Transfer</td>
               <td *ngIf="row.payment_for==6">Advance Amount Transfer</td>
-              <td *ngIf="row.payment_for==7">Commitment Payment</td>
+              <td *ngIf="row.payment_for==7">Prized Payment</td>
               <td>{{row.payment_type_info.payment_name}}</td>
               <td>{{row.total_amount}}</td>
               <td>{{row.cheque_no}}</td>

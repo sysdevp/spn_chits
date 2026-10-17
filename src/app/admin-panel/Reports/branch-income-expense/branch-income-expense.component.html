@@ -1,0 +1,88 @@
+<div class="sg-hero">
+  <h1>Branch Income &amp; Expenses</h1>
+  <p>Income and expenses of every branch in one report, compared with the previous period, with automatic AI insights.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div><label>From</label><input type="date" [(ngModel)]="f.from_date" /></div>
+    <div><label>To</label><input type="date" [(ngModel)]="f.to_date" /></div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" (click)="load()">{{ loading ? 'Loading...' : 'Search' }}</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-kpis">
+  <div class="sr-kpi"><span>Total income</span><b>{{ money(totals.income) }}</b></div>
+  <div class="sr-kpi rose"><span>Total expense</span><b>{{ money(totals.expense) }}</b></div>
+  <div class="sr-kpi blue"><span>Net</span><b [class.sr-red]="totals.net < 0">{{ money(totals.net) }}</b></div>
+  <div class="sr-kpi gold"><span>Branches</span><b>{{ totals.branches || 0 }}</b></div>
+</div>
+
+<div class="sg-card">
+  <div class="sr-title"><i class="fa fa-magic"></i> AI insights</div>
+  <div class="sr-insight" *ngFor="let i of insights" [ngClass]="i.type">{{ i.text }}</div>
+  <div class="sg-empty" *ngIf="!insights.length">No data for insights in this period.</div>
+  <div class="sg-note" *ngIf="meta.prev_from">Compared with {{ meta.prev_from | date:'dd MMM' }} – {{ meta.prev_to | date:'dd MMM yyyy' }}.</div>
+</div>
+
+<div class="sr-split">
+  <div class="sg-card">
+    <div class="sr-title">Net by branch</div>
+    <div class="sr-bar" *ngFor="let r of rows">
+      <span>{{ r.branch_name }}</span>
+      <div class="sr-track"><div class="sr-fill" [class.red]="r.net < 0" [style.width.%]="width(r.income, rows, 'income')"></div></div>
+      <b class="sr-right" [class.sr-red]="r.net < 0">{{ money(r.net) }}</b>
+    </div>
+  </div>
+  <div class="sg-card">
+    <div class="sr-title">Top heads</div>
+    <div class="sr-bar" *ngFor="let c of categories | slice:0:10">
+      <span>{{ c.category }}</span>
+      <div class="sr-track"><div class="sr-fill" [class.red]="c.kind === 'expense'" [style.width.%]="width(c.amount, categories, 'amount')"></div></div>
+      <b class="sr-right">{{ money(c.amount) }}</b>
+    </div>
+  </div>
+</div>
+
+<div class="sg-card" style="overflow:auto">
+  <table class="sg-table" *ngIf="rows.length">
+    <thead><tr><th>Branch</th><th class="sr-right">Income</th><th class="sr-right">Expense</th><th class="sr-right">Net</th>
+      <th class="sr-right">Expense %</th><th class="sr-right">Income vs prev</th><th class="sr-right">Expense vs prev</th><th>Top expense</th><th></th></tr></thead>
+    <tbody>
+      <ng-container *ngFor="let r of rows">
+        <tr>
+          <td><b>{{ r.branch_name }}</b></td>
+          <td class="sr-right sr-green">{{ money(r.income) }}</td>
+          <td class="sr-right sr-red">{{ money(r.expense) }}</td>
+          <td class="sr-right" [class.sr-red]="r.net < 0"><b>{{ money(r.net) }}</b></td>
+          <td class="sr-right">{{ r.expense_ratio }}%</td>
+          <td class="sr-right" [class.sr-green]="r.income_change > 0" [class.sr-red]="r.income_change < 0">{{ change(r.income_change) }}</td>
+          <td class="sr-right" [class.sr-red]="r.expense_change > 0">{{ change(r.expense_change) }}</td>
+          <td>{{ r.top_expense || '-' }}</td>
+          <td><button type="button" class="sg-btn light" (click)="open[r.branch_id] = !open[r.branch_id]">{{ open[r.branch_id] ? 'Hide' : 'Details' }}</button></td>
+        </tr>
+        <tr *ngIf="open[r.branch_id]">
+          <td colspan="9">
+            <div class="sr-split">
+              <div><div class="sr-title">Income heads</div>
+                <div *ngFor="let l of lines(r.income_lines)" class="d-flex justify-content-between"><span>{{ l.name }}</span><b>{{ money(l.amount) }}</b></div></div>
+              <div><div class="sr-title">Expense heads</div>
+                <div *ngFor="let l of lines(r.expense_lines)" class="d-flex justify-content-between"><span>{{ l.name }}</span><b>{{ money(l.amount) }}</b></div></div>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !rows.length">No income or expenses in this period.</div>
+</div>

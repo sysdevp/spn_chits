@@ -12,10 +12,10 @@
   <div class="card-body add-maze">
     <form [formGroup]="filterForm" (ngSubmit)="onSubmit()">
       <div class="form-group row">
-        <label class="col-sm-2 col-form-label">Branch <span class="error">*</span></label>
+        <label class="col-sm-2 col-form-label">Branch</label>
         <div class="col-sm-4">
           <select #branch_id formControlName="branch_id">
-            <option value="">Select Branch</option>
+            <option value="">All Branches</option>
             <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
           </select>
         </div>
@@ -30,24 +30,28 @@
         <thead>
           <tr>
             <th>S.No</th>
+            <th>Branch</th>
             <th>Customer</th>
             <th>Mobile</th>
             <th>Chit / Slab</th>
             <th>1st Inst. Due</th>
             <th>Paid</th>
             <th>%</th>
+            <th>Requested by</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let row of dataList">
             <td>{{ row.sno }}</td>
+            <td>{{ row.branch_info && row.branch_info.branch_name }}</td>
             <td>{{ row.customer_info && row.customer_info.name }} {{ row.customer_info && row.customer_info.last_name }}</td>
             <td>{{ row.customer_info && row.customer_info.mobile_no }}</td>
             <td>{{ row.scheme_info && row.scheme_info.chit_value }} / {{ row | slabAr }}</td>
             <td>{{ row.first_installment_due }}</td>
             <td>{{ row.paid_amount_total }}</td>
             <td>{{ row.payment_percent }}%</td>
+            <td class="small">{{ row.requested_by_name || '-' }}<div class="text-muted">{{ row.requested_at | slice:0:16 }}</div></td>
             <td>
               <button type="button" class="btn btn-sm btn-success" (click)="openApproveModal(row, approveModal)">
                 Approve SPN
@@ -63,7 +67,7 @@
 
 <ng-template #approveModal let-c="close" let-d="dismiss">
   <div class="modal-header">
-    <h5 class="modal-title">Approve SPN Commitment Chit</h5>
+    <h5 class="modal-title">Approve SPN Chit</h5>
     <button type="button" class="close" (click)="d('cancel')">&times;</button>
   </div>
   <div class="modal-body">
@@ -81,6 +85,13 @@
             <label>Due Date <span class="error">*</span></label>
             <input type="text" class="form-control" formControlName="due_date" placeholder="Enter Due Date"
               ngbDatepicker #d2="ngbDatepicker" (click)="d2.toggle()" onkeydown="return false;" />
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="form-group">
+            <label>Promised Month</label>
+            <input type="text" class="form-control" formControlName="promised_month" placeholder="Select Promised Month"
+              ngbDatepicker #d3="ngbDatepicker" (click)="d3.toggle()" onkeydown="return false;" />
           </div>
         </div>
         <div class="col-md-6">

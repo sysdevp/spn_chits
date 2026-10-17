@@ -43,6 +43,22 @@ export function slabLabelFromRow(row: any): string {
   return formatSlabWithArNo(slab, ar);
 }
 
+export const SPN_PRIZED_TAG = 'SPN Prized';
+
+/** prized_status may sit on the row itself or on its nested enrollment. */
+export function isPrizedRow(row: any): boolean {
+  if (!row) {
+    return false;
+  }
+  const nested = row.enrollment_det || row.enrollment_info || row.enrol_info || {};
+  return Number(row.prized_status) === 1 || row.prized_status === 'Prized' || Number(nested.prized_status) === 1;
+}
+
+export function withPrizedTag(label: string): string {
+  const text = String(label || '');
+  return text.indexOf(SPN_PRIZED_TAG) >= 0 ? text : (text ? text + ' · ' : '') + SPN_PRIZED_TAG;
+}
+
 /** Append AR No to enrol_name strings used in ledger / receipt dropdowns. */
 export function enrolNameWithAr(row: any): string {
   if (!row) {

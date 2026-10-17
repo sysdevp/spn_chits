@@ -111,7 +111,7 @@ export class SuitFileComponent implements OnInit {
       this.tenantid=this.auctionReport.get('tenant_id').value,
       this.branchid=event.target.setValue
 
-        this.userservice.getData(cond, "get-groups", "POST").subscribe((response: any) => {
+        this.userservice.getData(cond, "get-schemes", "POST").subscribe((response: any) => {
           try { 
             if (response.status == 'Success') {
               this.groupList = response.data;
@@ -130,6 +130,9 @@ export class SuitFileComponent implements OnInit {
     }
     this.auctionReport.get('branch_id').setValue('');
     this.auctionReport.get('group_id').setValue('');
+    if (this.auctionReport.get('scheme_id')) {
+      this.auctionReport.get('scheme_id').setValue('');
+    }
     this.allItems = [];
     this.submitted = false;
     //this.viewCustomer.get('tenant_id').setValue('');
@@ -384,6 +387,7 @@ export class SuitFileComponent implements OnInit {
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
       group_id: [''],
+      scheme_id: [''],
       //customer_id: [''],
       group_status: ['0'],
     });

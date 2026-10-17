@@ -1,0 +1,164 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span class="font-weight-bold">{{ kindLabel }} — Document Preparation</span>
+    <div>
+      <a class="btn btn-sm btn-outline-primary mr-1" [routerLink]="['/admin-panel/document-preparation']" [queryParams]="{kind: 'prized'}">Prized Payment</a>
+      <a class="btn btn-sm btn-outline-secondary mr-1" [routerLink]="['/admin-panel/document-preparation']" [queryParams]="{kind: 'closed'}">Closed Payment</a>
+      <a class="btn btn-sm btn-success" [routerLink]="['/admin-panel/add-customer']">Profile Creation</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <form [formGroup]="requestForm">
+      <div class="form-row">
+        <div class="form-group col-md-3" [hidden]="!isSuperAdmin">
+          <label>Company</label>
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select Company</option>
+            <option *ngFor="let company of companyList" [value]="company.id">{{ company.chit_fund_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-3">
+          <label>Branch</label>
+          <select class="form-control" formControlName="branch_id" (change)="branchChg()">
+            <option value="0">All Branches</option>
+            <option *ngFor="let branch of branchList" [value]="branch.id">{{ branch.branch_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-4">
+          <label>Customer</label>
+          <select class="form-control" formControlName="enrollment_id" (change)="onCustomerChange()">
+            <option value="">Select customer</option>
+            <option *ngFor="let enrol of enrollments" [value]="enrol.id">{{ customerLabel(enrol) }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>HO remarks</label>
+          <input type="text" class="form-control" formControlName="ho_remarks" />
+        </div>
+      </div>
+      <button type="button" class="btn btn-primary" [disabled]="saving" (click)="createRequest()">HO Approval Request</button>
+    </form>
+
+    <div class="mt-4" *ngIf="profile">
+      <h6 class="font-weight-bold">Customer history</h6>
+      <div class="row">
+        <div class="col-md-3"><strong>Name:</strong> {{ profile.customer_name }}</div>
+        <div class="col-md-2"><strong>Mobile:</strong> {{ profile.mobile }}</div>
+        <div class="col-md-2"><strong>AR:</strong> {{ profile.ar_no }}</div>
+        <div class="col-md-2"><strong>Slab:</strong> {{ profile.slab }}</div>
+        <div class="col-md-3"><strong>Branch:</strong> {{ profile.branch }}</div>
+        <div class="col-md-3 mt-2"><strong>Aadhaar:</strong> {{ profile.aadhar || 'Not available' }}</div>
+        <div class="col-md-3 mt-2"><strong>PAN:</strong> {{ profile.pan || 'Not available' }}</div>
+        <div class="col-md-3 mt-2"><strong>Joined:</strong> {{ profile.joining }}</div>
+      </div>
+      <div class="table-responsive mt-3" *ngIf="receipts.length">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th colspan="4">Receipts</th></tr><tr><th>Receipt No</th><th>Date</th><th>Amount</th><th>UTR</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let receipt of receipts">
+              <td>{{ receipt.receipt_no }}</td>
+              <td>{{ receipt.receipt_date }}</td>
+              <td>{{ receipt.amount }}</td>
+              <td>{{ receipt.transaction_no }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-responsive mt-2" *ngIf="payments.length">
+        <table class="table table-sm table-bordered">
+          <thead><tr><th colspan="3">Payments</th></tr><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let payment of payments">
+              <td>{{ payment.payment_date }}</td>
+              <td>{{ payment.total_amount }}</td>
+              <td>{{ payment.status }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p *ngIf="!receipts.length && !payments.length" class="text-muted">No receipts or payments for this enrollment.</p>
+    </div>
+
+    <h6 class="font-weight-bold mt-4">Documentation report</h6>
+    <div class="form-group">
+      <label>MD remarks</label>
+      <input type="text" class="form-control" [(ngModel)]="mdRemarks" [ngModelOptions]="{standalone: true}" />
+    </div>
+    <div class="table-responsive" *ngIf="requests.length">
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>S.No</th><th>Customer</th><th>Mobile</th><th>AR</th><th>Kind</th><th>Stage</th><th>HO remarks</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of requests">
+            <td>{{ row.sno }}</td>
+            <td>{{ row.customer_name }}</td>
+            <td>{{ row.mobile }}</td>
+            <td>{{ row.ar_no }}</td>
+            <td>{{ row.payment_kind }}</td>
+            <td>{{ stageLabel(row.stage) }}</td>
+            <td>{{ row.ho_remarks || '-' }}</td>
+            <td>
+              <button type="button" class="btn btn-sm btn-link" (click)="showHistory(row)">History</button>
+              <button type="button" class="btn btn-sm btn-info" *ngIf="row.stage === 'ho_requested'" (click)="confirmCustomer(row)">Branch Confirm Customer</button>
+              <button type="button" class="btn btn-sm btn-success mr-1" *ngIf="row.stage === 'branch_filled'" (click)="mdDecide(row, 'approve')">MD Approve</button>
+              <button type="button" class="btn btn-sm btn-danger" *ngIf="row.stage === 'branch_filled'" (click)="mdDecide(row, 'reject')">MD Reject</button>
+              <button type="button" class="btn btn-sm btn-warning" *ngIf="row.stage === 'md_approved'" (click)="openPayout(row)">Fill Bank &amp; Documents</button>
+              <span *ngIf="row.stage === 'docs_submitted'">
+                <a *ngIf="row.cheque_url" [href]="row.cheque_url" target="_blank">Cheque</a>
+                <a *ngIf="row.home_url" [href]="row.home_url" target="_blank" class="ml-2">Home</a>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p *ngIf="!loading && !requests.length" class="text-muted">No documentation requests for this payment type.</p>
+
+    <div class="border p-3 mt-3" *ngIf="selectedPayout">
+      <h6 class="font-weight-bold">After MD approval — {{ selectedPayout.customer_name }}</h6>
+      <form [formGroup]="payoutForm">
+        <div class="form-row">
+          <div class="form-group col-md-3"><label>Bank name</label><input class="form-control" formControlName="bank_name" /></div>
+          <div class="form-group col-md-3"><label>Account number</label><input class="form-control" formControlName="account_number" /></div>
+          <div class="form-group col-md-2"><label>IFSC</label><input class="form-control" formControlName="ifsc" /></div>
+          <div class="form-group col-md-2"><label>Cheque no</label><input class="form-control" formControlName="cheque_no" /></div>
+          <div class="form-group col-md-2">
+            <label>Cheque upload</label>
+            <input type="file" class="form-control" (change)="onFile($event, 'cheque_file')" />
+            <small *ngIf="payoutForm.get('cheque_file').value">Uploaded</small>
+          </div>
+        </div>
+        <div class="form-row" *ngIf="needsAadhar">
+          <div class="form-group col-md-4"><label>Aadhaar number</label><input class="form-control" formControlName="aadhar_no" /></div>
+          <div class="form-group col-md-4">
+            <label>Aadhaar upload</label>
+            <input type="file" class="form-control" (change)="onFile($event, 'aadhar_file')" />
+          </div>
+        </div>
+        <div class="form-row" *ngIf="needsPan">
+          <div class="form-group col-md-4"><label>PAN number</label><input class="form-control" formControlName="pan_no" /></div>
+          <div class="form-group col-md-4">
+            <label>PAN upload</label>
+            <input type="file" class="form-control" (change)="onFile($event, 'pan_file')" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-3">
+            <label>Home photo</label>
+            <input type="file" class="form-control" (change)="onFile($event, 'home_photo')" />
+            <small *ngIf="payoutForm.get('home_photo').value">Uploaded</small>
+          </div>
+          <div class="form-group col-md-3"><label>Nominee name</label><input class="form-control" formControlName="nominee_name" /></div>
+          <div class="form-group col-md-2"><label>Relation</label><input class="form-control" formControlName="nominee_relation" /></div>
+          <div class="form-group col-md-2"><label>Nominee mobile</label><input class="form-control" formControlName="nominee_mobile" /></div>
+          <div class="form-group col-md-2"><label>Nominee address</label><input class="form-control" formControlName="nominee_address" /></div>
+        </div>
+        <button type="button" class="btn btn-primary" [disabled]="saving" (click)="submitPayout()">Save branch documents</button>
+        <button type="button" class="btn btn-light ml-2" (click)="selectedPayout = null">Cancel</button>
+      </form>
+    </div>
+  </div>
+</div>

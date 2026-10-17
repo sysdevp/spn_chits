@@ -24,6 +24,7 @@ export class CommitmentReportComponent implements OnInit {
   companyList: any[];
   branchList: any[];
   groupList: any[];
+  slabList: any[] = [];
   isSuperAdmin:boolean;
   submitted: boolean;
   disableBtn: boolean;
@@ -68,6 +69,7 @@ export class CommitmentReportComponent implements OnInit {
   companyChg(event) {
     let tenant_id = event.target.value;
     this.setBranchList(tenant_id);
+    this.loadSchemes(tenant_id);
   }
 
   setBranchList(tenant_id) { 
@@ -87,44 +89,26 @@ export class CommitmentReportComponent implements OnInit {
 
   branchChg(event) 
   {
-    let cond = {
-      "conditions[tenant_id]" : this.AuctionReport.get('tenant_id').value,
-      "conditions[branch_id]" : event.target.value,
-     
-    }
-      this.tenantid=this.AuctionReport.get('tenant_id').value,
-      this.branchid=event.target.value
-    
-      if (this.tenantid!='' && this.branchid > 0)
-      {
-        this.userservice.getData(cond, "get-slab-dues", "POST").subscribe((response: any) => {
-          try { 
-            if (response.status == 'Success') {
-              this.groupList = response.data;
-            } else {
-              this.groupList = [];
-            }
-          }  catch (err) { }
-        }, (err: any) => { });
-      }
-      else if(this.tenantid!=''&& this.branchid==0) 
-      {
-        let cond1 = {
-          'tenant_id' : this.AuctionReport.get('tenant_id').value,
-        }
-        this.userservice.getData(cond1, "list-slab-dues", "POST").subscribe((response: any) => {
-          try { 
-            if (response.status == 'Success') {
-              this.groupList = response.data;
-            } else {
-              this.groupList = [];
-            }
-          }  catch (err) { }
-        }, (err: any) => { });
-      }
-      else{
+    this.tenantid = this.AuctionReport.get('tenant_id').value;
+    this.branchid = event.target.value;
+  }
 
-      }
+  loadSchemes(tenant_id) {
+    this.userservice.getData({ 'conditions[tenant_id]': tenant_id }, "get-schemes", "POST").subscribe((response: any) => {
+      this.groupList = response && response.status == 'Success' ? response.data : [];
+    }, () => { this.groupList = []; });
+  }
+
+  schemeChg(event) {
+    this.AuctionReport.get('slab_id').setValue('');
+    this.slabList = [];
+    const scheme_id = event.target.value;
+    if (!scheme_id) {
+      return;
+    }
+    this.userservice.getData({ 'conditions[scheme_id]': scheme_id }, "get-slab-dues", "POST").subscribe((response: any) => {
+      this.slabList = response && response.status == 'Success' ? response.data : [];
+    }, () => { this.slabList = []; });
   }
 
   setData(data) {
@@ -147,16 +131,21 @@ export class CommitmentReportComponent implements OnInit {
       this.branchList = [];
     }
     this.AuctionReport.get('branch_id').setValue('');
-    this.AuctionReport.get('group_id').setValue('');
+    this.AuctionReport.get('scheme_id').setValue('');
+    this.AuctionReport.get('slab_id').setValue('');
     this.AuctionReport.get('start_date').setValue(null);
     this.AuctionReport.get('end_date').setValue(null);
-    this.groupList = [];
+    this.slabList = [];
   }
 
   onSubmit() {
     this.SubmitbuttonName = "Loading...";
     this.submitted = true; 
-    const result = Object.assign({}, this.AuctionReport.value);
+    const result: any = Object.assign({}, this.AuctionReport.value, { commitment_only: 1 });
+    if (!result.branch_id || result.branch_id == '0') {
+      result.branch_id = 0;
+      result.branch_ids = (this.branchList || []).map((b) => b.id);
+    }
     if (this.AuctionReport.invalid) 
     { 
       this.SubmitbuttonName = "Submit";
@@ -179,7 +168,8 @@ export class CommitmentReportComponent implements OnInit {
 			this.columnDefs = [
         {headerName: 'Sno', field: 'sno',sort: "asc",resizable: true },
         {headerName: 'Branch Name', field: 'branch_name',resizable: true  },
-        {headerName: 'Slab Name', field: 'group_name',resizable: true },
+        {headerName: 'Scheme', field: 'scheme_name',resizable: true },
+        {headerName: 'Slab / AR No', field: 'group_name',resizable: true },
         {headerName: 'Chit Value', field: 'chit_value',resizable: true },
         {headerName: 'Customer Name', field: 'subscriber_name',resizable: true },
         {headerName: 'Mobile No', field: 'subscriber_mobile_no',resizable: true},
@@ -333,8 +323,9 @@ export class CommitmentReportComponent implements OnInit {
   ngOnInit() {
     this.AuctionReport = this.formBuilder.group({
       tenant_id: ['', Validators.required],
-      branch_id: ['', Validators.required],
-      group_id: [''],
+      branch_id: [''],
+      scheme_id: [''],
+      slab_id: [''],
       start_date:[null],
       end_date:[null]
     });
@@ -343,6 +334,7 @@ export class CommitmentReportComponent implements OnInit {
       this.AuctionReport.get('tenant_id').setValue(tenant_id);
       this.isSuperAdmin = false;
       this.setBranchList(tenant_id);
+      this.loadSchemes(tenant_id);
     }
     else {
       this.isSuperAdmin = true;

@@ -716,6 +716,7 @@ export class AddEmployeeComponent implements OnInit {
       ifsc_code: ['',[Validators.pattern(this.ifscPattern)]],
       target: ['',[Validators.pattern(this.decimalPattern)]],
       salary: ['', [Validators.required,Validators.pattern(this.decimalPattern)]],
+      day_allowance: ['200', [Validators.pattern(this.decimalPattern)]],
       collection_area_id: [0],
       commission: ['',[Validators.required,Validators.pattern(this.decimalPattern)]],
       incentive: ['',[Validators.required,Validators.pattern(this.decimalPattern)]],

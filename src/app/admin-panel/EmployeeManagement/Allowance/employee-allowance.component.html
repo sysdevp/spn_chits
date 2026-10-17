@@ -1,0 +1,137 @@
+<div class="sg-hero">
+  <h1>{{ title }}</h1>
+  <p *ngIf="mode === 'day'">Every present day earns the employee's day allowance (default ₹200, editable per employee). Mark days as paid from here.</p>
+  <p *ngIf="mode === 'petrol'">Petrol allowance entries per employee, with month-wise, day-wise and employee-wise reports.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id" (change)="branchChg()">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Employee</label>
+      <select [(ngModel)]="f.employee_id">
+        <option value="">All Employees</option>
+        <option *ngFor="let e of employeeList" [value]="e.id">{{ empName(e) }}</option>
+      </select>
+    </div>
+    <div><label>From</label><input type="date" [(ngModel)]="f.from_date" /></div>
+    <div><label>To</label><input type="date" [(ngModel)]="f.to_date" /></div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" (click)="load()">{{ loading ? 'Loading...' : 'Search' }}</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+      <button type="button" class="sg-btn light" *ngIf="mode === 'petrol'" (click)="showForm = !showForm; resetForm()">+ Petrol entry</button>
+    </div>
+  </div>
+</div>
+
+<div class="sg-card" *ngIf="mode === 'petrol' && showForm">
+  <div class="sr-title">{{ form.id ? 'Edit' : 'New' }} petrol allowance</div>
+  <div class="sg-grid">
+    <div>
+      <label>Employee</label>
+      <select [(ngModel)]="form.employee_id">
+        <option value="">Select</option>
+        <option *ngFor="let e of employeeList" [value]="e.id">{{ empName(e) }}</option>
+      </select>
+    </div>
+    <div><label>Date</label><input type="date" [(ngModel)]="form.allowance_date" /></div>
+    <div><label>KM</label><input type="number" [(ngModel)]="form.km" (input)="calcAmount()" /></div>
+    <div><label>Rate / KM</label><input type="number" [(ngModel)]="form.rate" (input)="calcAmount()" /></div>
+    <div><label>Amount</label><input type="number" [(ngModel)]="form.amount" /></div>
+    <div><label>Mode</label><select [(ngModel)]="form.mode"><option value="cash">Cash</option><option value="bank">Bank</option></select></div>
+    <div><label>Remarks</label><input type="text" [(ngModel)]="form.remarks" placeholder="Route / purpose" /></div>
+    <div style="display:flex;gap:8px"><button type="button" class="sg-btn" (click)="save()">Save</button></div>
+  </div>
+</div>
+
+<div class="sr-kpis" *ngIf="mode === 'day'">
+  <div class="sr-kpi"><span>Present days</span><b>{{ totals.days || 0 }}</b></div>
+  <div class="sr-kpi blue"><span>Allowance earned</span><b>{{ money(totals.amount) }}</b></div>
+  <div class="sr-kpi gold"><span>Paid</span><b>{{ money(totals.paid) }}</b></div>
+  <div class="sr-kpi rose"><span>To pay</span><b>{{ money((totals.amount || 0) - (totals.paid || 0)) }}</b></div>
+</div>
+<div class="sr-kpis" *ngIf="mode === 'petrol'">
+  <div class="sr-kpi"><span>Entries</span><b>{{ totals.entries || 0 }}</b></div>
+  <div class="sr-kpi blue"><span>Total KM</span><b>{{ (totals.km || 0) | number:'1.0-1' }}</b></div>
+  <div class="sr-kpi rose"><span>Petrol amount</span><b>{{ money(totals.amount) }}</b></div>
+  <div class="sr-kpi gold"><span>Employees</span><b>{{ employees.length }}</b></div>
+</div>
+
+<div class="sr-tabs">
+  <button type="button" [class.on]="view === 'day'" (click)="view = 'day'">Day-wise</button>
+  <button type="button" [class.on]="view === 'employee'" (click)="view = 'employee'">Employee-wise</button>
+  <button type="button" *ngIf="mode === 'petrol'" [class.on]="view === 'month'" (click)="view = 'month'">Month-wise</button>
+</div>
+
+<!-- Day allowance -->
+<div class="sg-card" style="overflow:auto" *ngIf="mode === 'day' && view === 'day'">
+  <div style="display:flex;gap:8px;margin-bottom:8px">
+    <button type="button" class="sg-btn light" (click)="selectAllUnpaid()">Select all unpaid</button>
+    <button type="button" class="sg-btn" (click)="markPaid()">Mark selected as paid ({{ unpaidSelected.length }})</button>
+  </div>
+  <table class="sg-table" *ngIf="rows.length">
+    <thead><tr><th></th><th>Date</th><th>Employee</th><th>Branch</th><th class="sr-right">Allowance</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of rows">
+        <td><input type="checkbox" *ngIf="!r.paid" [(ngModel)]="selected[key(r)]" /></td>
+        <td>{{ r.date | date:'dd/MM/yyyy' }}</td><td>{{ r.employee_name }}</td><td>{{ r.branch_name }}</td>
+        <td class="sr-right">{{ money(r.amount) }}</td>
+        <td [class.sr-green]="r.paid" [class.sr-red]="!r.paid">{{ r.paid ? 'Paid' : 'To pay' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !rows.length">No present days in this period.</div>
+</div>
+<div class="sg-card" style="overflow:auto" *ngIf="mode === 'day' && view === 'employee'">
+  <table class="sg-table" *ngIf="employees.length">
+    <thead><tr><th>Employee</th><th>Branch</th><th>Day allowance (₹)</th><th>Present days</th><th class="sr-right">Earned</th><th class="sr-right">Paid</th><th class="sr-right">To pay</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let e of employees">
+        <td>{{ e.employee_name }}</td><td>{{ e.branch_name }}</td>
+        <td><input type="number" [(ngModel)]="e.rate" style="width:90px" /> <button type="button" class="sg-btn light" (click)="saveRate(e)">Save</button></td>
+        <td>{{ e.days }}</td>
+        <td class="sr-right">{{ money(e.amount) }}</td><td class="sr-right sr-green">{{ money(e.paid) }}</td>
+        <td class="sr-right sr-red">{{ money(e.amount - e.paid) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !employees.length">No data.</div>
+</div>
+
+<!-- Petrol -->
+<div class="sg-card" style="overflow:auto" *ngIf="mode === 'petrol' && view === 'day'">
+  <table class="sg-table" *ngIf="rows.length">
+    <thead><tr><th>Date</th><th>Employee</th><th>Branch</th><th class="sr-right">KM</th><th class="sr-right">Rate</th><th class="sr-right">Amount</th><th>Mode</th><th>Remarks</th><th>Entered by</th><th></th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of rows">
+        <td>{{ r.allowance_date | date:'dd/MM/yyyy' }}</td><td>{{ r.employee_name }}</td><td>{{ r.branch_name }}</td>
+        <td class="sr-right">{{ r.km }}</td><td class="sr-right">{{ r.rate }}</td><td class="sr-right">{{ money(r.amount) }}</td>
+        <td>{{ r.mode }}</td><td>{{ r.remarks }}</td><td>{{ r.created_by_name || '-' }}</td>
+        <td style="white-space:nowrap"><button type="button" class="sg-btn light" (click)="edit(r)">Edit</button>
+          <button type="button" class="sg-btn light" (click)="remove(r)">Delete</button></td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !rows.length">No petrol allowance entries.</div>
+</div>
+<div class="sg-card" style="overflow:auto" *ngIf="mode === 'petrol' && view === 'employee'">
+  <table class="sg-table" *ngIf="employees.length">
+    <thead><tr><th>Employee</th><th>Branch</th><th>Days</th><th class="sr-right">KM</th><th class="sr-right">Amount</th></tr></thead>
+    <tbody><tr *ngFor="let e of employees"><td>{{ e.employee_name }}</td><td>{{ e.branch_name }}</td><td>{{ e.days }}</td>
+      <td class="sr-right">{{ e.km }}</td><td class="sr-right">{{ money(e.amount) }}</td></tr></tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!employees.length">No data.</div>
+</div>
+<div class="sg-card" style="overflow:auto" *ngIf="mode === 'petrol' && view === 'month'">
+  <table class="sg-table" *ngIf="months.length">
+    <thead><tr><th>Month</th><th>Entries</th><th class="sr-right">KM</th><th class="sr-right">Amount</th></tr></thead>
+    <tbody><tr *ngFor="let m of months"><td>{{ m.month }}</td><td>{{ m.count }}</td><td class="sr-right">{{ m.km }}</td><td class="sr-right">{{ money(m.amount) }}</td></tr></tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!months.length">No data.</div>
+</div>

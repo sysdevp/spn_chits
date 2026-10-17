@@ -381,6 +381,9 @@ export class AddBranchComponent implements OnInit {
       district_id:[''],
       city_id:[''],
       pincode: ['',[Validators.pattern(this.pincodePattern)]],
+      latitude: [''],
+      longitude: [''],
+      punch_radius_meters: [50],
       remarks:[''],
       created_by: [''],
     });

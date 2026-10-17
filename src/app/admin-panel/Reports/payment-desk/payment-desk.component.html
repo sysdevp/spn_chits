@@ -1,0 +1,660 @@
+<div class="paydesk">
+
+  <div *ngIf="mode === 'dashboard'">
+    <div class="pd-title-row">
+      <div>
+        <h2><i class="fa fa-inr"></i> Payments Dashboard</h2>
+        <p>Track priced payments, final closure and refunds across branches.</p>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card k-green"><div class="kpi-ico"><i class="fa fa-inr"></i></div><div><div class="kpi-lbl">Prized Payments</div><div class="kpi-val">{{ money(sumKind('prized')) }}</div><div class="kpi-sub">{{ countKind('prized') }} profiles</div></div></div>
+      <div class="kpi-card k-blue"><div class="kpi-ico"><i class="fa fa-check"></i></div><div><div class="kpi-lbl">Final Closed Payments</div><div class="kpi-val">{{ money(sumKind('closed')) }}</div><div class="kpi-sub">{{ countKind('closed') }} profiles</div></div></div>
+      <div class="kpi-card k-orange"><div class="kpi-ico"><i class="fa fa-refresh"></i></div><div><div class="kpi-lbl">Refund Payments</div><div class="kpi-val">{{ money(sumKind('refund')) }}</div><div class="kpi-sub">{{ countKind('refund') }} profiles</div></div></div>
+      <div class="kpi-card k-mint"><div class="kpi-ico"><i class="fa fa-file-text-o"></i></div><div><div class="kpi-lbl">Total Requests</div><div class="kpi-val">{{ summary.total || allRows.length }}</div><div class="kpi-sub">Accounts payout {{ summary.pending_accounts || 0 }}</div></div></div>
+    </div>
+    <div class="split-2">
+      <div class="panel">
+        <div class="panel-h">Branch wise amount</div>
+        <div class="bar-row" *ngFor="let b of branchBars()">
+          <span>{{ b.name }}</span>
+          <div class="bar-track"><div class="bar-fill" [style.width]="b.width + '%'"></div></div>
+          <b>{{ money(b.amount) }}</b>
+        </div>
+        <p class="muted" *ngIf="!branchBars().length">No payment profiles yet.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-h">Payment status</div>
+        <div class="status-pills">
+          <div><b>{{ summary.pending_field || 0 }}</b><span>Field verification</span></div>
+          <div><b>{{ summary.pending_chit_admin || 0 }}</b><span>Chit admin</span></div><div><b>{{ summary.pending_accounts || 0 }}</b><span>Accounts payout</span></div>
+          <div><b>{{ summary.approved || 0 }}</b><span>Approved</span></div>
+          <div><b>{{ summary.rejected || 0 }}</b><span>Rejected</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-h">Recent payments</div>
+      <table class="pd-table">
+        <thead><tr><th>Date</th><th>Customer</th><th>AR</th><th>Type</th><th>Amount</th><th>Mode</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of allRows | slice:0:8">
+            <td>{{ row.payment_date || row.created_at }}</td>
+            <td>{{ row.customer_name }}</td>
+            <td>{{ row.ar_no }}</td>
+            <td><span class="type-chip">{{ row.kind }}</span></td>
+            <td>{{ money(row.net_amount) }}</td>
+            <td>{{ row.payment_mode }}</td>
+            <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div *ngIf="mode === 'prized'">
+    <div class="pd-title-row">
+      <div>
+        <h2>New Prized Payment</h2>
+        <p>Customers added for this month's prize payment. A customer can be prized only once on the same chit.</p>
+      </div>
+      <button type="button" class="btn-green" (click)="openCreate()"><i class="fa fa-plus"></i> Create New Prized Payment</button>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Newly created</div><div class="kpi-val">{{ countKind('prized') }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Total priced amount</div><div class="kpi-val">{{ money(sumKind('prized')) }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Field verification</div><div class="kpi-val">{{ summary.pending_field || 0 }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Approved</div><div class="kpi-val">{{ summary.approved || 0 }}</div></div></div>
+    </div>
+    <div class="filter-bar" [formGroup]="filterForm">
+      <select class="pd-input filter-branch" formControlName="branch_id" (change)="load(); loadCustomers()">
+        <option value="0">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+      <input class="pd-input filter-branch" placeholder="Chit month" formControlName="from_date" />
+      <select class="pd-input filter-branch" formControlName="status" (change)="load()">
+        <option value="all">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="pending_chit_admin">Corporate chit admin</option><option value="pending_field">Field verification</option><option value="pending_accounts">Accounts payout</option>
+        <option value="approved">Paid</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button type="button" class="btn-green" (click)="load()">Search</button>
+      <button type="button" class="btn-line" (click)="resetFilters()">Reset</button>
+    </div>
+    <div class="panel">
+      <div class="panel-h">New Prized Payment List <span class="count-pill">{{ filtered().length }} customers</span></div>
+      <table class="pd-table">
+        <thead>
+          <tr>
+            <th>Date</th><th>Customer</th><th>Mobile</th><th>AR / Chit</th><th>Chit value</th><th>Prized amount</th><th>Month</th><th>Mode</th><th>Status</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of paged()">
+            <td>{{ row.created_at }}</td>
+            <td>{{ row.customer_name }}</td>
+            <td>{{ row.mobile }}</td>
+            <td>{{ row.ar_no }}</td>
+            <td>{{ money(row.chit_value) }}</td>
+            <td>{{ money(row.net_amount) }}</td>
+            <td>{{ row.prized_month }}</td>
+            <td>{{ row.payment_mode }}</td>
+            <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+            <td><button type="button" class="btn-view" (click)="openRow(row)">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted" *ngIf="!filtered().length">No priced profiles for this filter.</p>
+    </div>
+  </div>
+
+  <div *ngIf="mode === 'closed'">
+    <div class="pd-title-row">
+      <div>
+        <h2>Final Closed Payment</h2>
+        <p>Create the final payment for a chit that is completed.</p>
+      </div>
+      <button type="button" class="btn-green" (click)="openCreate()"><i class="fa fa-plus"></i> Create Final Closed Payment</button>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Closed profiles</div><div class="kpi-val">{{ rows.length }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Closed amount</div><div class="kpi-val">{{ money(sumKind('closed')) }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Field verification</div><div class="kpi-val">{{ summary.pending_field || 0 }}</div></div></div>
+      <div class="kpi-card k-soft"><div><div class="kpi-lbl">Approved</div><div class="kpi-val">{{ summary.approved || 0 }}</div></div></div>
+    </div>
+    <div class="filter-bar" [formGroup]="filterForm">
+      <select class="pd-input filter-branch" formControlName="branch_id" (change)="load(); loadCustomers()">
+        <option value="0">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+      <select class="pd-input filter-branch" formControlName="status" (change)="load()">
+        <option value="all">All Status</option>
+        <option value="draft">Draft</option>
+        <option value="pending_chit_admin">Corporate chit admin</option><option value="pending_field">Field verification</option><option value="pending_accounts">Accounts payout</option>
+        <option value="approved">Paid</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <button type="button" class="btn-green" (click)="load()">Search</button>
+      <button type="button" class="btn-line" (click)="resetFilters()">Reset</button>
+    </div>
+    <div class="panel">
+      <table class="pd-table">
+        <thead><tr><th>Customer</th><th>AR</th><th>Closed month</th><th>Amount</th><th>Mode</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td>{{ row.customer_name }}<div class="muted">{{ row.mobile }}</div></td>
+            <td>{{ row.ar_no }}</td>
+            <td>{{ row.closed_month }} {{ row.year_label }}</td>
+            <td>{{ money(row.net_amount) }}</td>
+            <td>{{ row.payment_mode }}</td>
+            <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+            <td><button type="button" class="btn-view" (click)="openRow(row)">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted" *ngIf="!rows.length">No closed payment profiles yet.</p>
+    </div>
+  </div>
+
+  <div class="refund-layout" *ngIf="mode === 'refund'" [class.with-panel]="panelOpen">
+    <div>
+      <div class="pd-title-row">
+        <div>
+          <h2><i class="fa fa-refresh"></i> Refund Payment</h2>
+          <p>Manage customer refund requests and process payments across branches.</p>
+        </div>
+        <button type="button" class="btn-green" (click)="openCreate()">Create Refund Profile</button>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-card k-purple"><div class="kpi-lbl">Total refund requests</div><div class="kpi-val">{{ rows.length }}</div></div>
+        <div class="kpi-card k-amber"><div class="kpi-lbl">Pending refunds</div><div class="kpi-val">{{ countTab('pending') }}</div></div>
+        <div class="kpi-card k-green"><div class="kpi-lbl">Processed refunds</div><div class="kpi-val">{{ countTab('processed') }}</div></div>
+        <div class="kpi-card k-red"><div class="kpi-lbl">Cancelled</div><div class="kpi-val">{{ countTab('cancelled') }}</div></div>
+      </div>
+      <div class="filter-bar" [formGroup]="filterForm">
+        <select class="pd-input filter-branch" formControlName="branch_id" (change)="load(); loadCustomers()">
+          <option value="0">All Branches</option>
+          <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+        </select>
+        <select class="pd-input filter-branch" formControlName="status" (change)="load()">
+          <option value="all">All</option>
+          <option value="pending_chit_admin">Corporate chit admin</option><option value="pending_field">Field verification</option><option value="pending_accounts">Accounts payout</option>
+          <option value="approved">Processed</option>
+          <option value="rejected">Cancelled</option>
+        </select>
+        <button type="button" class="btn-green" (click)="load()">Search</button>
+        <button type="button" class="btn-line" (click)="resetFilters()">Reset</button>
+      </div>
+      <div class="tabs">
+        <button type="button" [class.on]="tab==='all'" (click)="tab='all'; page=1">All Refunds ({{ rows.length }})</button>
+        <button type="button" [class.on]="tab==='pending'" (click)="tab='pending'; page=1">Pending ({{ countTab('pending') }})</button>
+        <button type="button" [class.on]="tab==='processed'" (click)="tab='processed'; page=1">Processed ({{ countTab('processed') }})</button>
+        <button type="button" [class.on]="tab==='cancelled'" (click)="tab='cancelled'; page=1">Cancelled ({{ countTab('cancelled') }})</button>
+      </div>
+      <div class="panel">
+        <table class="pd-table">
+          <thead>
+            <tr><th>#</th><th>Date</th><th>Customer</th><th>AR</th><th>Refund type</th><th>Amount</th><th>Status</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of paged(); let i = index">
+              <td>{{ (page - 1) * pageSize + i + 1 }}</td>
+              <td>{{ row.payment_date || row.created_at }}</td>
+              <td>{{ row.customer_name }}</td>
+              <td>{{ row.ar_no }}</td>
+              <td>{{ row.reason || 'Refund' }}</td>
+              <td>{{ money(row.net_amount) }}</td>
+              <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+              <td><button type="button" class="btn-view" (click)="openRow(row)">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" *ngIf="!filtered().length">No refund profiles for this filter.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-h">Branch wise refund amount</div>
+        <div class="bar-row" *ngFor="let b of branchBars()">
+          <span>{{ b.name }}</span>
+          <div class="bar-track"><div class="bar-fill green" [style.width]="b.width + '%'"></div></div>
+          <b>{{ money(b.amount) }}</b>
+        </div>
+      </div>
+    </div>
+    <aside class="side-panel" *ngIf="panelOpen && selected">
+      <div class="side-head">
+        <div>
+          <b>Refund Payment - Multiple Branch</b>
+          <div class="muted">Process refund for a customer across branches</div>
+        </div>
+        <button type="button" class="x" (click)="panelOpen=false">×</button>
+      </div>
+      <div class="side-body">
+        <div class="who">
+          <div class="avatar">{{ (selected.customer_name || 'C').slice(0,1) }}</div>
+          <div>
+            <b>{{ selected.customer_name }}</b>
+            <div class="muted">{{ selected.ar_no }} · {{ selected.mobile }}</div>
+          </div>
+        </div>
+        <div class="mini-grid">
+          <div><span>Refund type</span><b>{{ selected.reason || 'Refund' }}</b></div>
+          <div><span>Amount</span><b>{{ money(selected.net_amount) }}</b></div>
+          <div><span>Mode</span><b>{{ selected.payment_mode }}</b></div>
+          <div><span>Status</span><b>{{ statusText(selected) }}</b></div>
+          <div><span>Paid</span><b>{{ money(historyPaid) }}</b></div>
+          <div><span>This chit pending</span><b>{{ money(thisChitPending()) }}</b></div>
+          <div><span>Old chit pending</span><b>{{ money(oldChitPending()) }}</b></div>
+          <div><span>Released</span><b>{{ money(historyReleased) }}</b></div>
+          <div><span>Other chits</span><b>{{ otherEnrollmentHistory().length }}</b></div>
+        </div>
+        <div class="muted" *ngIf="selected.home_lat">Home pin {{ selected.home_lat }}, {{ selected.home_lng }}</div>
+        <div class="muted" *ngIf="selected.collection_lat">Collection pin {{ selected.collection_lat }}, {{ selected.collection_lng }}</div>
+        <div *ngIf="selected.photo_urls && selected.photo_urls.length">
+          <a *ngFor="let p of selected.photo_urls" [href]="p.url" target="_blank">Photo</a>
+        </div>
+        <h5 style="margin-top:12px;">Other chits paid / pending</h5>
+        <table class="pd-table mini" *ngIf="otherEnrollmentHistory().length">
+          <thead><tr><th>AR / Group</th><th>Paid</th><th>Pending</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of otherEnrollmentHistory()">
+              <td>{{ row.ar_no || row.slab_name || row.group_name || '-' }}</td>
+              <td class="ok">{{ money(row.paid_amount) }}</td>
+              <td class="warn">{{ money(row.pending_amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <h5>Desk profiles</h5>
+        <table class="pd-table mini" *ngIf="deskHistory.length">
+          <thead><tr><th>Kind</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of deskHistory">
+              <td>{{ row.kind }}</td>
+              <td>{{ money(row.net_amount) }}</td>
+              <td>{{ statusText(row) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
+
+  <div *ngIf="mode === 'pending'">
+    <div class="pd-title-row">
+      <div>
+        <h2>{{ title }}</h2>
+        <p>Prized / Refund: Branch or customer app request &rarr; Corporate Chit Admin approval (assigns field employee) &rarr; Field verification in mobile app &rarr; Accounts approval &amp; payout.</p>
+        <p>Final Closed: Request &rarr; Corporate Chit Admin approval &rarr; Accounts payout &rarr; Field verification after payout.</p>
+      </div>
+    </div>
+    <div class="kpi-row">
+      <div class="kpi-card k-soft hx-click" (click)="stage='chit_admin'"><div class="kpi-lbl">Corporate chit admin</div><div class="kpi-val">{{ summary.pending_chit_admin || 0 }}</div></div>
+      <div class="kpi-card k-amber hx-click" (click)="stage='field'"><div class="kpi-lbl">Field verification</div><div class="kpi-val">{{ summary.pending_field || 0 }}</div></div>
+      <div class="kpi-card k-green hx-click" (click)="stage='accounts'"><div class="kpi-lbl">Accounts payout</div><div class="kpi-val">{{ summary.pending_accounts || 0 }}</div></div>
+      <div class="kpi-card k-soft"><div class="kpi-lbl">Paid</div><div class="kpi-val">{{ summary.approved || 0 }}</div></div>
+      <div class="kpi-card k-red"><div class="kpi-lbl">Rejected</div><div class="kpi-val">{{ summary.rejected || 0 }}</div></div>
+      <div class="kpi-card k-mint"><div class="kpi-lbl">From customer app</div><div class="kpi-val">{{ summary.customer_app || 0 }}</div></div>
+    </div>
+    <div class="tabs">
+      <button type="button" [class.on]="stage==='all'" (click)="stage='all'">All waiting</button>
+      <button type="button" [class.on]="stage==='chit_admin'" (click)="stage='chit_admin'">Corporate Chit Admin</button>
+      <button type="button" [class.on]="stage==='field'" (click)="stage='field'">Field Verification</button>
+      <button type="button" [class.on]="stage==='accounts'" (click)="stage='accounts'">Accounts Payout</button>
+      <button type="button" [class.on]="stage==='mine'" (click)="stage='mine'">Assigned to me</button>
+    </div>
+    <div class="filter-bar" [formGroup]="filterForm">
+      <select class="pd-input filter-branch" formControlName="branch_id" (change)="load()">
+        <option value="0">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+      <button type="button" class="btn-green" (click)="load()">Search</button>
+      <button type="button" class="btn-line" (click)="resetFilters()">Reset</button>
+    </div>
+    <div class="panel">
+      <table class="pd-table">
+        <thead><tr><th>Customer</th><th>Type</th><th>Amount</th><th>Stage</th><th>Requested / Approved by</th><th>Pins / photos</th><th style="min-width:260px">Action</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let row of stageRows()">
+            <td>
+              {{ row.customer_name }}
+              <span class="type-chip" *ngIf="row.source === 'customer_app'">Customer App</span>
+              <div class="muted">{{ row.ar_no }} · {{ row.mobile }}</div>
+              <div class="muted">{{ row.branch_name }}</div>
+            </td>
+            <td>{{ row.kind }}<div class="muted">{{ row.prized_month || row.closed_month }}</div></td>
+            <td>{{ money(row.net_amount) }}</td>
+            <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+            <td class="trail">
+              <div><span class="muted">Requested:</span> {{ row.requested_by_name || '-' }} <span class="muted">{{ row.created_at }}</span></div>
+              <div *ngIf="row.chit_admin_at"><span class="muted">Chit admin:</span> {{ row.chit_admin_name || '-' }} <span class="muted">{{ row.chit_admin_at }}</span><div class="muted" *ngIf="row.chit_admin_remarks">“{{ row.chit_admin_remarks }}”</div></div>
+              <div *ngIf="row.field_employee_id"><span class="muted">Field:</span> {{ row.field_employee_name || '-' }} <span class="muted">{{ row.field_verified_at || 'pending' }}</span></div>
+              <div *ngIf="row.accounts_at"><span class="muted">Accounts:</span> {{ row.accounts_name || '-' }} <span class="muted">{{ row.accounts_at }}</span></div>
+            </td>
+            <td>
+              <div class="muted" *ngIf="row.home_lat">Home {{ row.home_lat }}, {{ row.home_lng }}</div>
+              <div class="muted" *ngIf="row.collection_lat">Collection {{ row.collection_lat }}, {{ row.collection_lng }}</div>
+              <a *ngFor="let p of row.photo_urls" [href]="p.url" target="_blank" class="mr-1">Photo</a>
+            </td>
+            <td>
+              <ng-container *ngIf="act[row.id]">
+                <ng-container *ngIf="row.status === 'pending_chit_admin'">
+                  <select class="pd-input" [(ngModel)]="act[row.id].field_employee_id" [ngModelOptions]="{standalone: true}">
+                    <option value="">Field verification employee *</option>
+                    <option *ngFor="let e of branchEmployees(row)" [value]="e.id">{{ e.first_name }} {{ e.last_name }}</option>
+                  </select>
+                  <input class="pd-input" [(ngModel)]="act[row.id].remarks" [ngModelOptions]="{standalone: true}" placeholder="Remarks" />
+                  <button type="button" class="btn-green sm" (click)="decide(row, 'approve')">Approve &amp; Assign</button>
+                  <button type="button" class="btn-line sm" (click)="decide(row, 'reject')">Reject</button>
+                </ng-container>
+                <ng-container *ngIf="isAccountsStage(row)">
+                  <select class="pd-input" [(ngModel)]="act[row.id].payment_mode" [ngModelOptions]="{standalone: true}">
+                    <option value="">Payout mode *</option>
+                    <option *ngFor="let m of payoutModes" [value]="m">{{ m }}</option>
+                  </select>
+                  <input type="date" class="pd-input" [(ngModel)]="act[row.id].payment_date" [ngModelOptions]="{standalone: true}" />
+                  <input class="pd-input" *ngIf="act[row.id].payment_mode && act[row.id].payment_mode !== 'Cash'" [(ngModel)]="act[row.id].transaction_no" [ngModelOptions]="{standalone: true}" placeholder="UTR / Cheque no *" />
+                  <input class="pd-input" *ngIf="act[row.id].payment_mode && act[row.id].payment_mode !== 'Cash'" [(ngModel)]="act[row.id].bank_name" [ngModelOptions]="{standalone: true}" placeholder="Bank" />
+                  <input class="pd-input" [(ngModel)]="act[row.id].remarks" [ngModelOptions]="{standalone: true}" placeholder="Remarks" />
+                  <button type="button" class="btn-green sm" (click)="decide(row, 'approve')">Approve &amp; Payout</button>
+                  <button type="button" class="btn-line sm" (click)="decide(row, 'reject')">Reject</button>
+                </ng-container>
+              </ng-container>
+              <span class="muted" *ngIf="row.status === 'pending_field'">Waiting for {{ row.field_employee_name || 'field employee' }} to verify in the mobile app</span>
+              <span class="muted" *ngIf="row.status === 'approved'">Paid {{ row.payment_mode }} {{ row.transaction_no }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="muted" *ngIf="!stageRows().length">No requests at this stage.</p>
+    </div>
+  </div>
+
+  <div class="modal-back" *ngIf="showForm && mode !== 'pending' && mode !== 'dashboard'">
+    <div class="modal-sheet" [formGroup]="form">
+      <div class="modal-head">
+        <div>
+          <b *ngIf="mode==='refund'">Create Refund Profile</b>
+          <b *ngIf="mode==='closed'">Create Final Closed Payment Profile</b>
+          <b *ngIf="mode==='prized'">Prized Allotment</b>
+          <div class="muted" *ngIf="mode==='refund'">Select the customer, enter the refund and submit for Corporate Chit Admin approval.</div>
+          <div class="muted" *ngIf="mode==='closed'">Select the customer, enter the final payment and submit for Corporate Chit Admin approval. Field verification happens after payout.</div>
+          <div class="muted" *ngIf="mode==='prized'">Select the customer, enter the prized allotment and submit for Corporate Chit Admin approval. Chits already prized are not listed.</div>
+        </div>
+        <button type="button" class="x" (click)="showForm=false">×</button>
+      </div>
+
+      <div class="form-grid" *ngIf="step===1">
+        <div class="card-block">
+          <h4>Customer Details</h4>
+          <label>Branch</label>
+          <select class="pd-input" [ngModel]="filterForm.get('branch_id').value" [ngModelOptions]="{standalone: true}" (ngModelChange)="onCreateBranchChange($event)">
+            <option value="0">All Branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+          <label style="margin-top:8px;">Customer *</label>
+          <input class="pd-input" [(ngModel)]="customerQuery" [ngModelOptions]="{standalone: true}" placeholder="Search name, mobile, customer ID or AR" />
+          <div class="cust-list">
+            <button type="button" class="cust-row" *ngFor="let e of visibleCustomers()" [class.on]="form.get('enrollment_id').value == e.id" (click)="pickCustomer(e)">
+              <b>{{ label(e) }}</b>
+              <span>{{ (e.branch_info && e.branch_info.branch_name) || '' }} · {{ (e.customer_info && (e.customer_info.mobile_no || e.customer_info.mobile)) || '' }}</span>
+            </button>
+            <p class="muted" *ngIf="!visibleCustomers().length">No enrolled customers for this branch. Choose All Branches, or check SPN approved customers.</p>
+          </div>
+          <select class="pd-input" formControlName="enrollment_id" style="display:none">
+            <option value=""></option>
+            <option *ngFor="let e of enrollments" [value]="e.id">{{ label(e) }}</option>
+          </select>
+          <div class="two" *ngIf="enrol">
+            <div><label>Customer name</label><input class="pd-input" [value]="customerName" readonly /></div>
+            <div><label>Mobile</label><input class="pd-input" [value]="info.mobile_no || info.mobile || ''" readonly /></div>
+            <div class="span2"><label>Address</label><input class="pd-input" [value]="info.address || info.door_no || ''" readonly /></div>
+          </div>
+        </div>
+        <div class="card-block">
+          <h4>Chit Scheme Details</h4>
+          <div class="muted" *ngIf="!enrol">Select a customer to load scheme details.</div>
+          <div class="two" *ngIf="enrol">
+            <div><label>AR / Chit</label><input class="pd-input" [value]="enrol.ar_no || ''" readonly /></div>
+            <div><label>Scheme</label><input class="pd-input" [value]="schemeName(enrol)" readonly /></div>
+            <div><label>Chit value</label><input class="pd-input" [value]="money(schemeValue(enrol))" readonly /></div>
+            <div><label>Months</label><input class="pd-input" [value]="schemeMonths(enrol)" readonly /></div>
+            <div><label>Slab</label><input class="pd-input" [value]="slabName(enrol)" readonly /></div>
+            <div><label>Branch</label><input class="pd-input" [value]="(enrol.branch_info && enrol.branch_info.branch_name) || ''" readonly /></div>
+          </div>
+        </div>
+        <div class="card-block summary">
+          <h4>{{ mode==='refund' ? 'Refund Summary' : 'Payment Summary' }}</h4>
+          <p>Customer <b>{{ customerName || '-' }}</b></p>
+          <p>AR <b>{{ enrol ? enrol.ar_no : '-' }}</b></p>
+          <p>Scheme <b>{{ enrol ? schemeName(enrol) : '-' }}</b></p>
+          <p>Paid <b>{{ money(historyPaid) }}</b></p>
+          <p>This chit pending <b>{{ money(thisChitPending()) }}</b></p>
+          <p>Old chit pending <b>{{ money(oldChitPending()) }}</b></p>
+          <p>Payment released <b>{{ money(historyReleased) }}</b></p>
+          <p>Amount <b>{{ money(net()) }}</b></p>
+        </div>
+      </div>
+
+      <div class="form-grid one" *ngIf="enrol">
+        <div class="card-block">
+          <h4>{{ mode==='prized' ? 'Prized Allotment' : 'Payment Allotment' }}</h4>
+          <div class="muted" *ngIf="dueLoading">Loading current month due...</div>
+          <div class="two">
+            <div>
+              <label>Payment month *</label>
+              <select class="pd-input" formControlName="payment_month" (change)="onPaymentMonthChange(form.get('payment_month').value)">
+                <option value="">Select month</option>
+                <option *ngFor="let m of paymentMonths" [value]="m.month">Month {{ m.month }} · {{ money(m.amount) }}</option>
+              </select>
+            </div>
+            <div><label>Year</label><input class="pd-input" formControlName="year_label" /></div>
+            <div><label>Due / payment amount *</label><input type="number" class="pd-input" formControlName="amount" /></div>
+            <div><label>Document charges</label><input type="number" class="pd-input" formControlName="document_charges" /></div>
+            <div><label>Govt fees</label><input type="number" class="pd-input" formControlName="govt_fees" /></div>
+            <div><label>Net allotment</label><input class="pd-input" [value]="money(net())" readonly /></div>
+            <div>
+              <label>Reason</label>
+              <select class="pd-input" formControlName="reason">
+                <option value="">Select reason</option>
+                <option>Prized Payment</option>
+                <option>Final Closure</option>
+                <option>Scheme Exit</option>
+                <option>Member Exit</option>
+                <option>Over Payment</option>
+                <option>Chit Completed</option>
+                <option>Refund</option>
+              </select>
+            </div>
+            <div class="span2"><label>Remarks</label><textarea class="pd-input" rows="2" formControlName="remarks"></textarea></div>
+          </div>
+          <div class="doc-row" style="margin-top:10px;">
+            <label class="doc" *ngFor="let doc of (mode==='closed' ? ['Customer Signed Letter','ID Proof','Chit Passbook','Closure Certificate','Other Documents'] : ['Customer Request Letter','ID Proof','Other Documents'])">
+              <i class="fa fa-cloud-upload"></i>
+              <span>{{ doc }}</span>
+              <small>{{ docs[doc] ? 'Uploaded' : 'PDF, JPG, PNG' }}</small>
+              <input type="file" (change)="onFile($event, doc)" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:0 16px;" *ngIf="enrol">
+        <button type="button" class="btn-line sm" (click)="showHistory = !showHistory">{{ showHistory ? 'Hide' : 'Show' }} full customer history</button>
+      </div>
+
+      <div class="hist-wrap" *ngIf="showHistory && enrol">
+        <div class="card-block hist-block">
+          <h4>Full customer history</h4>
+          <div class="muted" *ngIf="historyLoading">Loading paid, pending and payment release...</div>
+          <div class="hist-kpis" *ngIf="!historyLoading">
+            <div class="hk hk-green"><span>Total paid</span><b>{{ money(historyPaid) }}</b></div>
+            <div class="hk hk-amber"><span>This chit pending</span><b>{{ money(thisChitPending()) }}</b></div>
+            <div class="hk hk-amber"><span>Old chit pending</span><b>{{ money(oldChitPending()) }}</b></div>
+            <div class="hk hk-blue"><span>Payment released</span><b>{{ money(historyReleased) }}</b></div>
+            <div class="hk hk-mint"><span>All chits</span><b>{{ customerEnrollments.length }}</b></div>
+          </div>
+
+          <h5>This chit · paid &amp; receipts</h5>
+          <table class="pd-table mini" *ngIf="currentEnrollmentHistory().length">
+            <thead><tr><th>AR / Slab</th><th>Chit value</th><th>Paid</th><th>Pending</th><th>Prized status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of currentEnrollmentHistory()">
+                <td>{{ row.ar_no || row.slab_name || enrol.ar_no }}</td>
+                <td>{{ money(row.chit_value) }}</td>
+                <td class="ok">{{ money(row.paid_amount) }}</td>
+                <td class="warn">{{ money(row.pending_amount) }}</td>
+                <td>{{ row.prized_status_customer || (row.prized_status == 1 ? 'Prized' : 'Non-Prized') }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <table class="pd-table mini" *ngIf="currentReceipts.length">
+            <thead><tr><th>Inst / Date</th><th>Receipt</th><th>Paid</th><th>Mode</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of currentReceipts | slice:0:12">
+                <td>{{ row.installment_no || row.receipt_date || '-' }}</td>
+                <td>{{ row.receipt_no || row.id || '-' }}</td>
+                <td class="ok">{{ money(receiptAmount(row)) }}</td>
+                <td>{{ row.payment_type_name || row.payment_mode || row.mode || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="muted" *ngIf="!historyLoading && !currentReceipts.length">No receipt rows for this chit yet.</p>
+
+          <h5>This chit · payments / release</h5>
+          <table class="pd-table mini" *ngIf="currentPayments.length">
+            <thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of currentPayments">
+                <td>{{ row.payment_date || row.created_at || '-' }}</td>
+                <td>{{ row.payment_type || row.kind || 'Payment release' }}</td>
+                <td class="ok">{{ money(paymentAmount(row)) }}</td>
+                <td>{{ row.status == 1 || row.status === 'approved' ? 'Paid / Approved' : (row.status || '-') }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="muted" *ngIf="!historyLoading && !currentPayments.length">No payment release for this chit yet.</p>
+
+          <h5>Other chits · paid / pending</h5>
+          <table class="pd-table mini" *ngIf="otherEnrollmentHistory().length">
+            <thead><tr><th>Type</th><th>AR / Group / Slab</th><th>Chit value</th><th>Paid</th><th>Pending</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of otherEnrollmentHistory()">
+                <td>{{ chitTypeLabel(row) }}</td>
+                <td>{{ row.ar_no || row.slab_name || row.group_name || '-' }}</td>
+                <td>{{ money(row.chit_value) }}</td>
+                <td class="ok">{{ money(row.paid_amount) }}</td>
+                <td class="warn">{{ money(row.pending_amount) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="muted" *ngIf="!historyLoading && !otherEnrollmentHistory().length">No other chits for this customer.</p>
+
+          <h5>Payment desk · final / closed / refund / release</h5>
+          <table class="pd-table mini" *ngIf="deskHistory.length">
+            <thead><tr><th>Date</th><th>Kind</th><th>AR</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of deskHistory">
+                <td>{{ row.payment_date || row.created_at }}</td>
+                <td><span class="type-chip">{{ row.kind }}</span></td>
+                <td>{{ row.ar_no }}</td>
+                <td>{{ money(row.net_amount) }}</td>
+                <td><span class="st" [ngClass]="statusClass(row)">{{ statusText(row) }}</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="muted" *ngIf="!deskHistory.length">No prized / closed / refund desk profiles yet for this customer.</p>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn-line" (click)="showForm=false">Cancel</button>
+        <button type="button" class="btn-line" [disabled]="saving" (click)="save('draft')">Save as Draft</button>
+        <button type="button" class="btn-green" [disabled]="saving || !enrol" (click)="save('submit')">Submit for Corporate Chit Admin Approval</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-back" *ngIf="panelOpen && selected && mode !== 'refund'">
+    <div class="modal-sheet">
+      <div class="modal-head">
+        <b>{{ selected.customer_name }}</b>
+        <button type="button" class="x" (click)="panelOpen=false">×</button>
+      </div>
+      <div class="side-body">
+        <p>AR {{ selected.ar_no }} · {{ selected.kind }} · {{ money(selected.net_amount) }}</p>
+        <p>Scheme {{ selected.scheme_name || '-' }} · Chit {{ money(selected.chit_value) }}</p>
+        <p>Status {{ statusText(selected) }} · {{ selected.payment_mode }} {{ selected.transaction_no }}</p>
+        <div class="trail">
+          <div><span class="muted">Requested by:</span> {{ selected.requested_by_name || '-' }} · {{ selected.created_at }}</div>
+          <div *ngIf="selected.chit_admin_at"><span class="muted">Corporate chit admin:</span> {{ selected.chit_admin_name || '-' }} · {{ selected.chit_admin_at }} {{ selected.chit_admin_remarks }}</div>
+          <div *ngIf="selected.field_employee_id"><span class="muted">Field verification:</span> {{ selected.field_employee_name || '-' }} · {{ selected.field_verified_at || 'pending' }}</div>
+          <div *ngIf="selected.accounts_at"><span class="muted">Accounts payout:</span> {{ selected.accounts_name || '-' }} · {{ selected.accounts_at }} {{ selected.accounts_remarks }}</div>
+        </div>
+        <button type="button" class="btn-green sm" *ngIf="selected.status === 'draft'" (click)="submitDraft(selected)">Submit for Corporate Chit Admin Approval</button>
+        <p class="muted" *ngIf="selected.home_lat">Home {{ selected.home_lat }}, {{ selected.home_lng }}</p>
+        <p class="muted" *ngIf="selected.collection_lat">Collection {{ selected.collection_lat }}, {{ selected.collection_lng }}</p>
+        <a *ngFor="let p of selected.photo_urls" [href]="p.url" target="_blank">Photo</a>
+
+        <div class="hist-kpis" style="margin-top:12px;">
+          <div class="hk hk-green"><span>Total paid</span><b>{{ money(historyPaid) }}</b></div>
+          <div class="hk hk-amber"><span>This chit pending</span><b>{{ money(thisChitPending()) }}</b></div>
+          <div class="hk hk-amber"><span>Old chit pending</span><b>{{ money(oldChitPending()) }}</b></div>
+          <div class="hk hk-blue"><span>Payment released</span><b>{{ money(historyReleased) }}</b></div>
+          <div class="hk hk-mint"><span>Desk profiles</span><b>{{ deskHistory.length }}</b></div>
+        </div>
+
+        <h5>This chit receipts</h5>
+        <table class="pd-table mini" *ngIf="currentReceipts.length">
+          <thead><tr><th>Inst / Date</th><th>Receipt</th><th>Paid</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of currentReceipts | slice:0:10">
+              <td>{{ row.installment_no || row.receipt_date || '-' }}</td>
+              <td>{{ row.receipt_no || row.id || '-' }}</td>
+              <td class="ok">{{ money(receiptAmount(row)) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" *ngIf="!currentReceipts.length">No receipts for this chit.</p>
+
+        <h5>Payment release</h5>
+        <table class="pd-table mini" *ngIf="currentPayments.length">
+          <thead><tr><th>Date</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of currentPayments">
+              <td>{{ row.payment_date || row.created_at || '-' }}</td>
+              <td class="ok">{{ money(paymentAmount(row)) }}</td>
+              <td>{{ row.status == 1 || row.status === 'approved' ? 'Paid / Approved' : (row.status || '-') }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" *ngIf="!currentPayments.length">No payment release yet.</p>
+
+        <h5>Other chits paid / pending</h5>
+        <table class="pd-table mini" *ngIf="otherEnrollmentHistory().length">
+          <thead><tr><th>Type</th><th>AR / Group</th><th>Paid</th><th>Pending</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of otherEnrollmentHistory()">
+              <td>{{ chitTypeLabel(row) }}</td>
+              <td>{{ row.ar_no || row.slab_name || row.group_name || '-' }}</td>
+              <td class="ok">{{ money(row.paid_amount) }}</td>
+              <td class="warn">{{ money(row.pending_amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="muted" *ngIf="!otherEnrollmentHistory().length">No other chits.</p>
+
+        <h5>Final / closed / refund desk</h5>
+        <table class="pd-table mini" *ngIf="deskHistory.length">
+          <thead><tr><th>Kind</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of deskHistory">
+              <td>{{ row.kind }}</td>
+              <td>{{ money(row.net_amount) }}</td>
+              <td>{{ statusText(row) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

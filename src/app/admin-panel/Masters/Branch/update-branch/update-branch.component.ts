@@ -405,6 +405,9 @@ export class UpdateBranchComponent implements OnInit {
       district_id:[''],
       city_id:[''],
       pincode: ['',[Validators.pattern(this.pincodePattern)]],
+      latitude: [''],
+      longitude: [''],
+      punch_radius_meters: [50],
       remarks:[''],
       id: [''],
       updated_by: ['']
@@ -479,6 +482,9 @@ export class UpdateBranchComponent implements OnInit {
             this.UpdateBranch.get('address_line_1').setValue(response.data[0].address_line_1);
             this.UpdateBranch.get('address_line_2').setValue(response.data[0].address_line_2);
             this.UpdateBranch.get('landmark').setValue(response.data[0].landmark);
+            this.UpdateBranch.get('latitude').setValue(response.data[0].latitude || '');
+            this.UpdateBranch.get('longitude').setValue(response.data[0].longitude || '');
+            this.UpdateBranch.get('punch_radius_meters').setValue(response.data[0].punch_radius_meters || 50);
             this.UpdateBranch.get('prize_subscriber_penalty').setValue(response.data[0].prize_subscriber_penalty);
             this.UpdateBranch.get('non_prize_subscriber_penalty').setValue(response.data[0].non_prize_subscriber_penalty);
             this.UpdateBranch.get('bonus_days').setValue(response.data[0].bonus_days);

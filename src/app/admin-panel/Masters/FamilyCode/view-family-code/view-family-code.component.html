@@ -42,6 +42,7 @@
             <th>SNo</th>
             <th>Branch </th>
             <th>Family Code</th>
+            <th>Members</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -50,6 +51,7 @@
             <td>{{row.sno}}</td>
             <td>{{row.branch_name}}</td>
             <td>{{row.family_code}}</td>
+            <td>{{row.member_count || 0}}</td>
             <td>  
               <a (click)="open(uploadModal, { windowClass: 'modal-lg animate' }, row.id)"><i class="fas fa-eye text-success"></i></a>
               <a [routerLink]="['/admin-panel/update-family-code/'+row.id]"><i class="fas fa-edit text-primary mx-2"></i></a>

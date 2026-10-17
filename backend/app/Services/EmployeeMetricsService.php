@@ -17,6 +17,7 @@ use App\Models\OtherCharge;
 use App\Models\Receipt;
 use Carbon\Carbon;
 use DB;
+use Illuminate\Support\Facades\Schema;
 
 class EmployeeMetricsService
 {
@@ -97,12 +98,15 @@ class EmployeeMetricsService
         foreach ($targets as $tg) {
             $achieved = 0;
             $type = $tg->target_type ?: 'existing_client_collection';
-            if ($type === 'collection' || $type === 'existing_client_collection' || $type === 'new_client_collection') {
-                $achieved = self::collectionAmount($tenantId, $employeeId, $tg->period_start, min($date, $tg->period_end));
+            $end = min($date, $tg->period_end);
+            if ($type === 'new_client_collection') {
+                $achieved = self::collectionAmountByKind($tenantId, $employeeId, $tg->period_start, $end, 'new');
+            } elseif ($type === 'collection' || $type === 'existing_client_collection') {
+                $achieved = self::collectionAmountByKind($tenantId, $employeeId, $tg->period_start, $end, 'old');
             } elseif ($type === 'sales' || $type === 'new_business') {
-                $achieved = self::salesCount($tenantId, $employeeId, $tg->period_start, min($date, $tg->period_end));
+                $achieved = self::salesCount($tenantId, $employeeId, $tg->period_start, $end);
             } elseif ($type === 'activity') {
-                $achieved = self::taskCompletionPercent($tenantId, $employeeId, $tg->period_start, min($date, $tg->period_end));
+                $achieved = self::taskCompletionPercent($tenantId, $employeeId, $tg->period_start, $end);
             }
             $tg->achieved_amount = $achieved;
             $tg->save();
@@ -262,6 +266,15 @@ class EmployeeMetricsService
         return $awarded;
     }
 
+    public static function employeePhotoUrl($emp)
+    {
+        if (!$emp || empty($emp->photo)) {
+            return '';
+        }
+        return rtrim((string) (env('APP_URL') ?: ''), '/')
+            . '/storage/app/uploads/employee_photos/' . ltrim($emp->photo, '/');
+    }
+
     public static function leaderboard($tenantId, $branchId, $periodMonth = null, $limit = 20)
     {
         $month = $periodMonth ?: Carbon::today()->format('Y-m');
@@ -274,11 +287,17 @@ class EmployeeMetricsService
             $query->where('branch_id', $branchId);
         }
         $rows = $query->get();
+        $branchNames = array();
+        $branchIds = $rows->pluck('branch_id')->filter()->unique()->values()->all();
+        if (!empty($branchIds) && Schema::hasTable('branches')) {
+            $branchNames = DB::table('branches')->whereIn('id', $branchIds)->pluck('branch_name', 'id')->all();
+        }
         $list = array();
         $rank = 1;
         foreach ($rows as $r) {
             $emp = $r->employee_det;
             $name = $emp ? trim($emp->first_name . ' ' . $emp->last_name) : '';
+            $photo = self::employeePhotoUrl($emp);
             $list[] = array(
                 'rank' => $rank++,
                 'employee_id' => (int) $r->employee_id,
@@ -286,9 +305,355 @@ class EmployeeMetricsService
                 'overall_score' => (float) $r->overall_score,
                 'performance_rating' => $r->performance_rating,
                 'collection_score' => (float) $r->collection_score,
+                'sales_score' => (float) $r->sales_score,
+                'attendance_score' => (float) $r->attendance_score,
+                'activity_score' => (float) $r->activity_score,
                 'period_month' => $r->period_month,
+                'profile_pic' => $photo,
+                'photo_url' => $photo,
+                'branch_id' => (int) $r->branch_id,
+                'branch_name' => isset($branchNames[$r->branch_id]) ? $branchNames[$r->branch_id] : '',
             );
         }
         return $list;
+    }
+
+    public static function addCollectionTotals($into, $tenantId, $from, $to, $groupCol)
+    {
+        $add = function ($rows) use (&$into) {
+            foreach ($rows as $id => $total) {
+                $key = (int) $id;
+                if ($key <= 0) {
+                    continue;
+                }
+                $into[$key] = (isset($into[$key]) ? $into[$key] : 0) + (float) $total;
+            }
+        };
+        $receipts = Receipt::where('tenant_id', $tenantId)
+            ->whereBetween('receipt_date', array($from, $to))
+            ->selectRaw($groupCol . ', SUM(received_amount + penalty) as total')
+            ->groupBy($groupCol)
+            ->pluck('total', $groupCol);
+        $add($receipts);
+        $advance = AdvanceReceipt::where('tenant_id', $tenantId)
+            ->whereBetween('receipt_date', array($from, $to))
+            ->selectRaw($groupCol . ', SUM(receipt_amount) as total')
+            ->groupBy($groupCol)
+            ->pluck('total', $groupCol);
+        $add($advance);
+        $other = OtherCharge::where('tenant_id', $tenantId)
+            ->whereBetween('received_date', array($from, $to))
+            ->selectRaw($groupCol . ', SUM(amount) as total')
+            ->groupBy($groupCol)
+            ->pluck('total', $groupCol);
+        $add($other);
+        $before = BeforeEnrolReceipt::where('tenant_id', $tenantId)
+            ->whereBetween('received_date', array($from, $to))
+            ->selectRaw($groupCol . ', SUM(amount) as total')
+            ->groupBy($groupCol)
+            ->pluck('total', $groupCol);
+        $add($before);
+        return $into;
+    }
+
+    public static function topEmployeesByCollection($tenantId, $from, $to, $limit = 3)
+    {
+        $totals = self::addCollectionTotals(array(), $tenantId, $from, $to, 'employee_id');
+        arsort($totals);
+        $topIds = array_slice(array_keys($totals), 0, $limit);
+        if (empty($topIds)) {
+            return array();
+        }
+        $employees = Employee::whereIn('id', $topIds)->get()->keyBy('id');
+        $branchIds = $employees->pluck('branch_id')->filter()->unique()->values()->all();
+        $branchNames = array();
+        if (!empty($branchIds) && Schema::hasTable('branches')) {
+            $branchNames = DB::table('branches')->whereIn('id', $branchIds)->pluck('branch_name', 'id')->all();
+        }
+        $list = array();
+        $rank = 1;
+        foreach ($topIds as $eid) {
+            $emp = $employees->get($eid);
+            $name = $emp ? trim($emp->first_name . ' ' . $emp->last_name) : '';
+            if ($name === '') {
+                continue;
+            }
+            $photo = self::employeePhotoUrl($emp);
+            $bid = $emp ? (int) $emp->branch_id : 0;
+            $list[] = array(
+                'rank' => $rank++,
+                'employee_id' => (int) $eid,
+                'employee_name' => $name,
+                'overall_score' => null,
+                'performance_rating' => '',
+                'collection_amount' => round($totals[$eid], 2),
+                'profile_pic' => $photo,
+                'photo_url' => $photo,
+                'branch_id' => $bid,
+                'branch_name' => isset($branchNames[$bid]) ? $branchNames[$bid] : '',
+            );
+        }
+        return $list;
+    }
+
+    public static function topBranchesByCollection($tenantId, $from, $to, $limit = 3)
+    {
+        $totals = self::addCollectionTotals(array(), $tenantId, $from, $to, 'branch_id');
+        arsort($totals);
+        $topIds = array_slice(array_keys($totals), 0, $limit);
+        if (empty($topIds)) {
+            return array();
+        }
+        $branchNames = array();
+        if (Schema::hasTable('branches')) {
+            $branchNames = DB::table('branches')->whereIn('id', $topIds)->pluck('branch_name', 'id')->all();
+        }
+        $list = array();
+        $rank = 1;
+        foreach ($topIds as $bid) {
+            $name = isset($branchNames[$bid]) ? $branchNames[$bid] : '';
+            if ($name === '') {
+                continue;
+            }
+            $list[] = array(
+                'rank' => $rank++,
+                'branch_id' => (int) $bid,
+                'branch_name' => $name,
+                'collection_amount' => round($totals[$bid], 2),
+            );
+        }
+        return $list;
+    }
+
+    public static function collectionAmountByKind($tenantId, $employeeId, $from, $to, $kind)
+    {
+        $receiptQuery = Receipt::where('tenant_id', $tenantId)
+            ->where('employee_id', $employeeId)
+            ->whereBetween('receipt_date', array($from, $to));
+
+        $newEnrolSub = function ($sub) use ($from, $to) {
+            $sub->select('id')->from('chit_details')
+                ->whereBetween(DB::raw('DATE(created_at)'), array($from, $to));
+        };
+
+        if ($kind === 'new') {
+            $receiptQuery->whereIn('enrollment_id', $newEnrolSub);
+            return (float) ($receiptQuery->selectRaw('SUM(received_amount + penalty) as total')->value('total') ?? 0);
+        }
+
+        $receiptQuery->where(function ($q) use ($newEnrolSub) {
+            $q->whereNull('enrollment_id')
+                ->orWhere('enrollment_id', 0)
+                ->orWhereNotIn('enrollment_id', $newEnrolSub);
+        });
+        $r = (float) ($receiptQuery->selectRaw('SUM(received_amount + penalty) as total')->value('total') ?? 0);
+        $scope = function ($q) use ($tenantId, $employeeId) {
+            $q->where('tenant_id', $tenantId)->where('employee_id', $employeeId);
+        };
+        $a = AdvanceReceipt::whereBetween('receipt_date', array($from, $to))->where($scope)->sum('receipt_amount');
+        $o = OtherCharge::whereBetween('received_date', array($from, $to))->where($scope)->sum('amount');
+        $b = BeforeEnrolReceipt::whereBetween('received_date', array($from, $to))->where($scope)->sum('amount');
+        return (float) ($r + $a + $o + $b);
+    }
+
+    public static function emptyTargetBucket($label, $type)
+    {
+        return array(
+            'label' => $label,
+            'target_type' => $type,
+            'target_amount' => 0,
+            'achieved_amount' => 0,
+            'completion_percent' => 0,
+        );
+    }
+
+    public static function packTarget($label, $type, $amount, $achieved)
+    {
+        $amount = (float) $amount;
+        $achieved = (float) $achieved;
+        return array(
+            'label' => $label,
+            'target_type' => $type,
+            'target_amount' => round($amount, 2),
+            'achieved_amount' => round($achieved, 2),
+            'completion_percent' => $amount > 0 ? min(100, round(($achieved / $amount) * 100)) : 0,
+        );
+    }
+
+    public static function targetBreakdown($tenantId, $employeeId, $onDate = null)
+    {
+        $date = $onDate ?: Carbon::today()->toDateString();
+        $targets = self::syncTargetProgress($tenantId, $employeeId, $date);
+        $sales = self::emptyTargetBucket('Sales', 'sales');
+        $newCust = self::emptyTargetBucket('New customer', 'new_client_collection');
+        $oldCust = self::emptyTargetBucket('Old customer', 'existing_client_collection');
+
+        foreach ($targets as $tg) {
+            $type = strtolower((string) ($tg->target_type ?: 'existing_client_collection'));
+            $row = self::packTarget($tg->target_label ?: $type, $type, $tg->target_amount, $tg->achieved_amount);
+            if (in_array($type, array('sales', 'new_business'), true)) {
+                $sales = self::packTarget('Sales', 'sales', $sales['target_amount'] + $row['target_amount'], $sales['achieved_amount'] + $row['achieved_amount']);
+            } elseif ($type === 'new_client_collection') {
+                $newCust = self::packTarget('New customer', 'new_client_collection', $newCust['target_amount'] + $row['target_amount'], $newCust['achieved_amount'] + $row['achieved_amount']);
+            } elseif (in_array($type, array('existing_client_collection', 'collection', ''), true)) {
+                $oldCust = self::packTarget('Old customer', 'existing_client_collection', $oldCust['target_amount'] + $row['target_amount'], $oldCust['achieved_amount'] + $row['achieved_amount']);
+            }
+        }
+
+        if ($newCust['target_amount'] <= 0 && $oldCust['target_amount'] <= 0) {
+            $monthStart = Carbon::parse($date)->startOfMonth()->toDateString();
+            $emp = Employee::find($employeeId);
+            $monthly = $emp ? (float) ($emp->target ?? 0) : 0;
+            $oldCust = self::packTarget(
+                'Old customer',
+                'existing_client_collection',
+                $monthly,
+                self::collectionAmountByKind($tenantId, $employeeId, $monthStart, $date, 'old')
+            );
+            $newCust = self::packTarget(
+                'New customer',
+                'new_client_collection',
+                0,
+                self::collectionAmountByKind($tenantId, $employeeId, $monthStart, $date, 'new')
+            );
+            if ($sales['target_amount'] <= 0) {
+                $sales = self::packTarget(
+                    'Sales',
+                    'sales',
+                    0,
+                    self::salesCount($tenantId, $employeeId, $monthStart, $date)
+                );
+            }
+        }
+
+        $collection = self::packTarget(
+            'Collection',
+            'collection',
+            $newCust['target_amount'] + $oldCust['target_amount'],
+            $newCust['achieved_amount'] + $oldCust['achieved_amount']
+        );
+
+        return array(
+            'sales' => $sales,
+            'collection' => $collection,
+            'new_customer' => $newCust,
+            'old_customer' => $oldCust,
+        );
+    }
+
+    public static function ensureTopEmployees($list, $tenantId, $limit = 3)
+    {
+        $list = array_values(is_array($list) ? $list : array());
+        $used = array();
+        foreach ($list as $row) {
+            $used[] = (int) ($row['employee_id'] ?? 0);
+        }
+        if (count($list) >= $limit) {
+            return array_slice($list, 0, $limit);
+        }
+        $q = Employee::where('tenant_id', $tenantId);
+        if (Schema::hasColumn('employees', 'status')) {
+            $q->where('status', 1);
+        }
+        if (!empty($used)) {
+            $q->whereNotIn('id', $used);
+        }
+        $emps = $q->orderBy('id', 'desc')->limit($limit - count($list))->get();
+        $rank = count($list) + 1;
+        foreach ($emps as $emp) {
+            $name = trim(($emp->first_name ? $emp->first_name : '') . ' ' . ($emp->last_name ? $emp->last_name : ''));
+            if ($name === '') {
+                $name = 'Employee ' . $emp->id;
+            }
+            $photo = self::employeePhotoUrl($emp);
+            $list[] = array(
+                'rank' => $rank++,
+                'employee_id' => (int) $emp->id,
+                'employee_name' => $name,
+                'overall_score' => null,
+                'collection_amount' => 0,
+                'profile_pic' => $photo,
+                'photo_url' => $photo,
+                'branch_id' => (int) $emp->branch_id,
+                'branch_name' => optional($emp->branch_det)->branch_name,
+            );
+        }
+        return $list;
+    }
+
+    public static function ensureTopBranches($list, $tenantId, $limit = 3)
+    {
+        $list = array_values(is_array($list) ? $list : array());
+        $used = array();
+        foreach ($list as $row) {
+            $used[] = (int) ($row['branch_id'] ?? 0);
+        }
+        if (count($list) >= $limit) {
+            return array_slice($list, 0, $limit);
+        }
+        $q = DB::table('branches')->where('tenant_id', $tenantId);
+        if (Schema::hasColumn('branches', 'status')) {
+            $q->where('status', 1);
+        }
+        if (!empty($used)) {
+            $q->whereNotIn('id', $used);
+        }
+        $rows = $q->orderBy('id', 'desc')->limit($limit - count($list))->get();
+        $rank = count($list) + 1;
+        foreach ($rows as $br) {
+            $name = isset($br->branch_name) ? $br->branch_name : '';
+            if ($name === '') {
+                continue;
+            }
+            $list[] = array(
+                'rank' => $rank++,
+                'branch_id' => (int) $br->id,
+                'branch_name' => $name,
+                'collection_amount' => 0,
+            );
+        }
+        return $list;
+    }
+
+    public static function scoresBoard($tenantId, $branchId = 0, $periodMonth = null, $limit = 80)
+    {
+        $month = $periodMonth ?: Carbon::today()->format('Y-m');
+        $q = Employee::where('tenant_id', $tenantId);
+        if (Schema::hasColumn('employees', 'status')) {
+            $q->where('status', 1);
+        }
+        if ($branchId) {
+            $q->where('branch_id', $branchId);
+        }
+        $emps = $q->orderBy('first_name')->limit($limit)->get();
+        $rows = array();
+        foreach ($emps as $emp) {
+            $perf = self::computePerformance($tenantId, (int) $emp->branch_id, (int) $emp->id, $month);
+            $name = trim(($emp->first_name ? $emp->first_name : '') . ' ' . ($emp->last_name ? $emp->last_name : ''));
+            $photo = self::employeePhotoUrl($emp);
+            $rows[] = array(
+                'employee_id' => (int) $emp->id,
+                'employee_name' => $name ?: ('Employee ' . $emp->id),
+                'profile_pic' => $photo,
+                'photo_url' => $photo,
+                'branch_id' => (int) $emp->branch_id,
+                'branch_name' => optional($emp->branch_det)->branch_name,
+                'overall_score' => (float) $perf->overall_score,
+                'collection_score' => (float) $perf->collection_score,
+                'sales_score' => (float) $perf->sales_score,
+                'attendance_score' => (float) $perf->attendance_score,
+                'activity_score' => (float) $perf->activity_score,
+                'performance_rating' => $perf->performance_rating,
+            );
+        }
+        usort($rows, function ($a, $b) {
+            return ($b['overall_score'] <=> $a['overall_score']);
+        });
+        $rank = 1;
+        foreach ($rows as &$row) {
+            $row['rank'] = $rank++;
+        }
+        unset($row);
+        return $rows;
     }
 }

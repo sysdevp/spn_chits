@@ -17,8 +17,8 @@
   </div>
   <div class="ba-kpi">
     <div class="ba-kpi-l">Monthly Target</div>
-    <div class="ba-kpi-v">—</div>
-    <div class="ba-kpi-n">Target API pending</div>
+    <div class="ba-kpi-v">₹ {{ n(s().monthly_target) | number:'1.0-0' }}</div>
+    <div class="ba-kpi-n">{{ n(s().monthly_target_percent) }}% achieved</div>
   </div>
   <div class="ba-kpi" (click)="openDetail.emit('subscribers')" style="cursor:pointer">
     <div class="ba-kpi-l">Branch Customers</div>

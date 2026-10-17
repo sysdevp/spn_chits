@@ -2,14 +2,14 @@
   <div class="card-header">
     <div class="row">
       <div class="col-6 my-auto font-weight-bold">
-        Add Commitment Chit Enroll Details
+        Add Chit Enroll Details
       </div>
       <div class="col-6 text-right">
         <a
           [routerLink]="['/admin-panel/view-commitment-chit']"
           class="bg-info border-0 text-white px-3 py-2"
         >
-          <i class="fas fa-eye pr-2"></i> View Commitment Chit</a
+          <i class="fas fa-eye pr-2"></i> View Chit</a
         >
       </div>
     </div>
@@ -272,6 +272,7 @@
                 #d2="ngbDatepicker"
                 onkeydown="return false;"
               />
+              <small class="text-muted">Auto-filled from Date Of Joining (1st due completion date). Change only if different.</small>
               <div
                 class="col-md-12"
                 *ngIf="submitted && f.due_date.errors"

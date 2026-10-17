@@ -551,7 +551,7 @@ try {
 if (response.status == 'Success') {
 this.appService.showAlert("Enrol Refund",response.msg, "success");
 setTimeout(() => {
-this.router.navigate(['/admin-panel/payment-refund-report']);
+this.router.navigate(['/admin-panel/refund-approval']);
 }, 300);
 } else {
 this.appService.showAlert("Enrol Refund", response.msg, "error");

@@ -1322,11 +1322,22 @@ class PettyCashExpenseController extends Controller
     }
 
 
- public function bookReport(Request $request)
+    public function bookReport(Request $request)
 {
     $bookType = $request->book_type;
-    $fromDate = $request->from_date ?? now()->startOfMonth()->toDateString();
-    $toDate = $request->to_date ?? now()->toDateString();
+    $fromDate = $request->from_date
+        ?? $request->start_date
+        ?? now()->startOfMonth()->toDateString();
+    $toDate = $request->to_date
+        ?? $request->end_date
+        ?? now()->toDateString();
+    // Support Angular date objects {year,month,day}
+    if (is_array($fromDate) && !empty($fromDate['year'])) {
+        $fromDate = sprintf('%04d-%02d-%02d', $fromDate['year'], $fromDate['month'], $fromDate['day']);
+    }
+    if (is_array($toDate) && !empty($toDate['year'])) {
+        $toDate = sprintf('%04d-%02d-%02d', $toDate['year'], $toDate['month'], $toDate['day']);
+    }
     $branchId = $request->branch_id;
 
     if ($bookType === 'cash') {

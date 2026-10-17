@@ -12,7 +12,7 @@ class EmployeeTarget extends Model
 
     protected $fillable = [
         'tenant_id', 'branch_id', 'employee_id', 'period_type', 'target_type',
-        'period_start', 'period_end', 'target_amount', 'achieved_amount',
+        'period_start', 'period_end', 'target_amount', 'business_value', 'achieved_amount',
         'target_label', 'notes', 'created_by', 'updated_by', 'status',
     ];
 

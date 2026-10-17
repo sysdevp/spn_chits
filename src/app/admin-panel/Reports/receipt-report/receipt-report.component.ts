@@ -457,6 +457,17 @@ export class ReceiptReportComponent implements OnInit {
             {headerName: 'Receipt Date', field: 'receipt_date',resizable: true },
             {headerName: 'Accounts Date', field: 'accounts_date' ,resizable: true},
             {headerName: 'Received Amount', field: 'total_received_amount',resizable: true},
+            {headerName: 'Location', field: 'location_name', resizable: true,
+              cellRenderer: function(params) {
+                if (!params.data) return '';
+                const name = params.data.location_name || '';
+                if (params.data.maps_link) {
+                  return '<a href="' + params.data.maps_link + '" target="_blank" title="Open map">' +
+                    (name || 'View Map') + ' <i class="fas fa-map-marker-alt text-success"></i></a>';
+                }
+                return name || '-';
+              }
+            },
             {headerName: 'Payment Type', field: 'payment_type_name',resizable: true},
             {headerName: 'Cheque No', field: 'cheque_no' ,resizable: true},
             {headerName: 'Cheque Date', field: 'cheque_date',resizable: true },

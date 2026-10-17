@@ -38,14 +38,14 @@
       </div>
       <div class="row float-right mt-2">
         <div class="form-group col-md-4 mt-auto mb-0">
-          <button type="submit" class="btn btn-primary mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
+          <button type="submit" class="btn btn-success mr-1" [disabled]="disableBtn">{{SubmitbuttonName}}</button>
         </div>
     </div>
     </form>
 <div class="" [hidden]="hidecustomerLedger">
     <div class="row cus_led_info" >
 
-      <div class="col-md-5">
+      <div class="col-md-4">
         <div class="media">
           <img *ngIf="photo!=''" src={{photo}} class="img-view"/>
           <div class="media-body mt-auto">
@@ -54,8 +54,28 @@
           </div>
         </div>
       </div>
-      <div class="col-md-4 mt-auto">
-        <!--     <h3><i class="fas fa-download pr-3"></i>Export Subscriber Information</h3>-->
+      <div class="col-md-3 mt-auto prized-status-box">
+        <div class="ps-title">Prized Status</div>
+        <div *ngIf="prizedEnrollments().length; else notPrized">
+          <span class="spn-prized-tag"><i class="fa fa-trophy"></i> SPN Prized</span>
+          <div class="ps-sub">{{ prizedEnrollments().length }} of {{ (enrollmentInfo || []).length }} chits prized</div>
+          <div class="ps-list"><span *ngFor="let e of prizedEnrollments()">{{ e | slabAr }}</span></div>
+        </div>
+        <ng-template #notPrized>
+          <span class="spn-nonprized-tag">Non Prized</span>
+          <div class="ps-sub">{{ (enrollmentInfo || []).length }} chits · none prized yet</div>
+        </ng-template>
+      </div>
+      <div class="col-md-3 mt-auto customer-insights">
+        <div class="customer-remarks">
+          <strong>Remarks</strong><br>{{remarks}}
+        </div>
+        <div class="customer-score" *ngIf="displayScore" [ngClass]="scoreGradeClass(displayScore.grade)" [title]="displayScore.manual ? 'Manual score set by admin' : 'Customer score from all enrollments'">
+          <strong>{{displayScore.score}}</strong>
+          <span>{{displayScore.grade}}</span>
+          <small *ngIf="displayScore.manual" class="score-manual">Manual</small>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-success ml-2 no-print" *ngIf="isAdminUser && custid" (click)="openScoreEdit()" title="Edit score (admin only)"><i class="fa fa-pencil"></i></button>
       </div>
  <!--      <div class="col-md-3 mt-auto">
           <label class="switch">
@@ -65,6 +85,33 @@
             </label>
       </div> -->
 
+    </div>
+    <div class="score-edit-box no-print" *ngIf="scoreEditOpen">
+      <b>Edit customer score (admin only)</b>
+      <div class="d-flex flex-wrap align-items-end mt-2" style="gap:10px">
+        <div><label>Score (0 - 1000)</label><input type="number" min="0" max="1000" class="form-control" [(ngModel)]="scoreEditValue" [ngModelOptions]="{standalone: true}" /></div>
+        <div style="flex:1;min-width:240px"><label>Remarks *</label><input class="form-control" [(ngModel)]="scoreEditRemarks" [ngModelOptions]="{standalone: true}" placeholder="Why is the score being changed?" /></div>
+        <button type="button" class="btn btn-success" (click)="saveScoreOverride()">Save</button>
+        <button type="button" class="btn btn-outline-secondary" *ngIf="scoreOverride" (click)="saveScoreOverride(true)">Reset to system score</button>
+        <button type="button" class="btn btn-light" (click)="scoreEditOpen=false">Cancel</button>
+      </div>
+      <table class="table table-sm mt-2 mb-0" *ngIf="scoreLogs.length">
+        <thead><tr><th>Date</th><th>Old</th><th>New</th><th>Remarks</th><th>By</th></tr></thead>
+        <tbody><tr *ngFor="let l of scoreLogs"><td>{{ l.created_at }}</td><td>{{ l.old_score }}</td><td>{{ l.new_score === null ? 'System' : l.new_score }}</td><td>{{ l.remarks }}</td><td>{{ l.updated_by_name }}</td></tr></tbody>
+      </table>
+    </div>
+    <div class="customer-score-note" *ngIf="scoreOverride">
+      Manual score {{ scoreOverride.score }} set by admin: “{{ scoreOverride.remarks }}”. System score {{ paymentScore ? paymentScore.score : '-' }}.
+    </div>
+    <div class="customer-score-note" *ngIf="paymentScore">
+      Score uses all {{ scoreEnrollmentCount }} enrollment{{ scoreEnrollmentCount === 1 ? '' : 's' }}.
+      Paid {{ paymentScore.paid | number:'1.2-2' }}
+      · Pending {{ paymentScore.pending | number:'1.2-2' }}
+      · Pending penalty {{ paymentScore.pendingPenalty }}
+      · Late installments {{ paymentScore.lateInstallments }}
+      · Late days counted {{ paymentScore.countedLateDays }}
+      · Late penalty {{ paymentScore.latePenalty }}
+      · <a [routerLink]="['/admin-panel/customer-score-rules']">How this is calculated</a>
     </div>
 
     <!-- tabs -->
@@ -431,10 +478,10 @@
         <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
           <div class="stmt-toolbar no-print">
             <div class="form-group mb-0">
-              <label>Select Commitment Enrollment</label>
+              <label>Select Chit Enrollment</label>
               <select id="accountEnrollSelect" class="form-control" (change)="enrollChg($event)">
                 <option value="">Select Enrollment</option>
-                <option *ngFor="let data of enrolList" [value]="data.id">{{ data | slabAr:'enrol' }}</option>
+                <option *ngFor="let data of enrolList" [value]="data.id" [style.color]="isEnrolPrized(data.id) ? '#DC2626' : '#15803D'">{{ data | slabAr:'enrol' }}{{ isEnrolPrized(data.id) ? ' — SPN Prized' : '' }}</option>
               </select>
             </div>
             <button type="button" (click)="onAccountPdf()" class="btn btn-success" [disabled]="hideEnrolmentDetails">
@@ -447,7 +494,7 @@
               <div class="stmt-head">
                 <div class="stmt-head-left">
                   <h2>Account Information</h2>
-                  <p>Commitment Chit — Month-wise Ledger</p>
+                  <p>Chit — Month-wise Ledger</p>
                 </div>
                 <div class="stmt-head-right">
                   <img [src]="companyLogo" alt="Logo" onerror="this.style.display='none'" />
@@ -458,7 +505,7 @@
                 <div class="stmt-customer-grid">
                   <div><span>Customer</span><strong>{{name}} ({{customer_code}})</strong></div>
                   <div><span>Branch</span><strong>{{branchName}}</strong></div>
-                  <div><span>Slab Name</span><strong>{{accountSlabName || '-'}}</strong></div>
+                  <div><span>Slab Name</span><strong [style.color]="accountPrized ? '#DC2626' : '#15803D'">{{accountSlabName || '-'}} <span [class]="accountPrized ? 'spn-prized-tag sm' : 'spn-nonprized-tag sm'">{{ accountPrized ? 'SPN Prized' : 'Non Prized' }}</span></strong></div>
                   <div><span>Mobile</span><strong>{{MobileNo}}</strong></div>
                 </div>
               </div>
@@ -720,7 +767,7 @@
         <div class="tab-pane fade" id="profilestatement" role="tabpanel" aria-labelledby="profile-statement-tab">
         <div class="stmt-toolbar no-print">
           <div class="form-group mb-0">
-            <label>Select Commitment Enrollment</label>
+            <label>Select Chit Enrollment</label>
             <select class="form-control" (change)="enrollstatementChg($event)">
               <option value="">Select Enrollment</option>
               <option *ngFor="let data of enrolList" [value]="data.id">{{ data | slabAr:'enrol' }}</option>
@@ -729,7 +776,7 @@
           <button type="button" (click)="onpdfcustomerstatement()" class="btn btn-success" [disabled]="hideEnrolment2Details">
             <i class="fa fa-file-pdf-o"></i> Download PDF
           </button>
-          <button type="button" (click)="exportAsXLSX()" class="btn btn-info" [disabled]="hideEnrolment2Details">
+          <button type="button" (click)="exportAsXLSX()" class="btn btn-success" [disabled]="hideEnrolment2Details">
             <i class="fa fa-file-excel-o"></i> Export Excel
           </button>
         </div>
@@ -739,7 +786,7 @@
             <div class="stmt-head">
               <div class="stmt-head-left">
                 <h2>Customer Statement</h2>
-                <p>Commitment Chit — Account Summary</p>
+                <p>Chit — Account Summary</p>
               </div>
               <div class="stmt-head-right">
                 <img [src]="logo || companyLogo" alt="Logo" onerror="this.style.display='none'" />

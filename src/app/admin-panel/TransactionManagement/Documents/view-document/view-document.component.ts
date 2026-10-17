@@ -22,13 +22,16 @@ export class ViewDocumentComponent implements OnInit {
   dataList: any;
   showloader: boolean;
   TableHidden:boolean = true;
-  ViewDocumentInfo: ViewData[]=[];
+  ViewDocumentInfo: any = {};
   BranchInfo: ViewData[]=[];
   CustomerInfo: ViewData[]=[];
   GroupInfo: ViewData[]=[];
   CollectedEmpInfo: ViewData[]=[];
   DocumentInfo: any;
   AssetInfo: any;
+  ChitInfo: any[] = [];
+  verifyRemarks = '';
+  verifying = false;
   hideDocuments: boolean=true;
   hideAssets: boolean=true;
   GuarantorInfo: any;
@@ -85,6 +88,7 @@ export class ViewDocumentComponent implements OnInit {
       this.viewDocument.get('tenant_id').setValue('');
     }
     this.viewDocument.get('branch_id').setValue('');
+    this.viewDocument.get('verification_status').setValue('');
     this.allItems = [];
     this.pager = {};
     this.pagedItems = [];
@@ -120,9 +124,9 @@ export class ViewDocumentComponent implements OnInit {
   filterChg(filterText) {  
     if (filterText!='') {
       this.allItems =  this.dataList.filter(item => {
-        const filter = ['branch_name','customer_code','name','mobile_no'];
+        const filter = ['branch_name','customer_code','customer_name','mobile_no','group_name'];
         return filter.some(
-          key => item[key].toLowerCase().indexOf(filterText.toLowerCase()) !== -1
+          key => String(item[key] || '').toLowerCase().indexOf(filterText.toLowerCase()) !== -1
         )
       }); 
     }
@@ -224,12 +228,15 @@ export class ViewDocumentComponent implements OnInit {
       }
       return;
     } 
-    let cond = {
+    let cond: any = {
       "conditions[tenant_id]" : this.viewDocument.get('tenant_id').value,
-      "conditions[branch_id]" : this.viewDocument.get('branch_id').value
+      "verification_status" : this.viewDocument.get('verification_status').value
+    }
+    if (this.viewDocument.get('branch_id').value) {
+      cond["conditions[branch_id]"] = this.viewDocument.get('branch_id').value;
     }
     this.userservice.getData(cond, "get-documents", "POST").subscribe((response: any) => {
-      this.SubmitbuttonName = "Submit";
+      this.SubmitbuttonName = "Filter";
       try {
         if (response.status == 'Success') {
           this.dataList = response.data
@@ -255,7 +262,8 @@ export class ViewDocumentComponent implements OnInit {
   ngOnInit() {
     this.viewDocument = this.formBuilder.group({
       tenant_id: ['', Validators.required],
-      branch_id: ['', Validators.required],
+      branch_id: [''],
+      verification_status: [''],
     });
     let tenant_id = localStorage.getItem('tenant_id');
     if(tenant_id) {
@@ -290,9 +298,46 @@ export class ViewDocumentComponent implements OnInit {
     }); */
   } 
 
+  verify(status: number) {
+    const doc = this.ViewDocumentInfo;
+    if (!doc || !doc['id']) {
+      return;
+    }
+    const remarks = status === 2 ? prompt('Reason for rejection') : (this.verifyRemarks || '');
+    if (status === 2 && !remarks) {
+      return;
+    }
+    this.verifying = true;
+    this.userservice.getData({
+      id: doc['id'],
+      verification_status: status,
+      remarks: remarks,
+      verified_by: localStorage.getItem('logged_employee_id')
+    }, 'verify-document', 'JSON').subscribe((res: any) => {
+      this.verifying = false;
+      if (res && res.status === 'Success') {
+        doc['verification_status'] = status;
+        doc['verification_label'] = status === 1 ? 'Approved' : 'Rejected';
+        doc['verification_remarks'] = remarks;
+        const row = (this.dataList || []).find((r) => r.id === doc['id']);
+        if (row) {
+          row.verification_status = status;
+          row.verification_label = doc['verification_label'];
+        }
+        this.appService.showAlert('KYC Verification', res.msg, 'success');
+      } else {
+        this.appService.showAlert('KYC Verification', (res && res.msg) || 'Unable to update', 'error');
+      }
+    }, () => {
+      this.verifying = false;
+    });
+  }
+
   open(content, options = {}, recordId=0 ) {
     this.hideDocuments = true;
     this.hideAssets = true;
+    this.verifyRemarks = '';
+    this.ChitInfo = [];
     let cond = {
       "conditions[id]" : recordId 
     }
@@ -307,6 +352,7 @@ export class ViewDocumentComponent implements OnInit {
           this.CollectedEmpInfo = response.data[0].collected_emp_info;
           this.DocumentInfo = response.data[0].document_info;
           this.AssetInfo = response.data[0].asset_info;
+          this.ChitInfo = response.data[0].chit_info || [];
           if(response.data[0].document_info.length>0) {
             this.hideDocuments = false;
           }

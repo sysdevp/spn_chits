@@ -11,7 +11,21 @@ import { PagerService } from '../../../../Services/pager.service';
   
   selector: 'app-view-customer',
   templateUrl: './view-customer.component.html',
-  styles: []
+  styles: [`
+    .cust-filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; background: #f4fbf7; border: 1px solid #e3f3ea; border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+    .cust-field { flex: 1 1 160px; }
+    .cust-field label { display: block; font-size: 12px; color: #5c6b80; font-weight: 700; margin-bottom: 6px; }
+    .cust-field input, .cust-field select { width: 100%; height: 40px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 0 12px; background: #fff; }
+    .cust-btn { height: 40px; border-radius: 10px; padding: 0 14px; font-weight: 700; border: 0; cursor: pointer; }
+    .cust-btn.green { background: #18A957; color: #fff; }
+    .cust-btn.white { background: #fff; color: #10233f; border: 1px solid #d7e2ea; }
+    .cust-photo { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid #E9FFF3; }
+    .cust-photo.empty { display: inline-flex; align-items: center; justify-content: center; background: #EDF6FF; color: #1687E8; font-weight: 800; }
+    .cust-pill { background: #E9FFF3; color: #0d7a45; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 700; }
+    .cust-pill.off { background: #FFF0F4; color: #c2185b; }
+    .cust-view { display: inline-flex; align-items: center; gap: 6px; background: #18A957; color: #fff !important; border-radius: 999px; padding: 6px 12px; font-weight: 700; font-size: 12px; text-decoration: none; }
+    .cust-view i { color: #fff !important; background: transparent !important; width: auto !important; height: auto !important; }
+  `]
 })
 
 export class ViewCustomerComponent implements OnInit {
@@ -114,6 +128,8 @@ export class ViewCustomerComponent implements OnInit {
 
   resetCustomer() { 
     this.submitted = false;
+    this.customerSearch = '';
+    this.customerStatus = '';
     //this.viewCustomer.get('tenant_id').setValue('');
     let tenant_id = localStorage.getItem('tenant_id');
     if(!tenant_id) {
@@ -173,22 +189,26 @@ export class ViewCustomerComponent implements OnInit {
     this.setPage(this.pager.currentPage);
   }
 
-  filterChg(filterText) {  
-    if (filterText!='') {
-      this.allItems =  this.dataList.filter(item => {
-        const filter = ['branch_name','customer_code','name','mobile_no'];
-        return filter.some(
-          key => item[key].toLowerCase().indexOf(filterText.toLowerCase()) !== -1
-        )
-      }); 
-    }
-    else {
-      this.allItems =  this.dataList;
-    }
+  filterChg(filterText) {
+    const text = (filterText || '').toLowerCase();
+    const status = this.customerStatus || '';
+    this.allItems = (this.dataList || []).filter(item => {
+      const matchesStatus = !status || (status === 'Active' ? Number(item.status) !== 0 : Number(item.status) === 0);
+      if (!matchesStatus) {
+        return false;
+      }
+      if (!text) {
+        return true;
+      }
+      const filter = ['branch_name', 'customer_code', 'name', 'mobile_no'];
+      return filter.some(key => String(item[key] || '').toLowerCase().indexOf(text) !== -1);
+    });
     this.setPage(1);
-    setTimeout(() => {
-      this.setPagerString();
-    },3000);
+    this.setPagerString();
+  }
+
+  applyCustomerFilters() {
+    this.filterChg(this.customerSearch || '');
   }
 
   sortBy(fldName) {  
@@ -283,7 +303,8 @@ export class ViewCustomerComponent implements OnInit {
 
     let cond = {
       "conditions[tenant_id]" : this.viewCustomer.get('tenant_id').value,
-      "conditions[branch_id]" : this.viewCustomer.get('branch_id').value
+      "conditions[branch_id]" : this.viewCustomer.get('branch_id').value,
+      "include_inactive": 1
     }
     
     this.userservice.getData(cond, "get-customers-view", "POST").subscribe((response: any) => {

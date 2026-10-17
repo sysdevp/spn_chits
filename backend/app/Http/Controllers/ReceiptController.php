@@ -97,6 +97,14 @@ class ReceiptController extends Controller
 		$transaction_bill = $request->transaction_bill ?? '';
 		$transaction_book = $request->transaction_book ?? '';
 		$neft_adjust_id = $request->neft_adjust_id ?? 0;
+        \App\Services\UtrScanService::ensureTimeColumn();
+        $utrCheck = \App\Services\UtrScanService::validateSubmission($request);
+        if ($utrCheck !== true) {
+            return response()->json(['status' => 'Error', 'msg' => $utrCheck], 200);
+        }
+        if (\App\Services\UtrScanService::paymentNeedsUtr($payment_type_id)) {
+            $transaction_no = \App\Services\UtrScanService::normalizeUtr($transaction_no);
+        }
 		
 
         $receipt_no_base = $this->generateReceiptNumber($tenant_id, $group_id);
@@ -137,6 +145,14 @@ class ReceiptController extends Controller
             $receipt->bank_name_id = (int) $bank_name_id;
             $receipt->branch_name = $branch_name;
             $receipt->transaction_no = $transaction_no;
+            if (\Schema::hasColumn('receipts', 'transaction_time')) {
+                $receipt->transaction_time = $request->transaction_time ?? null;
+            }
+            if (\Schema::hasColumn('receipts', 'utr_entry_mode')) {
+                $mode = strtolower(trim((string) ($request->utr_entry_mode ?: 'manual')));
+                $receipt->utr_entry_mode = $mode === 'scanned' ? 'scanned' : 'manual';
+            }
+            $receipt->transaction_bill = $transaction_bill;
             $receipt->cheque_date = (is_array($request->cheque_date) && isset($request->cheque_date['year']))
                 ? $this->formatDate($request->cheque_date)
                 : $cheque_date;
@@ -1453,6 +1469,13 @@ private function formatDate($dateArray)
 				$cond['group_id'] = $request->group_id; 
 				$cond1['group_id'] = $request->group_id; 
 			}
+            $schemeEnrolIds = null;
+            if (!empty($request->scheme_id)) {
+                $schemeEnrolIds = \App\Models\ChitDetail::where('scheme_id', $request->scheme_id)->pluck('id')->all();
+                if (empty($schemeEnrolIds)) {
+                    $schemeEnrolIds = [-1];
+                }
+            }
 			if(isset($request->customer_id)){
 				$cond['customer_id'] = $request->customer_id; 
 				$cond1['customer_id'] = $request->customer_id; 
@@ -1507,6 +1530,12 @@ private function formatDate($dateArray)
              
 			$receipts = Receipt::select("enrollment_id","bank_name_id","payment_type_id","customer_id","employee_id","group_id","branch_id","tenant_id","receipt_date","amount as received_amount","cheque_no","receipt_passbook_mode","accounts_date","cheque_date","cheque_clear_return_date","cheque_debit_to","ticket_no","receipt_no","cancel_dividend_amount","status")->Where($cond)->Where('group_id','!=','0')->whereBetween('receipt_date',[$start_date,$end_date])->groupBy('receipt_no')->union($advance_rcpts)->orderBy('receipt_date')->get();	
 			}
+
+            if (is_array($schemeEnrolIds)) {
+                $receipts = collect($receipts)->filter(function ($receipt) use ($schemeEnrolIds) {
+                    return in_array((int) $receipt->enrollment_id, $schemeEnrolIds, true);
+                })->values();
+            }
 			
 			// print_r($receipts);exit;
             $i=1;  
@@ -1589,6 +1618,13 @@ private function formatDate($dateArray)
 				$receipt->penalty_amount = $penalty_amount;
 				$total_received_amount = $total_paid + $penalty_amount;
 				$receipt->total_received_amount = $total_received_amount;
+				$receipt->location_name = isset($receipt->location_name) ? $receipt->location_name : '';
+				$receipt->map_url = (!empty($receipt->latitude) && !empty($receipt->longitude))
+					? ('https://maps.google.com/maps?q=' . $receipt->latitude . ',' . $receipt->longitude . '&z=16&output=embed')
+					: '';
+				$receipt->maps_link = (!empty($receipt->latitude) && !empty($receipt->longitude))
+					? ('https://www.google.com/maps?q=' . $receipt->latitude . ',' . $receipt->longitude)
+					: '';
 				$receipt->receipt_passbook_mode = $receipt->receipt_passbook_mode;
 				$receipt->other_branch_info = [];
 				$receipt->other_branch_name = '-';
@@ -5610,6 +5646,28 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 					$receipts = Receipt::Where($cond)->Where('group_id','0')->whereBetween('receipt_date',[$start_date,$end_date])->get();
 				}
 			}
+
+			$customerStatusMap = [];
+			if (isset($receipts) && count($receipts) > 0) {
+				$enrollIds = collect($receipts)->pluck('enrollment_id')->filter()->unique()->values()->all();
+				if (!empty($enrollIds)) {
+					$paidByEnroll = DB::table('receipts')->whereIn('enrollment_id', $enrollIds)->where('status', 1)
+						->groupBy('enrollment_id')->selectRaw('enrollment_id, SUM(received_amount) as paid')->pluck('paid', 'enrollment_id');
+					$dueByEnroll = DB::table('chit_details as cd')->leftJoin('schemes as s', 's.id', '=', 'cd.scheme_id')
+						->whereIn('cd.id', $enrollIds)->pluck('s.monthly_due', 'cd.id');
+					foreach ($enrollIds as $eid) {
+						$due = (float) ($dueByEnroll[$eid] ?? 0);
+						$paid = (float) ($paidByEnroll[$eid] ?? 0);
+						$customerStatusMap[$eid] = ($due > 0 && $paid >= $due) ? 'Old' : 'New';
+					}
+				}
+				$wantStatus = strtolower((string) $request->customer_status);
+				if ($wantStatus === 'old' || $wantStatus === 'new') {
+					$receipts = collect($receipts)->filter(function ($r) use ($customerStatusMap, $wantStatus) {
+						return strtolower($customerStatusMap[$r->enrollment_id] ?? 'New') === $wantStatus;
+					})->values();
+				}
+			}
 			
 
             $i=1;  
@@ -5631,7 +5689,8 @@ private function getDebitAccountHeadId($payment_type_id, $bank_id = null)
 				$receipt->branch_name = isset($receipt->branch_det->branch_name) ? ($receipt->branch_det->branch_name) : [];
 				$receipt->slabName = \App\Models\ChitDetail::formatSlabWithArNo(isset($receipt->enrollment_det->slab_due_det->slab_name) ? ($receipt->enrollment_det->slab_due_det->slab_name) : '', $receipt->enrollment_det->ar_no ?? null) ?: '-';
 				$receipt->ar_no = $receipt->enrollment_det->ar_no ?? null;
-				$receipt->employee_name = isset($receipt->employee_det->first_name) ? ($receipt->employee_det->first_name) : '-';
+				$receipt->customer_status = $customerStatusMap[$receipt->enrollment_id] ?? 'New';
+  				$receipt->employee_name = isset($receipt->employee_det->first_name) ? ($receipt->employee_det->first_name) : '-';
 				$receipt->customer_name = $receipt->customer_det->name . ' / ' . $receipt->customer_det->customer_code;
 				$receipt->enrollment_branch_name = isset($receipt->enroll_branch) ? ($receipt->enroll_branch) : [];	
 				
@@ -9133,13 +9192,16 @@ $receipt->bonus_amount= 0;
             if(isset($request->branch_id) && (int)$request->branch_id > 0){
                 $query->where('branch_id', (int)$request->branch_id);
             }
+            $dateCol = \Schema::hasColumn('cash_settlements', 'settlement_date')
+                ? 'settlement_date'
+                : 'date';
             if(($start_date=='') && ($end_date!='')) {
-                $query->where('settlement_date', '<=', date('Y-m-d',strtotime($end_date)));
+                $query->where($dateCol, '<=', date('Y-m-d',strtotime($end_date)));
             } else if(($start_date!='') || ($end_date!='')) {
                 if(($start_date!='') && ($end_date=='')) {
                     $end_date = date('Y-m-d');
                 }
-                $query->whereBetween('settlement_date',[$start_date,$end_date]);
+                $query->whereBetween($dateCol,[$start_date,$end_date]);
             }
 
             // approval_status: ''/all = all, 0 = non-approved, 1 = approved
@@ -9152,7 +9214,7 @@ $receipt->bonus_amount= 0;
                 $query->where('is_approved', (int) $request->approval_status);
             }
 
-            $cash_settlements = $query->orderBy('settlement_date', 'desc')->orderBy('id', 'desc')->get();
+            $cash_settlements = $query->orderBy($dateCol, 'desc')->orderBy('id', 'desc')->get();
     		
 			
                 $tot_settlement_amount = 0;   
@@ -9179,8 +9241,11 @@ $receipt->bonus_amount= 0;
                     $cash_settlement->is_approved = $isApproved;
                     $cash_settlement->approval_status_name = $isApproved === 1 ? 'Approved' : 'Non-Approved';
                     $cash_settlement->approval_remarks = $cash_settlement->approval_remarks ?? '';
-                    if (!empty($cash_settlement->settlement_date) && $cash_settlement->settlement_date != '0000-00-00') {
-                        $cash_settlement->settlement_date = date('d-m-Y', strtotime($cash_settlement->settlement_date));
+                    $rawDate = $cash_settlement->settlement_date ?? ($cash_settlement->date ?? null);
+                    if (!empty($rawDate) && $rawDate != '0000-00-00') {
+                        $cash_settlement->settlement_date = date('d-m-Y', strtotime($rawDate));
+                    } else {
+                        $cash_settlement->settlement_date = '';
                     }
                     $tot_settlement_amount += (float) $cash_settlement->received_amount;
                     $i++;
@@ -9219,13 +9284,22 @@ $receipt->bonus_amount= 0;
             1 => 'amt_1',
         ];
         $parts = [];
+        $calcTotal = 0;
         foreach ($denoms as $face => $col) {
             $cnt = (int) ($cash_settlement->$col ?? 0);
             if ($cnt > 0) {
-                $parts[] = $cnt . ' x Rs.' . $face . ' = ' . ($cnt * $face);
+                $lineTotal = $cnt * $face;
+                $parts[] = $cnt . ' x Rs.' . $face . ' = ' . $lineTotal;
+                $calcTotal += $lineTotal;
             }
         }
-        return !empty($parts) ? implode(', ', $parts) : '-';
+        if (!empty($parts)) {
+            return implode(', ', $parts) . ' | Total: Rs.' . $calcTotal;
+        }
+        $received = (float) ($cash_settlement->received_amount ?? $cash_settlement->total_amount ?? 0);
+        return $received > 0
+            ? ('No denomination breakdown (Received: Rs.' . number_format($received, 2) . ')')
+            : '-';
     }
 	
 	public function getDailyCollection(Request $request)
@@ -9559,6 +9633,82 @@ Public function list_before_enrol_receipts_customer(Request $request)
             $response['msg'] = \Lang::get('api.global_error');
             return response()->json($response, 401);
     	}
+    }
+
+    public function utr_receipt_report(Request $request)
+    {
+        try {
+            \App\Services\UtrScanService::ensureTimeColumn();
+            $query = Receipt::query()
+                ->whereNotNull('transaction_no')
+                ->where('transaction_no', '!=', '')
+                ->where('transaction_no', '!=', '0');
+            if (!empty($request->tenant_id)) {
+                $query->where('tenant_id', $request->tenant_id);
+            }
+            if (!empty($request->branch_id) && (int) $request->branch_id !== 0) {
+                $query->where('branch_id', $request->branch_id);
+            }
+            if (!empty($request->from_date)) {
+                $query->whereDate('receipt_date', '>=', $request->from_date);
+            }
+            if (!empty($request->to_date)) {
+                $query->whereDate('receipt_date', '<=', $request->to_date);
+            }
+            if (!empty($request->utr)) {
+                $query->where('transaction_no', 'like', '%' . \App\Services\UtrScanService::normalizeUtr($request->utr) . '%');
+            }
+            $entryMode = strtolower(trim((string) ($request->entry_mode ?: 'all')));
+            if (in_array($entryMode, array('scanned', 'manual'), true) && \Schema::hasColumn('receipts', 'utr_entry_mode')) {
+                $query->where('utr_entry_mode', $entryMode);
+            }
+            $rows = $query->orderBy('receipt_date', 'desc')->orderBy('id', 'desc')->limit(1000)->get();
+            $data = [];
+            $serial = 1;
+            $total = 0;
+            $base = rtrim((string) (env('APP_URL') ?: url('/')), '/');
+            foreach ($rows as $row) {
+                $customer = Customer::find($row->customer_id);
+                $employee = Employee::find($row->employee_id);
+                $branch = Branch::find($row->branch_id);
+                $amount = (float) ($row->received_amount ?: $row->amount ?: 0);
+                $total += $amount;
+                $photo = '';
+                if (!empty($row->transaction_bill)) {
+                    $bill = str_replace('\\', '/', (string) $row->transaction_bill);
+                    if (preg_match('#^https?://#i', $bill)) {
+                        $photo = $bill;
+                    } else {
+                        $photo = $base . '/storage/app/uploads/receipt_photos/' . ltrim(basename($bill), '/');
+                    }
+                }
+                $data[] = [
+                    'sno' => $serial++,
+                    'receipt_no' => $row->receipt_no,
+                    'receipt_date' => $row->receipt_date,
+                    'customer_name' => $customer ? trim(($customer->name ?? '') . ' ' . ($customer->last_name ?? '')) : '',
+                    'mobile' => $customer->mobile_no ?? '',
+                    'employee_name' => $employee ? trim(($employee->first_name ?? '') . ' ' . ($employee->last_name ?? '')) : '',
+                    'branch_name' => $branch->branch_name ?? '',
+                    'amount' => $amount,
+                    'utr' => $row->transaction_no,
+                    'txn_date' => $row->transaction_date,
+                    'txn_time' => $row->transaction_time ?? '',
+                    'entry_mode' => ($row->utr_entry_mode ?? '') === 'manual' ? 'manual' : 'scanned',
+                    'entry_mode_label' => ($row->utr_entry_mode ?? '') === 'manual' ? 'Manually typed' : 'Camera / screenshot',
+                    'screenshot' => $photo,
+                    'status' => ((int) $row->status === 0) ? 'Cancelled' : 'Active',
+                ];
+            }
+            return response()->json([
+                'status' => 'Success',
+                'msg' => '',
+                'data' => $data,
+                'totals' => ['amount' => $total, 'count' => count($data)],
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'Error', 'msg' => $e->getMessage()], 200);
+        }
     }
 
 }

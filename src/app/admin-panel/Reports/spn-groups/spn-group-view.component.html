@@ -1,0 +1,120 @@
+<div class="sg-hero">
+  <h1>Group View</h1>
+  <p>All SPN chit groups with members, vacancies and Due No. Click a group to see its members.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div>
+      <label>Branch</label>
+      <select [(ngModel)]="filters.branch_id" (change)="load()">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Scheme</label>
+      <select [(ngModel)]="filters.scheme_id" (change)="schemeChg()">
+        <option value="">All Schemes</option>
+        <option *ngFor="let s of schemeList" [value]="s.id">{{ s.scheme_format || (s.chit_value + ' / ' + s.no_of_months + ' M') }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Slab</label>
+      <select [(ngModel)]="filters.slab_id" (change)="load()">
+        <option value="">All Slabs</option>
+        <option *ngFor="let s of slabList" [value]="s.id">{{ s.slab_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Due No</label>
+      <input type="number" min="1" [(ngModel)]="filters.due_no" (change)="load()" placeholder="Any" />
+    </div>
+    <div>
+      <label>Group Name</label>
+      <input [(ngModel)]="filters.search" (keyup.enter)="load()" placeholder="Search" />
+    </div>
+    <div>
+      <label>Month</label>
+      <select [(ngModel)]="filters.month" (change)="load()">
+        <option value="">All months</option>
+        <option *ngFor="let m of monthNames; let i = index" [value]="i + 1">{{ m }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Year</label>
+      <select [(ngModel)]="filters.year" (change)="load()">
+        <option value="">All years</option>
+        <option *ngFor="let y of years" [value]="y">{{ y }}</option>
+      </select>
+    </div>
+    <div style="display: flex; gap: 8px;">
+      <button type="button" class="sg-btn" (click)="load()">{{ loading ? 'Loading...' : 'Filter' }}</button>
+      <button type="button" class="sg-btn light" (click)="reset()">Reset</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">Excel</button>
+    </div>
+  </div>
+</div>
+
+<div class="sg-kpis">
+  <div class="sg-kpi"><span>Groups</span><b>{{ groups.length }}</b></div>
+  <div class="sg-kpi" style="background:#EDF6FF"><span>Members</span><b>{{ totalMembers() }}</b></div>
+  <div class="sg-kpi" style="background:#FFF8E8"><span>Vacant seats</span><b>{{ totalVacant() }}</b></div>
+  <div class="sg-kpi" style="background:#F4EEFF"><span>Full groups</span><b>{{ fullGroups() }}</b></div>
+</div>
+
+<div class="sg-card" style="overflow-x: auto;">
+  <table class="sg-table">
+    <thead>
+      <tr><th>S.No</th><th>Group</th><th>Branch</th><th>Scheme</th><th>Slab</th><th>Due No</th><th>Members</th><th>Fill</th><th>Mode</th><th>Created</th><th></th></tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let g of groups">
+        <tr [class.on]="active && active.id === g.id" (click)="open(g)" style="cursor: pointer;">
+          <td>{{ g.sno }}</td>
+          <td><b>{{ g.group_name }}</b></td>
+          <td>{{ g.branch_name }}</td>
+          <td>{{ g.scheme_name }}</td>
+          <td>{{ g.slab_name }}</td>
+          <td>{{ g.due_no }}</td>
+          <td>{{ g.members }} / {{ g.max_members }}</td>
+          <td><div class="sg-bar"><i [style.width.%]="fillPct(g)"></i></div></td>
+          <td>{{ g.formation_mode }}</td>
+          <td>{{ g.created_at }}</td>
+          <td><button type="button" class="sg-btn danger sm" (click)="$event.stopPropagation(); deleteGroup(g)">Delete</button></td>
+        </tr>
+        <tr *ngIf="active && active.id === g.id">
+          <td colspan="11" style="background: #fbfefc;">
+            <table class="sg-table">
+              <thead><tr><th>#</th><th>Customer</th><th>Mobile</th><th>Branch</th><th>Slab</th><th>AR No</th><th>Due No</th><th>Paid</th><th>Pending</th><th></th></tr></thead>
+              <tbody>
+                <tr *ngFor="let m of members">
+                  <td>{{ m.sno }}</td>
+                  <td>{{ m.customer_name }} <small class="text-muted" *ngIf="m.customer_code">({{ m.customer_code }})</small></td>
+                  <td>{{ m.mobile }}</td>
+                  <td>{{ m.branch_name }}</td>
+                  <td>{{ m.slab_name }}</td>
+                  <td>{{ m.ar_no }}</td>
+                  <td>{{ m.due_no }}</td>
+                  <td>₹{{ m.paid | number:'1.0-0' }}</td>
+                  <td>₹{{ m.pending | number:'1.0-0' }}</td>
+                  <td><button type="button" class="sg-btn light sm" (click)="removeMember(m)">Remove</button></td>
+                </tr>
+                <tr *ngIf="!members.length"><td colspan="10" class="sg-empty">No members.</td></tr>
+              </tbody>
+            </table>
+            <div *ngIf="g.vacant > 0" style="display: flex; gap: 8px; margin-top: 10px; align-items: center;">
+              <select [(ngModel)]="addId" style="height: 34px; border-radius: 8px; border: 1px solid #d7e3f0; min-width: 320px;">
+                <option value="">Add a free chit on Due {{ g.due_no }} ({{ freeChits.length }} available)</option>
+                <option *ngFor="let f of freeChits" [value]="f.enrollment_id">{{ f.customer_name }} · {{ f.branch_name }} · AR {{ f.ar_no }}</option>
+              </select>
+              <button type="button" class="sg-btn sm" (click)="addMember()" [disabled]="!addId">Add Member</button>
+              <span class="sg-note">{{ g.vacant }} seat(s) left</span>
+            </div>
+          </td>
+        </tr>
+      </ng-container>
+      <tr *ngIf="!groups.length && !loading"><td colspan="11" class="sg-empty">No groups yet. Create one from SPN New Group.</td></tr>
+    </tbody>
+  </table>
+</div>

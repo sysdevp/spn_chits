@@ -14,6 +14,7 @@ import html2canvas from 'html2canvas';
 export class SchemeWisePayablePendingReportComponent implements OnInit {
   @ViewChild('tenant_id') focus1: ElementRef;
   @ViewChild('branch_id') focus2: ElementRef;
+  @ViewChild('due_no') focus3: ElementRef;
 
   filterForm: FormGroup;
   dataList: any[] = [];
@@ -101,6 +102,7 @@ export class SchemeWisePayablePendingReportComponent implements OnInit {
       this.branchList = [];
     }
     this.filterForm.get('branch_id').setValue('');
+    this.filterForm.get('due_no').setValue('');
     this.filterForm.get('scheme_id').setValue('');
     this.schemeList = [];
   }
@@ -115,6 +117,8 @@ export class SchemeWisePayablePendingReportComponent implements OnInit {
         this.focus1.nativeElement.focus();
       } else if (this.f.branch_id.errors) {
         this.focus2.nativeElement.focus();
+      } else if (this.f.due_no.errors && this.focus3) {
+        this.focus3.nativeElement.focus();
       }
       return;
     }
@@ -145,6 +149,7 @@ export class SchemeWisePayablePendingReportComponent implements OnInit {
             { headerName: 'Paid', field: 'paid', resizable: true },
             { headerName: 'Overall Pending', field: 'overall_pending', resizable: true },
             { headerName: 'Running Month', field: 'running_month', resizable: true },
+            { headerName: 'Due No', field: 'due_no', resizable: true },
             { headerName: 'Collection Agent', field: 'collection_agent', resizable: true },
             { headerName: 'Area', field: 'collection_area', resizable: true },
           ];
@@ -234,6 +239,7 @@ export class SchemeWisePayablePendingReportComponent implements OnInit {
     this.filterForm = this.formBuilder.group({
       tenant_id: ['', Validators.required],
       branch_id: ['', Validators.required],
+      due_no: ['', Validators.required],
       scheme_id: [''],
     });
     const tenant_id = localStorage.getItem('tenant_id');

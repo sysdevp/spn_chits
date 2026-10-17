@@ -188,6 +188,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('update-slab-due-status','SlabDueController@update_status');
 	Route::post('get-slab-type','SlabDueController@get_slab_type');
 	Route::post('get-customer-slab-type','SlabDueController@get_customer_slab_type');
+	Route::post('get-cancel-customer-slab-type','SlabDueController@get_customer_slab_type');
 	//Slab Payments
 	Route::post('store-slab-payment','SlabPaymentController@store_slab_payment');
 	Route::post('update-slab-payment','SlabPaymentController@update_slab_payment');
@@ -256,9 +257,12 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	//Customers
 	Route::post('store-customer','CustomerController@store_customer');
 	Route::post('update-customer','CustomerController@update_customer');
+	Route::post('store-customer-branch-transfer','CustomerController@store_customer_branch_transfer');
+	Route::post('list-customer-branch-transfers','CustomerController@list_customer_branch_transfers');
 	Route::post('get-unenrollment-report','CustomerController@get_unenrollment_report');
 	Route::post('get-customers','CustomerController@get_customers');
 	Route::post('list-customers','CustomerController@list_customers');
+	Route::post('customer-birthday-report','CustomerController@customer_birthday_report');
 	Route::post('delete-customer','CustomerController@delete_customer');
 	Route::post('update-customer-status','CustomerController@update_status');
 	Route::post('customer-file-upload','CustomerController@fileUpload');
@@ -274,6 +278,8 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('update-nominee','CustomerController@update_nominee');
 	Route::post('delete-nominee','CustomerController@delete_nominee');
 	Route::post('interest-customer-report','CustomerController@interest_customer_report');
+	Route::post('list-customer-app-leads','CustomerAppController@list_leads');
+	Route::post('update-customer-app-lead-status','CustomerAppController@update_lead_status');
 	Route::post('get-guarantor-details','CustomerController@get_guarantor_details');
 	Route::post('commitment-customer-wise-outstanding','CustomerController@commitment_customer_wise_outstanding');
 	
@@ -298,6 +304,15 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('get-cancel-enrolled-customers','ChitDetailController@get_cancel_enroll_customers');
 	Route::post('get-cancel-customer-details','ChitDetailController@get_cancel_customers_payment_details');
 	Route::post('store-payment-refund','ChitDetailController@store_payment_refund');
+	Route::post('list-refund-requests','ChitDetailController@list_refund_requests');
+	Route::post('approve-refund-request','ChitDetailController@approve_refund_request');
+	Route::post('store-document-preparation','DocumentPreparationController@store_request');
+	Route::post('list-document-preparations','DocumentPreparationController@list_requests');
+	Route::post('branch-fill-document-preparation','DocumentPreparationController@branch_fill');
+	Route::post('submit-document-payout','DocumentPreparationController@submit_payout_documents');
+	Route::post('md-decide-document-preparation','DocumentPreparationController@md_decide');
+	Route::post('document-preparation-history','DocumentPreparationController@customer_history');
+	Route::post('upload-document-preparation','DocumentPreparationController@upload_file');
 	Route::post('delete-customer-commitment-enrollment','ChitDetailController@delete_commitment_enrol');
 	Route::post('get-payment-refund','ChitDetailController@get_payment_refund');
 	Route::post('payment-refund-report','ChitDetailController@payment_refund_report');
@@ -374,6 +389,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('store-document','DocumentController@store_document');
 	Route::post('update-document','DocumentController@update_document');
 	Route::post('get-documents','DocumentController@get_documents');
+	Route::post('verify-document','DocumentController@verify_document');
 	Route::post('list-documents','DocumentController@list_documents');
 	Route::post('delete-document','DocumentController@delete_document');
 	Route::post('asset-document-upload','DocumentController@assetFileUpload');
@@ -431,6 +447,15 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('list-leave-requests','EmployeeLeaveRequestController@list_leave_requests');
 	Route::post('decide-leave-request','EmployeeLeaveRequestController@decide_leave_request');
 	Route::post('list-punch-attendances','EmployeeLeaveRequestController@list_punch_attendances');
+	Route::post('list-live-employee-locations','MobileApiController@list_live_employee_locations');
+	Route::post('mobile-list-live-employee-locations','MobileApiController@list_live_employee_locations');
+	Route::post('mobile-update-live-location','MobileApiController@mobile_update_live_location');
+	Route::post('employee-travel-map','MobileApiController@employee_travel_map');
+	Route::post('mobile-employee-travel-map','MobileApiController@employee_travel_map');
+	Route::post('approve-outside-punch','MobileApiController@approve_outside_punch');
+	Route::post('reject-outside-punch','MobileApiController@reject_outside_punch');
+	Route::post('mobile-approve-outside-punch','MobileApiController@approve_outside_punch');
+	Route::post('mobile-reject-outside-punch','MobileApiController@reject_outside_punch');
 	// Employee Tasks & Targets
 	Route::post('store-employee-task','EmployeeTaskTargetController@store_employee_task');
 	Route::post('list-employee-tasks','EmployeeTaskTargetController@list_employee_tasks');
@@ -450,6 +475,9 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('list-skill-assessments','EmployeeExtendedController@list_skill_assessments');
 	Route::post('delete-skill-assessment','EmployeeExtendedController@delete_skill_assessment');
 	Route::post('get-employee-performance','EmployeeExtendedController@get_employee_performance');
+	Route::post('store-employee-advance','EmployeeExtendedController@store_employee_loan_advance');
+	Route::post('list-employee-advances','EmployeeExtendedController@list_employee_loan_advances');
+	Route::post('decide-employee-advance','EmployeeExtendedController@decide_employee_loan_advance');
 	Route::post('list-performance-scores','EmployeeExtendedController@list_performance_scores');
 	Route::post('store-work-plan','EmployeeExtendedController@store_work_plan');
 	Route::post('list-work-plans','EmployeeExtendedController@list_work_plans');
@@ -673,6 +701,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('payment-release-report','PaymentController@get_payment_report');
 	Route::post('payment-pending-report','PaymentController@get_payment_pending_report');
 	Route::post('enrol-report','ChitDetailController@get_enrol_report');
+	Route::post('commitment-enrol-report','ChitDetailController@get_enrol_report');
 	Route::post('customer-wise-outstanding-report','CustomerController@get_customer_wise_outstanding');
 	Route::post('enrollment-wise-details','ChitDetailController@customer_wise_enrol_details');
 	Route::post('group-wise-outstanding-report','ChitDetailController@get_group_wise_outstanding');
@@ -683,6 +712,8 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('dashboard','ReceiptController@get_dashboard');
 	Route::post('get-chit-dashboard-bundle','ChitDashboardController@get_bundle');
 	Route::post('historical-performance-report','BusinessAnalyticsReportController@historical_performance');
+	Route::post('collection-prediction-report','CollectionPredictionReportController@collection_prediction_report');
+	Route::post('employee-performance-ai','CollectionPredictionReportController@employee_performance_ai');
 	Route::post('business-forecast-report','BusinessAnalyticsReportController@forecast');
 	Route::post('dashboard-bid','BiddingDetailController@get_bid_dashborad');
 	Route::post('auction-minutes-report','BiddingDetailController@get_auction_minutes_report');
@@ -747,6 +778,7 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('store-temp-commitment-chit','ChitDetailController@store_temp_commitment_chit');
 	Route::post('list-commitment-eligibility-pending','ChitDetailController@list_commitment_eligibility_pending');
 	Route::post('approve-commitment-eligibility','ChitDetailController@approve_commitment_eligibility');
+	Route::post('commitment-promise-report','ChitDetailController@commitment_promise_report');
 	Route::post('get-commitment-reports','ChitDetailController@get_commitment_reports');
 	Route::post('cheque-return-payment-refund','ChitDetailController@cheque_return_payment_refund');
 	Route::post('cheque-cleared-payment-refund','ChitDetailController@cheque_cleared_payment_refund');
@@ -845,6 +877,8 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('get-device-counts','MobileApiController@get_device_counts');
 	Route::post('get-devices','MobileApiController@get_devices');
 	Route::post('add-cash-settlement','MobileApiController@mobile_cash_settlement');
+	Route::post('mobile-list-cash-settlements','MobileApiController@mobile_list_cash_settlements');
+	Route::post('mobile-approve-cash-settlement','MobileApiController@mobile_approve_cash_settlement');
 	Route::post('list-followup-status-types','MobileApiController@mobile_followup_status_list');
 	Route::post('mobile-list-states','MobileApiController@mobile_state_lists');
 	Route::post('mobile-list-districts','MobileApiController@mobile_district_lists');
@@ -863,6 +897,8 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('update-lead-detail','MobileApiController@update_lead_detail');
 	Route::post('entrollment-wise-group-details','MobileApiController@entrollment_wise_group_details');
 	Route::post('mobile-add-receipt','MobileApiController@mobile_add_receipt');
+	Route::post('extract-utr-screenshot','MobileApiController@extract_utr_screenshot');
+	Route::post('utr-receipt-report','ReceiptController@utr_receipt_report');
 	Route::post('mobile-list-payment-types','MobileApiController@mobile_list_payment_types');
 	Route::post('get-collection-agent-dashboard','MobileApiController@get_collection_agent_dashboard');
 	Route::post('get-business-agent-dashboard','MobileApiController@get_business_agent_dashboard');
@@ -920,6 +956,13 @@ Route::group(['middleware' => ['tenantCheck','auth.jwt']], function () {
 	Route::post('customer-profile','MobileApiController@customer_profile');
 	Route::post('customer-due-details','MobileApiController@customer_due_details'); 
 	Route::post('customer-app-version','MobileApiController@customer_app_version'); 
+	Route::post('customer-app-store-lead','CustomerAppController@store_lead');
+	Route::post('customer-app-my-referrals','CustomerAppController@my_referrals');
+	Route::post('customer-full-profile','CustomerAppController@full_profile');
+	Route::post('customer-upload-profile-documents','CustomerAppController@upload_profile_documents');
+	Route::post('customer-update-profile','CustomerAppController@update_profile');
+	Route::post('customer-support-contacts','CustomerAppController@support_contacts');
+	Route::post('customer-branches','CustomerAppController@branches');
 	
 
 
@@ -959,9 +1002,69 @@ Route::get('mobile-get-collection-area-customers-new','MobileApiController@mobil
 	Route::post('mobile-app-version','MobileApiController@mobile_app_version'); 
 	Route::post('mobile-punch-attendance','MobileApiController@mobile_punch_attendance');
 	Route::post('mobile-get-today-attendance','MobileApiController@mobile_get_today_attendance');
+	Route::post('mobile-update-live-location','MobileApiController@mobile_update_live_location');
+	Route::post('mobile-list-live-employee-locations','MobileApiController@list_live_employee_locations');
+	Route::post('mobile-punch-photo-upload','MobileApiController@mobile_punch_photo_upload');
+	Route::post('mobile-employee-travel-map','MobileApiController@employee_travel_map');
+	Route::post('employee-travel-map','MobileApiController@employee_travel_map');
+	Route::post('mobile-approve-outside-punch','MobileApiController@approve_outside_punch');
+	Route::post('mobile-reject-outside-punch','MobileApiController@reject_outside_punch');
 	Route::post('mobile-get-collection-area-customers-new','MobileApiController@mobile_get_collection_area_customers_new');
 	Route::post('mobile-submit-leave-request','EmployeeLeaveRequestController@store_leave_request');
 	Route::post('mobile-list-leave-requests','EmployeeLeaveRequestController@list_leave_requests');
+	Route::post('store-office-ticket','OfficeTicketController@store_ticket');
+	Route::post('list-office-tickets','OfficeTicketController@list_tickets');
+	Route::post('get-office-ticket','OfficeTicketController@get_ticket');
+	Route::post('office-ticket-message','OfficeTicketController@add_message');
+	Route::post('update-office-ticket','OfficeTicketController@update_status');
+	Route::post('office-ticket-feedback','OfficeTicketController@submit_feedback');
+	Route::post('office-ticket-report','OfficeTicketController@ticket_report');
+	Route::post('upload-office-ticket','OfficeTicketController@upload_file');
+	Route::post('store-payment-desk','PaymentDeskController@store_request');
+	Route::post('list-payment-desk','PaymentDeskController@list_requests');
+	Route::post('field-submit-payment-desk','PaymentDeskController@field_submit');
+	Route::post('approve-payment-desk','PaymentDeskController@admin_decide');
+	Route::post('upload-payment-desk','PaymentDeskController@upload_file');
+	Route::post('submit-draft-payment-desk','PaymentDeskController@submit_draft');
+	Route::post('mobile-field-payment-tasks','PaymentDeskController@mobile_field_tasks');
+	Route::post('spn-auction-report','PrizedShowGroupController@auction_report');
+	Route::post('customer-payment-request','PaymentDeskController@store_request');
+	Route::post('list-prized-show-scheme-customers','PrizedShowGroupController@list_scheme_customers');
+	Route::post('store-prized-show-group','PrizedShowGroupController@store_group');
+	Route::post('update-prized-show-group','PrizedShowGroupController@update_group');
+	Route::post('list-prized-show-groups','PrizedShowGroupController@list_groups');
+	Route::post('get-prized-show-group','PrizedShowGroupController@get_group');
+	Route::post('mark-prized-show-month','PrizedShowGroupController@mark_month');
+	Route::post('clear-prized-show-month','PrizedShowGroupController@clear_month');
+	Route::post('delete-prized-show-group','PrizedShowGroupController@delete_group');
+	Route::post('prized-show-report','PrizedShowGroupController@report');
+	Route::post('section-hub-summary','SectionHubController@summary');
+	Route::post('customer-category-report','CustomerCategoryReportController@report');
+	Route::post('get-customer-score-override','CustomerCategoryReportController@get_score_override');
+	Route::post('save-customer-score-override','CustomerCategoryReportController@save_score_override');
+	Route::post('completed-not-paid-report','SpnAccountsReportController@completed_not_paid');
+	Route::post('header-notifications','SpnAccountsReportController@header_notifications');
+	Route::post('cash-box-report','SpnAccountsReportController@cash_box');
+	Route::post('cash-box-request','SpnAccountsReportController@cash_box_request');
+	Route::post('cash-box-decide','SpnAccountsReportController@cash_box_decide');
+	Route::post('my-day-report','SpnAccountsReportController@my_day');
+	Route::post('branch-income-expense-report','SpnAccountsReportController@branch_income_expense');
+	Route::post('petty-cash-branch-report','SpnAccountsReportController@petty_cash_branch_report');
+	Route::post('day-allowance-report','SpnAccountsReportController@day_allowance_report');
+	Route::post('mark-day-allowance-paid','SpnAccountsReportController@mark_day_allowance_paid');
+	Route::post('save-day-allowance-rate','SpnAccountsReportController@save_day_allowance_rate');
+	Route::post('petrol-allowances','SpnAccountsReportController@petrol_allowances');
+	Route::post('save-petrol-allowance','SpnAccountsReportController@save_petrol_allowance');
+	Route::post('delete-petrol-allowance','SpnAccountsReportController@delete_petrol_allowance');
+	Route::post('spn-group-available','SpnGroupController@available');
+	Route::post('spn-group-store','SpnGroupController@store');
+	Route::post('spn-group-list','SpnGroupController@list');
+	Route::post('spn-group-members','SpnGroupController@members');
+	Route::post('spn-group-add-member','SpnGroupController@add_member');
+	Route::post('spn-group-remove-member','SpnGroupController@remove_member');
+	Route::post('spn-group-delete','SpnGroupController@delete');
+	Route::post('branch-overview','SectionHubController@branch_overview');
+	Route::post('branch-overview-detail','SectionHubController@branch_detail');
 	Route::post('mobile-decide-leave-request','EmployeeLeaveRequestController@decide_leave_request');
 	Route::post('mobile-list-punch-attendances','EmployeeLeaveRequestController@list_punch_attendances');
 	Route::post('mobile-store-employee-task','EmployeeTaskTargetController@store_employee_task');
@@ -985,4 +1088,11 @@ Route::get('mobile-get-collection-area-customers-new','MobileApiController@mobil
 	Route::post('mobile-register-push-token','MobileApiController@mobile_register_push_token');
 	Route::post('mobile-receipt-file-upload','MobileApiController@mobile_receipt_file_upload');
 	Route::post('mobile-list-banks','MobileApiController@mobile_list_banks');
+	Route::post('mobile-get-employee-profile','MobileApiController@mobile_get_employee_profile');
+	Route::post('mobile-get-work-snapshot','EmployeeExtendedController@get_work_snapshot');
+	Route::post('mobile-get-employee-incentives','EmployeeExtendedController@get_employee_incentives');
+	Route::post('mobile-get-daily-report','EmployeeExtendedController@get_daily_report');
+	Route::post('mobile-store-employee-loan-advance','EmployeeExtendedController@store_employee_loan_advance');
+	Route::post('mobile-list-employee-loan-advances','EmployeeExtendedController@list_employee_loan_advances');
+	Route::post('mobile-decide-employee-loan-advance','EmployeeExtendedController@decide_employee_loan_advance');
 	Route::post('get-unenrollment-mobile','CustomerController@get_unenrollment_mobile'); 

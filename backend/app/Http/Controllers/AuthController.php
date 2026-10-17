@@ -162,12 +162,12 @@ class AuthController extends Controller
  
   public function logout(Request $request)
   {
-    session_destroy();
-    $this->validate($request, [
-      'token' => 'required'
-    ]);
+    $token = $request->token ?: $request->bearerToken();
+    if (!$token) {
+      return response()->json(['success' => true, 'message' => \Lang::get('api.success_user_logged_out')]);
+    }
     try {
-      JWTAuth::invalidate($request->token);
+      JWTAuth::invalidate($token);
       return response()->json([
         'success' => true,
         'message' => \Lang::get('api.success_user_logged_out')

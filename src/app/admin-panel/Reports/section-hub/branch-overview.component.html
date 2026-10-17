@@ -1,0 +1,139 @@
+<div class="hub">
+
+  <!-- Banner -->
+  <div class="hub-hero">
+    <div class="hub-hero-ico"><i class="fa fa-university"></i></div>
+    <div class="hub-hero-copy">
+      <h1>SPN <span>BRANCH OVERVIEW</span></h1>
+      <p class="hub-tag" *ngIf="!detail">All branches • All sections • One view</p>
+      <p class="hub-tag" *ngIf="detail && detail.branch">
+        {{ detail.branch.branch_name }} <span *ngIf="detail.branch.branch_code">({{ detail.branch.branch_code }})</span>
+        <span *ngIf="detail.branch.address_line_1"> • {{ detail.branch.address_line_1 }}</span>
+        <span *ngIf="detail.branch.mobile_no || detail.branch.phone_no"> • <i class="fa fa-phone"></i> {{ detail.branch.mobile_no || detail.branch.phone_no }}</span>
+      </p>
+      <div class="hub-chips">
+        <span>Chit</span><span>Customers</span><span>Collection</span><span>Payment</span><span>HR</span><span>CRM</span><span>Security</span>
+      </div>
+    </div>
+    <div class="hub-hero-side">
+      <div class="hub-slogan"><div>Every Branch</div><div>One Family</div><div>Greater SPN</div></div>
+      <div class="hub-filter">
+        <select [ngModel]="branchId" (ngModelChange)="changeBranch($event)">
+          <option value="">All Branches</option>
+          <option *ngFor="let b of branches" [value]="b.id">{{ b.branch_name }}</option>
+        </select>
+        <button type="button" (click)="branchId ? loadDetail() : loadList()" [disabled]="loading"><i class="fa fa-refresh" [class.fa-spin]="loading"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hub-error" *ngIf="error">{{ error }}</div>
+  <div class="hub-loading" *ngIf="loading && !branches.length && !detail"><i class="fa fa-spinner fa-spin"></i> Loading...</div>
+
+  <!-- ================= ALL BRANCHES ================= -->
+  <ng-container *ngIf="!branchId">
+    <div class="hub-kpis" *ngIf="branches.length">
+      <div class="hub-kpi t-green"><div class="hub-kpi-ico"><i class="fa fa-university"></i></div>
+        <div><div class="hub-kpi-label">Branches</div><div class="hub-kpi-value">{{ branches.length }}</div><div class="hub-kpi-sub">Offices</div></div></div>
+      <div class="hub-kpi t-blue"><div class="hub-kpi-ico"><i class="fa fa-users"></i></div>
+        <div><div class="hub-kpi-label">Customers</div><div class="hub-kpi-value">{{ fmt(totals.customers, false) }}</div><div class="hub-kpi-sub">All profiles</div></div></div>
+      <div class="hub-kpi t-amber"><div class="hub-kpi-ico"><i class="fa fa-link"></i></div>
+        <div><div class="hub-kpi-label">Active Chits</div><div class="hub-kpi-value">{{ fmt(totals.active, false) }}</div><div class="hub-kpi-sub">Running enrolments</div></div></div>
+      <div class="hub-kpi t-purple"><div class="hub-kpi-ico"><i class="fa fa-inr"></i></div>
+        <div><div class="hub-kpi-label">Chit Value</div><div class="hub-kpi-value">{{ short(totals.chit_value) }}</div><div class="hub-kpi-sub">Active enrolments</div></div></div>
+      <div class="hub-kpi t-red"><div class="hub-kpi-ico"><i class="fa fa-money"></i></div>
+        <div><div class="hub-kpi-label">Collection (6 Months)</div><div class="hub-kpi-value">{{ short(totals.six_collection) }}</div><div class="hub-kpi-sub">This month {{ short(totals.month_collection) }}</div></div></div>
+      <div class="hub-kpi t-cyan"><div class="hub-kpi-ico"><i class="fa fa-id-badge"></i></div>
+        <div><div class="hub-kpi-label">Employees</div><div class="hub-kpi-value">{{ fmt(totals.employees, false) }}</div><div class="hub-kpi-sub">Active staff</div></div></div>
+    </div>
+
+    <div class="bo-toolbar" *ngIf="branches.length">
+      <h3><i class="fa fa-university"></i> Branch Wise Overview</h3>
+      <input type="text" [(ngModel)]="search" placeholder="Search branch...">
+    </div>
+
+    <div class="bo-grid">
+      <div class="bo-card" *ngFor="let b of filtered; let i = index" [ngClass]="tones[i % tones.length]" (click)="openBranch(b.id)">
+        <div class="bo-card-top">
+          <div class="bo-building"><i class="fa fa-building"></i></div>
+          <div>
+            <div class="bo-code">{{ b.branch_code || 'BR' }}</div>
+            <div class="bo-name">{{ b.branch_name }}</div>
+          </div>
+        </div>
+        <div class="bo-stats">
+          <div><span>Customers</span><b>{{ fmt(b.customers, false) }}</b></div>
+          <div><span>Active Chits</span><b class="ok">{{ fmt(b.active, false) }}</b></div>
+          <div><span>Eligible</span><b>{{ fmt(b.eligible, false) }}</b></div>
+          <div><span>Closed</span><b class="bad">{{ fmt(b.closed, false) }}</b></div>
+          <div><span>Chit Value</span><b>{{ short(b.chit_value) }}</b></div>
+          <div><span>Employees</span><b>{{ fmt(b.employees, false) }}</b></div>
+          <div><span>This Month</span><b class="ok">{{ short(b.month_collection) }}</b></div>
+          <div><span>6 Months</span><b class="ok">{{ short(b.six_collection) }}</b></div>
+        </div>
+        <div class="bo-share">
+          <div class="bo-share-bar"><i [style.width.%]="share(b.six_collection, 'six_collection')"></i></div>
+          <small>{{ share(b.six_collection, 'six_collection') }}% of company collection</small>
+        </div>
+        <div class="bo-open">Open Branch View <i class="fa fa-arrow-right"></i></div>
+      </div>
+    </div>
+
+    <div class="hub-panel hub-table" *ngIf="branches.length">
+      <div class="hub-panel-head"><h3>Branch Comparison</h3></div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr><th>S.No</th><th>Branch</th><th>Customers</th><th>Active</th><th>Eligible</th><th>Closed</th><th>Chit Value</th><th>This Month</th><th>6 Months</th><th>Payments</th><th>Leads</th><th>Employees</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of branches; let i = index">
+              <td>{{ i + 1 }}</td>
+              <td><b>{{ b.branch_name }}</b> <small *ngIf="b.branch_code">({{ b.branch_code }})</small></td>
+              <td>{{ fmt(b.customers, false) }}</td>
+              <td>{{ fmt(b.active, false) }}</td>
+              <td>{{ fmt(b.eligible, false) }}</td>
+              <td>{{ fmt(b.closed, false) }}</td>
+              <td class="hub-money">{{ fmt(b.chit_value, true) }}</td>
+              <td class="hub-money">{{ fmt(b.month_collection, true) }}</td>
+              <td class="hub-money">{{ fmt(b.six_collection, true) }}</td>
+              <td class="hub-money">{{ fmt(b.payments, true) }}</td>
+              <td>{{ fmt(b.leads, false) }}</td>
+              <td>{{ fmt(b.employees, false) }}</td>
+              <td><a class="hub-viewall" [routerLink]="['/admin-panel/branch-overview', b.id]">View <i class="fa fa-arrow-right"></i></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ================= ONE BRANCH ================= -->
+  <ng-container *ngIf="branchId">
+    <div class="bo-back">
+      <a routerLink="/admin-panel/branch-overview"><i class="fa fa-arrow-left"></i> All Branches</a>
+    </div>
+    <div class="hub-loading" *ngIf="loading"><i class="fa fa-spinner fa-spin"></i> Loading branch...</div>
+
+    <div class="bo-sections" *ngIf="detail && !loading">
+      <div class="hub-panel bo-section" *ngFor="let s of sections; let i = index" [ngClass]="tones[i % tones.length]">
+        <div class="hub-panel-head">
+          <h3><span class="bo-sec-ico"><i [ngClass]="s.cfg.icon"></i></span> SPN {{ s.cfg.word }}</h3>
+          <a class="hub-viewall" [routerLink]="sectionLink(s.key)" [queryParams]="{ branch: branchId }">Open <i class="fa fa-arrow-right"></i></a>
+        </div>
+        <div class="bo-sec-kpis">
+          <div *ngFor="let k of detail.sections[s.key]?.kpis">
+            <span>{{ k.label }}</span>
+            <b>{{ k.money ? short(k.value) : fmt(k.value, false) }}</b>
+          </div>
+        </div>
+        <div class="bo-spark" *ngIf="detail.sections[s.key]?.trend?.rows?.length">
+          <small>{{ detail.sections[s.key].trend.title }}</small>
+          <div class="bo-spark-bars">
+            <i *ngFor="let r of detail.sections[s.key].trend.rows" [style.height]="sparkHeight(r.value, detail.sections[s.key].trend.rows)" [title]="r.label + ': ' + r.value"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

@@ -1,0 +1,80 @@
+<div class="sg-hero">
+  <h1>SPN Auction Report</h1>
+  <p>Who is prized and for how much, scheme-wise, by month or auction date. Branch logins see only their branch.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Scheme</label>
+      <select [(ngModel)]="f.scheme_id">
+        <option value="">All Schemes</option>
+        <option *ngFor="let s of schemeList" [value]="s.id">{{ schemeLabel(s) }}</option>
+      </select>
+    </div>
+    <div><label>Month</label><input type="month" [(ngModel)]="f.month" /></div>
+    <div><label>Or auction date</label><input type="date" [(ngModel)]="f.auction_date" /></div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" (click)="load()">Search</button>
+      <button type="button" class="sg-btn light" (click)="reset()">Reset</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-kpis">
+  <div class="sr-kpi"><span>Prized customers</span><b>{{ totals.prized || 0 }}</b></div>
+  <div class="sr-kpi blue"><span>Prized amount</span><b>{{ money(totals.amount) }}</b></div>
+  <div class="sr-kpi gold"><span>Paid out</span><b>{{ money(totals.paid) }}</b></div>
+  <div class="sr-kpi rose"><span>Yet to pay</span><b>{{ money((totals.amount || 0) - (totals.paid || 0)) }}</b></div>
+  <div class="sr-kpi violet"><span>Schemes</span><b>{{ schemes.length }}</b></div>
+</div>
+
+<div class="sr-split">
+  <div class="sg-card">
+    <div class="sr-title">Scheme-wise prized</div>
+    <div class="sr-bar" *ngFor="let s of schemes">
+      <span>{{ s.scheme }} ({{ s.prized }})</span>
+      <div class="sr-track"><div class="sr-fill" [style.width.%]="width(s.amount, schemes, 'amount')"></div></div>
+      <b class="sr-right">{{ money(s.amount) }}</b>
+    </div>
+    <div class="sg-empty" *ngIf="!schemes.length">No prized customers for this filter.</div>
+  </div>
+  <div class="sg-card">
+    <div class="sr-title">Month-wise prized</div>
+    <div class="sr-bar" *ngFor="let m of months">
+      <span>{{ m.month }} ({{ m.prized }})</span>
+      <div class="sr-track"><div class="sr-fill" [style.width.%]="width(m.amount, months, 'amount')"></div></div>
+      <b class="sr-right">{{ money(m.amount) }}</b>
+    </div>
+    <div class="sg-empty" *ngIf="!months.length">-</div>
+  </div>
+</div>
+
+<div class="sg-card" style="overflow:auto">
+  <div class="sg-empty" *ngIf="loading">Loading...</div>
+  <table class="sg-table" *ngIf="!loading && rows.length">
+    <thead><tr><th>Auction date</th><th>Scheme</th><th>Group</th><th>Month</th><th>Customer</th><th>Branch</th><th>AR No</th><th class="sr-right">Prized amount</th><th>Payout</th></tr></thead>
+    <tbody>
+      <tr *ngFor="let r of rows">
+        <td>{{ r.auction_date || '-' }}</td>
+        <td>{{ r.scheme }}</td>
+        <td>{{ r.group_name }}</td>
+        <td>{{ r.month_no }}</td>
+        <td>{{ r.customer_name }} <span class="spn-prized-tag sm">SPN Prized</span><div class="sg-note" style="margin:0">{{ r.customer_code }} · {{ r.mobile }}</div></td>
+        <td>{{ r.branch_name }}</td>
+        <td>{{ r.ar_no }}</td>
+        <td class="sr-right">{{ money(r.prized_amount) }}</td>
+        <td [class.sr-green]="r.payment_status === 'approved'">{{ payLabel(r.payment_status) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !rows.length">No prized customers for this month / auction date. Mark prized months in Prized Show Group.</div>
+</div>

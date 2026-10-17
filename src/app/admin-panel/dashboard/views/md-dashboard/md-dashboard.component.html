@@ -1,433 +1,327 @@
-<div class="ad-wrap">
-
-  <!-- Row 1: KPI cards -->
-  <div class="ad-kpi-row">
-    <div class="ad-kpi" (click)="openDetail.emit('collections')" style="cursor:pointer">
-      <div class="ad-kpi-ico g"><i class="fas fa-rupee-sign"></i></div>
-      <div class="ad-kpi-l">Total Collections</div>
-      <div class="ad-kpi-v">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
-      <div class="ad-kpi-trend muted">This month</div>
-    </div>
-    <div class="ad-kpi">
-      <div class="ad-kpi-ico b"><i class="fas fa-bullseye"></i></div>
-      <div class="ad-kpi-l">Total Target</div>
-      <div class="ad-kpi-v">—</div>
-      <div class="ad-prog"><span [style.width]="achievedPct() + '%'"></span></div>
-      <div class="ad-kpi-trend muted">{{ achievedPct() }}% bid release (proxy)</div>
-    </div>
-    <div class="ad-kpi" (click)="openDetail.emit('subscribers')" style="cursor:pointer">
-      <div class="ad-kpi-ico p"><i class="fas fa-users"></i></div>
-      <div class="ad-kpi-l">Total Customers</div>
-      <div class="ad-kpi-v">{{ n(s().customers) | number:'1.0-0' }}</div>
-      <div class="ad-kpi-trend muted">Active subscribers</div>
-    </div>
-    <div class="ad-kpi">
-      <div class="ad-kpi-ico t"><i class="fas fa-briefcase"></i></div>
-      <div class="ad-kpi-l">Active Chit Groups</div>
-      <div class="ad-kpi-v">{{ n(s().running_groups) | number:'1.0-0' }}</div>
-      <div class="ad-kpi-trend muted">Running groups</div>
-    </div>
-    <div class="ad-kpi" (click)="openDetail.emit('followups')" style="cursor:pointer">
-      <div class="ad-kpi-ico y"><i class="fas fa-filter"></i></div>
-      <div class="ad-kpi-l">Total Leads</div>
-      <div class="ad-kpi-v">—</div>
-      <div class="ad-kpi-trend muted">Leads API pending</div>
-    </div>
-    <div class="ad-kpi">
-      <div class="ad-kpi-ico o"><i class="fas fa-clock"></i></div>
-      <div class="ad-kpi-l">Pending Collections</div>
-      <div class="ad-kpi-v">₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</div>
-      <div class="ad-kpi-trend muted">Bid pending release</div>
-    </div>
-    <div class="ad-kpi">
-      <div class="ad-kpi-ico r"><i class="fas fa-exclamation-triangle"></i></div>
-      <div class="ad-kpi-l">Overdue Collections</div>
-      <div class="ad-kpi-v">₹ {{ overdueTotal() | number:'1.0-0' }}</div>
-      <div class="ad-kpi-trend down">{{ outstanding().length }} members listed</div>
-    </div>
+<div class="hx">
+  <div class="hx-kpis">
+    <a class="hx-kpi green" [routerLink]="hub('today-collection')">
+      <div class="hx-ico g"><i class="fas fa-rupee-sign"></i></div>
+      <div class="hx-l">Today Collection</div>
+      <div class="hx-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
+      <div class="hx-s up">Month ₹ {{ n(s().current_month_collection) | number:'1.0-0' }} ({{ n(s().collection_target_percent) }}%)</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(0)" fill="rgba(24,169,87,.16)"></path>
+        <path [attr.d]="sparkLine(0)" fill="none" stroke="#18A957" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi blue" [routerLink]="hub('sales')">
+      <div class="hx-ico b"><i class="fas fa-bullseye"></i></div>
+      <div class="hx-l">Sales Target</div>
+      <div class="hx-v">₹ {{ n(s().sales_target || s().monthly_target) | number:'1.0-0' }}</div>
+      <div class="hx-s">{{ targetAchievedPct() }}% achieved</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(1)" fill="rgba(22,135,232,.14)"></path>
+        <path [attr.d]="sparkLine(1)" fill="none" stroke="#1687E8" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi violet" [routerLink]="hub('chit')">
+      <div class="hx-ico p"><i class="fas fa-users"></i></div>
+      <div class="hx-l">Total Customers</div>
+      <div class="hx-v">{{ n(s().customers) | number:'1.0-0' }}</div>
+      <div class="hx-s">{{ n(s().month_enrolled_customers) }} joined this month</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(2)" fill="rgba(122,63,242,.14)"></path>
+        <path [attr.d]="sparkLine(2)" fill="none" stroke="#7A3FF2" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi gold" [routerLink]="hub('today-enrollment')">
+      <div class="hx-ico y"><i class="fas fa-user-plus"></i></div>
+      <div class="hx-l">Today Enrolled</div>
+      <div class="hx-v">{{ n(s().today_enrolled_customers) | number:'1.0-0' }}</div>
+      <div class="hx-s">View full details</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(3)" fill="rgba(242,169,0,.16)"></path>
+        <path [attr.d]="sparkLine(3)" fill="none" stroke="#F2A900" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi rose" [routerLink]="hub('pending-collection')">
+      <div class="hx-ico r"><i class="fas fa-clock"></i></div>
+      <div class="hx-l">Pending Collections</div>
+      <div class="hx-v">₹ {{ n(s().month_pending_amount) | number:'1.0-0' }}</div>
+      <div class="hx-s">{{ n(s().month_pending_count) }} customers due this month</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(4)" fill="rgba(239,71,111,.12)"></path>
+        <path [attr.d]="sparkLine(4)" fill="none" stroke="#EF476F" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi red" [routerLink]="hub('overdue-collection')">
+      <div class="hx-ico d"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="hx-l">Overdue Collections</div>
+      <div class="hx-v">₹ {{ (n(s().overdue_amount) || overdueTotal()) | number:'1.0-0' }}</div>
+      <div class="hx-s">{{ n(s().overdue_count) || outstanding().length }} customers overdue</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(5)" fill="rgba(229,57,53,.12)"></path>
+        <path [attr.d]="sparkLine(5)" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
+    <a class="hx-kpi cyan" [routerLink]="hub('attendance')">
+      <div class="hx-ico c"><i class="fas fa-map-marker-alt"></i></div>
+      <div class="hx-l">Live Tracking</div>
+      <div class="hx-v">{{ n(s().live_employee_count) | number:'1.0-0' }}</div>
+      <div class="hx-s">{{ n(s().present_today) }} present / {{ n(s().absent_today) }} absent</div>
+      <svg class="hx-spark" viewBox="0 0 140 32" aria-hidden="true">
+        <path [attr.d]="sparkArea(6)" fill="rgba(21,159,211,.14)"></path>
+        <path [attr.d]="sparkLine(6)" fill="none" stroke="#159FD3" stroke-width="2" stroke-linecap="round"></path>
+      </svg>
+    </a>
   </div>
 
-  <!-- Row 2: Charts -->
-  <div class="row">
-    <div class="col-lg-5 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h ad-panel-h-flex">
-          <span>Collection Trend <small class="text-muted font-weight-normal">({{ barScope === 'today' ? 'Today' : 'This Month' }})</small></span>
-        </div>
-        <div class="rd-panel-b">
-          <div *ngIf="!hasBars()" class="rd-placeholder">
-            No receipts by payment mode for this company/branch this month.<br>
-            <small>Try All Branches, or check that receipts exist for the selected month.</small>
-          </div>
-          <ng-container *ngIf="hasBars()">
-            <svg class="ad-trend-svg" viewBox="0 0 320 160" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="mdTrendFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#22c55e" stop-opacity="0.35"/>
-                  <stop offset="100%" stop-color="#22c55e" stop-opacity="0.02"/>
-                </linearGradient>
-              </defs>
-              <polygon [attr.points]="trendArea" fill="url(#mdTrendFill)"></polygon>
-              <polyline [attr.points]="trendPoints" fill="none" stroke="#16a34a" stroke-width="2.5"
-                stroke-linejoin="round" stroke-linecap="round"></polyline>
-            </svg>
-            <div class="small text-muted mt-2">Built from payment-mode totals (live). Daily series API pending.</div>
-            <div class="mt-2" *ngFor="let label of barLabels; let i = index">
-              <div class="d-flex justify-content-between small mb-1">
-                <span>{{ label }}</span><strong>₹ {{ n(barData[i]) | number:'1.0-0' }}</strong>
-              </div>
-              <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="barWidth(i)"></div></div>
+  <div class="hx-leaders">
+    <div class="hx-board emp hx-click" [routerLink]="hub('top-performers')">
+      <img class="hx-art trophy" src="assets/img/spn-trophy.png" alt="">
+      <div class="hx-board-head">
+        <div class="hx-board-title">Top 3 Employees (Collection)</div>
+        <a class="hx-pill" [routerLink]="hub('top-performers')">Full Overview</a>
+      </div>
+      <div class="hx-lead" *ngFor="let e of topEmployees(); let i = index">
+        <div class="hx-medal" [ngClass]="i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze'">{{ i + 1 }}</div>
+        <img class="hx-photo" [src]="portrait(i)" alt="">
+        <div class="hx-lead-main">
+          <div class="hx-lead-line">
+            <div class="hx-lead-who">
+              <b>{{ e.name }}</b>
+              <small>{{ e.branch }}<span *ngIf="e.receipts"> · {{ e.receipts }} receipts</span></small>
             </div>
-          </ng-container>
+            <div class="hx-lead-amt">
+              ₹ {{ n(e.amount) | number:'1.0-0' }}
+              <small>{{ e.pct }}%</small>
+            </div>
+          </div>
+          <div class="hx-track"><span [style.width]="e.pct + '%'"></span></div>
         </div>
       </div>
+      <p class="hx-empty on-dark" *ngIf="!topEmployees().length">No employee collections in this scope yet.</p>
     </div>
 
-    <div class="col-lg-3 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h">Target vs Achievement</div>
-        <div class="rd-panel-b">
-          <div class="ad-vbars">
-            <div class="ad-vbar-col">
-              <div class="ad-vbar-amt">—</div>
-              <div class="ad-vbar" [style.height]="targetBarH()"></div>
-              <div class="ad-vbar-lbl">Target</div>
+    <div class="hx-board branch hx-click" [routerLink]="hub('top-performers')">
+      <img class="hx-art city" src="assets/img/spn-branch-city.png" alt="">
+      <div class="hx-board-head">
+        <div class="hx-board-title">Top 3 Branches (Collection)</div>
+        <a class="hx-pill" [routerLink]="hub('top-performers')">Full Overview</a>
+      </div>
+      <div class="hx-lead" *ngFor="let b of branchRows().slice(0, 3); let i = index">
+        <div class="hx-medal" [ngClass]="i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze'">{{ i + 1 }}</div>
+        <div class="hx-pin" [ngClass]="i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze'">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"></path></svg>
+        </div>
+        <div class="hx-lead-main">
+          <div class="hx-lead-line">
+            <div class="hx-lead-who">
+              <b>{{ b.branch_name }}</b>
             </div>
-            <div class="ad-vbar-col">
-              <div class="ad-vbar-amt">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
-              <div class="ad-vbar ach" [style.height]="achievedBarH()"></div>
-              <div class="ad-vbar-lbl">Achieved</div>
-            </div>
-          </div>
-          <div class="ad-gauge-wrap">
-            <div class="ad-gauge" [style.background]="gaugeSafe"></div>
-            <div class="ad-gauge-hole">
-              <div class="ad-gauge-pct">{{ achievedPct() }}%</div>
-              <div class="ad-gauge-sub">Released</div>
+            <div class="hx-lead-amt">
+              ₹ {{ n(b.amount) | number:'1.0-0' }}
+              <small>{{ b.target_pct || b.pct || 0 }}%</small>
             </div>
           </div>
-          <div class="small text-muted text-center mt-2">Gauge uses bid release mix until target API is available</div>
+          <div class="hx-track blue"><span [style.width]="(b.target_pct || b.pct || 0) + '%'"></span></div>
         </div>
       </div>
+      <p class="hx-empty on-dark" *ngIf="!branchRows().length">No branch collections this month.</p>
     </div>
 
-    <div class="col-lg-4 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h">Collection by Branch</div>
-        <div class="rd-panel-b">
-          <div class="row">
-            <div class="col-5">
-              <div class="ad-map-box">
-                <div>
-                  <i class="fas fa-map-marker-alt text-success mb-2 d-block" style="font-size:1.4rem"></i>
-                  Branch map<br><small>API pending</small>
-                </div>
-              </div>
-            </div>
-            <div class="col-7">
-              <div *ngIf="!branchRows().length" class="rd-placeholder mt-2 py-2" style="padding:0.75rem">
-                No branch collections this month
-              </div>
-              <div class="ad-branch-row" *ngFor="let b of branchRows().slice(0, 5)">
-                <div class="ad-branch-name">{{ b.branch_name }}</div>
-                <div class="flex-grow-1">
-                  <div class="rd-bar-track"><div class="rd-bar-fill" [style.width]="(b.pct || 0) + '%'"></div></div>
-                </div>
-                <div class="ad-branch-amt">₹ {{ n(b.amount) | number:'1.0-0' }}</div>
-              </div>
-              <div class="d-flex justify-content-between mt-2 small font-weight-bold">
-                <span>Total (month)</span>
-                <span>₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="hx-panel light target hx-click" [routerLink]="hub('sales')">
+      <div class="hx-ph">
+        <span class="hx-ph-title"><span class="hx-mini-ico"><i class="fas fa-bullseye"></i></span> Business Target</span>
+        <a [routerLink]="hub('sales')">View Details</a>
       </div>
-    </div>
-  </div>
-
-  <!-- Row 3: Mini metrics -->
-  <div class="ad-mini-row">
-    <div class="ad-mini">
-      <div class="ad-mini-l">Collections (Today)</div>
-      <div class="ad-mini-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">New Customers</div>
-      <div class="ad-mini-v">—</div>
-      <div class="ad-mini-t" style="color:#94a3b8">This month · API pending</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">New Leads</div>
-      <div class="ad-mini-v">—</div>
-      <div class="ad-mini-t" style="color:#94a3b8">This month · API pending</div>
-    </div>
-    <div class="ad-mini" (click)="openDetail.emit('followups')" style="cursor:pointer">
-      <div class="ad-mini-l">Follow-ups Pending</div>
-      <div class="ad-mini-v">{{ n(s().today_followup_count) | number:'1.0-0' }}</div>
-      <div class="ad-mini-t">Due today</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">Overdue Members</div>
-      <div class="ad-mini-v">{{ outstanding().length }}</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">Active Employees</div>
-      <div class="ad-mini-v">—</div>
-      <div class="ad-mini-t" style="color:#94a3b8">API pending</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">Auction Today</div>
-      <div class="ad-mini-v">{{ auctions().length }}</div>
-    </div>
-    <div class="ad-mini">
-      <div class="ad-mini-l">Payments Today</div>
-      <div class="ad-mini-v">₹ {{ n(s().today_payment_total) | number:'1.0-0' }}</div>
-    </div>
-  </div>
-
-  <!-- Row 4: Tables / overview -->
-  <div class="row">
-    <div class="col-lg-4 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h">Top Performing Branches <small class="text-muted font-weight-normal">(This Month)</small></div>
-        <div class="rd-panel-b table-responsive p-0">
-          <table class="rd-table mb-0">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Branch</th>
-                <th>Collection (₹)</th>
-                <th>Target</th>
-                <th>%</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngIf="!branchRows().length">
-                <td colspan="5" class="text-center text-muted py-4">No branch collections this month</td>
-              </tr>
-              <tr *ngFor="let b of branchRows()">
-                <td>{{ b.rank }}</td>
-                <td>{{ b.branch_name }}</td>
-                <td>{{ n(b.amount) | number:'1.0-0' }}</td>
-                <td>—</td>
-                <td>{{ b.pct }}%</td>
-              </tr>
-              <tr>
-                <td></td>
-                <td><strong>Total</strong></td>
-                <td><strong>{{ n(s().current_month_collection) | number:'1.0-0' }}</strong></td>
-                <td>—</td>
-                <td>—</td>
-              </tr>
-            </tbody>
-          </table>
+      <div class="hx-target-body">
+        <div class="hx-gauge-wrap">
+          <div class="hx-gauge" [style.background]="gaugeSafe"></div>
+          <div class="hx-gauge-hole">{{ targetAchievedPct() }}%<small>Achieved</small></div>
         </div>
-      </div>
-    </div>
-
-    <div class="col-lg-3 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h">Business Overview</div>
-        <div class="rd-panel-b text-center">
-          <div class="rd-donut-wrap mx-auto">
-            <div class="rd-donut" [style.background]="bizDonutSafe"></div>
-            <div class="rd-donut-hole d-flex flex-column align-items-center justify-content-center" style="font-size:0.7rem;color:#64748b;line-height:1.2">
-              <strong style="font-size:1.1rem;color:#0f172a">{{ totalGroups() || n(s().running_groups) }}</strong>
-              Total Groups
-            </div>
-          </div>
-          <div class="ad-biz-legend text-left small mt-2">
-            <div class="mb-1"><span style="background:#16a34a"></span> Active Chits — {{ n(s().running_groups) }}</div>
-            <div class="mb-1"><span style="background:#94a3b8"></span> Vacant — {{ n(s().vacant_groups) }}</div>
-            <div class="mb-1"><span style="background:#38bdf8"></span> Closed — —</div>
-            <div><span style="background:#cbd5e1"></span> Others — —</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-2 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h">Financial Overview</div>
-        <div class="rd-panel-b">
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico g"><i class="fas fa-rupee-sign"></i></span> Collections</div>
-            <strong>₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</strong>
-          </div>
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico b"><i class="fas fa-hand-holding-usd"></i></span> Disbursements</div>
-            <strong>₹ {{ n(s().today_payment_total) | number:'1.0-0' }}</strong>
-          </div>
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico t"><i class="fas fa-university"></i></span> Bank Balance</div>
-            <strong>—</strong>
-          </div>
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico y"><i class="fas fa-wallet"></i></span> Cash in Hand</div>
-            <strong>—</strong>
-          </div>
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico o"><i class="fas fa-clock"></i></span> Pending</div>
-            <strong>₹ {{ n(s().total_bid_pending) | number:'1.0-0' }}</strong>
-          </div>
-          <div class="ad-fin-row">
-            <div class="ad-fin-l"><span class="ad-fin-ico r"><i class="fas fa-exclamation"></i></span> Overdue</div>
-            <strong>₹ {{ overdueTotal() | number:'1.0-0' }}</strong>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-lg-3 mb-3">
-      <div class="rd-panel h-100">
-        <div class="rd-panel-h ad-panel-h-flex">
-          <span>Alerts &amp; Notifications</span>
-          <a class="ad-link" (click)="openDetail.emit('followups')">View All</a>
-        </div>
-        <div class="rd-panel-b">
-          <div class="ad-alert" *ngIf="outstanding().length">
-            <span class="ad-alert-dot red"></span>
-            <div>
-              <strong>High Overdue Members ({{ outstanding().length }})</strong>
-              <div class="text-muted small">₹ {{ overdueTotal() | number:'1.0-0' }} pending release</div>
-            </div>
-          </div>
-          <div class="ad-alert" *ngIf="n(s().today_followup_count)">
-            <span class="ad-alert-dot orange"></span>
-            <div>
-              <strong>Follow-ups Pending ({{ n(s().today_followup_count) }})</strong>
-              <div class="text-muted small">Due today</div>
-            </div>
-          </div>
-          <div class="ad-alert" *ngIf="auctions().length">
-            <span class="ad-alert-dot green"></span>
-            <div>
-              <strong>Auction Scheduled Today ({{ auctions().length }})</strong>
-              <div class="text-muted small">{{ auctions()[0]?.group_name || 'Groups ready' }}</div>
-            </div>
-          </div>
-          <div class="ad-alert">
-            <span class="ad-alert-dot blue"></span>
-            <div>
-              <strong>Bid Release Status ({{ achievedPct() }}%)</strong>
-              <div class="text-muted small">Released vs pending</div>
-            </div>
-          </div>
-          <div class="ad-alert" *ngIf="n(s().vacant_groups)">
-            <span class="ad-alert-dot orange"></span>
-            <div>
-              <strong>Vacant Groups ({{ n(s().vacant_groups) }})</strong>
-              <div class="text-muted small">Tickets still open</div>
-            </div>
-          </div>
-          <div *ngIf="!outstanding().length && !n(s().today_followup_count) && !auctions().length" class="rd-placeholder">
-            No active alerts
-          </div>
+        <div class="hx-target-copy">
+          <div class="hx-v">₹ {{ n(s().monthly_target_achieved || s().current_month_collection) | number:'1.0-0' }}</div>
+          <div class="hx-s">of ₹ {{ n(s().monthly_target || s().sales_target) | number:'1.0-0' }}</div>
+          <div class="hx-legend"><i class="g"></i> Achieved {{ targetAchievedPct() }}%</div>
+          <div class="hx-legend"><i class="wait"></i> Pending {{ pendingPct() }}%</div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Row 5: Sparkline cards -->
-  <div class="ad-spark-row">
-    <div class="ad-spark">
-      <div class="ad-spark-l">Collections (This Month)</div>
-      <div class="ad-spark-v">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
-      <div class="ad-spark-t muted" style="color:#94a3b8">Live</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline [attr.points]="sparkPoints" fill="none" stroke="#16a34a" stroke-width="2"></polyline>
+  <div class="hx-ops">
+    <a class="hx-op blue" [routerLink]="hub('attendance')">
+      <div class="hx-op-copy">
+        <div class="hx-op-ico"><i class="fas fa-user-friends"></i></div>
+        <div class="hx-l">Attendance Today</div>
+        <div class="hx-v">{{ n(s().present_today) }} <small class="hx-of">/ {{ n(s().active_employees) }}</small></div>
+        <div class="hx-dots"><i class="on"></i> Present {{ n(s().present_today) }} &nbsp;<i class="off"></i> Absent {{ n(s().absent_today) }}</div>
+        <div class="hx-s">On leave {{ n(s().leave_today) }} · Live {{ n(s().live_employee_count) }}</div>
+      </div>
+      <div class="hx-ring">
+        <div class="hx-gauge sm" [style.background]="attendSafe"></div>
+        <div class="hx-ring-hole">{{ attendancePct() }}%</div>
+      </div>
+    </a>
+    <a class="hx-op orange" [routerLink]="hub('birthdays')">
+      <div class="hx-op-copy">
+        <div class="hx-op-ico"><i class="fas fa-birthday-cake"></i></div>
+        <div class="hx-l">Employee Birthdays</div>
+        <div class="hx-v">{{ n(s().employee_birthday_today) }} <small class="hx-of">today</small></div>
+        <div class="hx-s">{{ birthdayNames() || 'No birthday today' }}</div>
+        <div class="hx-s link">{{ n(s().employee_birthday_month) }} this month →</div>
+      </div>
+      <svg class="hx-deco leaf" viewBox="0 0 90 90" aria-hidden="true">
+        <path fill="rgba(255,255,255,.35)" d="M46 10c14 16 30 22 30 40 0 18-14 30-30 32C30 80 16 68 16 50 16 32 32 26 46 10z"/>
+        <path fill="none" stroke="rgba(255,255,255,.7)" stroke-width="2" d="M46 78V28"/>
       </svg>
-    </div>
-    <div class="ad-spark">
-      <div class="ad-spark-l">Leads (This Month)</div>
-      <div class="ad-spark-v">—</div>
-      <div class="ad-spark-t" style="color:#94a3b8">API pending</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline points="0,28 20,24 40,26 60,18 80,20 100,14 120,16 140,10" fill="none" stroke="#94a3b8" stroke-width="2"></polyline>
+    </a>
+    <a class="hx-op purple" [routerLink]="hub('tasks-targets')">
+      <div class="hx-op-copy">
+        <div class="hx-op-ico"><i class="fas fa-clipboard-list"></i></div>
+        <div class="hx-l">Today's Tasks</div>
+        <div class="hx-v">{{ n(s().today_tasks_count) }}</div>
+        <div class="hx-s">{{ tasksDone() }} Completed | {{ tasksPending() }} Pending</div>
+      </div>
+      <svg class="hx-deco" viewBox="0 0 90 90" aria-hidden="true">
+        <path fill="rgba(255,255,255,.32)" d="M45 8l28 10v22c0 20-12 34-28 40C29 74 17 60 17 40V18L45 8z"/>
+        <path fill="none" stroke="#fff" stroke-width="3" d="M34 46l8 8 16-18"/>
       </svg>
-    </div>
-    <div class="ad-spark">
-      <div class="ad-spark-l">Customers</div>
-      <div class="ad-spark-v">{{ n(s().customers) | number:'1.0-0' }}</div>
-      <div class="ad-spark-t muted" style="color:#94a3b8">Total</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline [attr.points]="sparkPoints" fill="none" stroke="#7c3aed" stroke-width="2"></polyline>
+    </a>
+    <a class="hx-op pink" [routerLink]="hub('tasks-targets')">
+      <div class="hx-op-copy">
+        <div class="hx-op-ico"><i class="fas fa-bullseye"></i></div>
+        <div class="hx-l">Today's Targets</div>
+        <div class="hx-v">₹ {{ n(s().collection_target) | number:'1.0-0' }}</div>
+        <div class="hx-s">Achieved ₹ {{ n(s().today_collection_total) | number:'1.0-0' }} ({{ todayTargetPct() }}%)</div>
+        <div class="hx-track light"><span [style.width]="todayTargetPct() + '%'"></span></div>
+      </div>
+      <svg class="hx-deco bars" viewBox="0 0 90 70" aria-hidden="true">
+        <rect x="8" y="36" width="14" height="26" rx="3" fill="rgba(255,255,255,.35)"/>
+        <rect x="28" y="22" width="14" height="40" rx="3" fill="rgba(255,255,255,.5)"/>
+        <rect x="48" y="12" width="14" height="50" rx="3" fill="rgba(255,255,255,.7)"/>
+        <rect x="68" y="28" width="14" height="34" rx="3" fill="rgba(255,255,255,.4)"/>
       </svg>
+    </a>
+  </div>
+
+  <div class="hx-row3 mid">
+    <div class="hx-panel light route-card">
+      <div class="hx-ph">
+        <span class="hx-ph-title">Settlement Approvals</span>
+        <a [routerLink]="hub('settlement-approvals')">View All</a>
+      </div>
+      <div class="hx-v big">{{ n(s().settlement_pending_count) }}</div>
+      <div class="hx-s">Pending approval · {{ n(s().settlement_approved_count) }} approved this month</div>
+      <div class="hx-exp" *ngFor="let row of pendingSettlements().slice(0, 4)">
+        <span class="hx-exp-ico travel"></span>
+        <span class="hx-exp-name">{{ row.employee || '-' }} <small class="hx-muted">{{ row.branch }} · {{ row.settlement_date }}</small></span>
+        <b>₹ {{ n(row.amount) | number:'1.0-0' }}</b>
+      </div>
+      <p class="hx-empty" *ngIf="!pendingSettlements().length">No settlements waiting for approval.</p>
+      <a class="hx-approve-btn" routerLink="/admin-panel/settlement-report">Approve Settlements →</a>
     </div>
-    <div class="ad-spark">
-      <div class="ad-spark-l">Today Collections</div>
-      <div class="ad-spark-v">₹ {{ n(s().today_collection_total) | number:'1.0-0' }}</div>
-      <div class="ad-spark-t muted" style="color:#94a3b8">Live</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline [attr.points]="sparkPoints" fill="none" stroke="#0d9488" stroke-width="2"></polyline>
-      </svg>
+    <div class="hx-panel light map">
+      <div class="hx-ph">
+        <span class="hx-ph-title">Live Field Staff Map</span>
+        <a routerLink="/admin-panel/view-punch-attendance">View Full Map</a>
+      </div>
+      <div class="hx-map-frame">
+        <iframe *ngIf="fieldMapSafe" title="Field map" class="hx-map" [src]="fieldMapSafe"></iframe>
+        <div class="hx-map-legend">
+          <div><i class="on"></i> Live ({{ n(s().live_employee_count) }})</div>
+          <div><i class="route"></i> Present ({{ n(s().present_today) }})</div>
+          <div><i class="idle"></i> Absent ({{ n(s().absent_today) }})</div>
+        </div>
+      </div>
     </div>
-    <div class="ad-spark">
-      <div class="ad-spark-l">Overdue (Listed)</div>
-      <div class="ad-spark-v">₹ {{ overdueTotal() | number:'1.0-0' }}</div>
-      <div class="ad-spark-t down">{{ outstanding().length }} members</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline points="0,8 20,12 40,10 60,18 80,16 100,24 120,22 140,28" fill="none" stroke="#dc2626" stroke-width="2"></polyline>
-      </svg>
-    </div>
-    <div class="ad-spark">
-      <div class="ad-spark-l">Running Groups</div>
-      <div class="ad-spark-v">{{ n(s().running_groups) }}</div>
-      <div class="ad-spark-t muted" style="color:#94a3b8">Vacant {{ n(s().vacant_groups) }}</div>
-      <svg viewBox="0 0 140 36" preserveAspectRatio="none">
-        <polyline [attr.points]="sparkPoints" fill="none" stroke="#2563eb" stroke-width="2"></polyline>
+    <div class="hx-panel light exp-card">
+      <div class="hx-ph">
+        <span class="hx-ph-title">Today's Expenses</span>
+        <a [routerLink]="hub('expenses')">View All</a>
+      </div>
+      <div class="hx-v big">₹ {{ n(s().today_expense_total) | number:'1.0-0' }}</div>
+      <div class="hx-s">Total Expenses Today</div>
+      <div class="hx-exp" *ngFor="let row of expenseRows(); let i = index">
+        <span class="hx-exp-ico" [ngClass]="row.kind"></span>
+        <span class="hx-exp-name">{{ row.label }}</span>
+        <b>₹ {{ n(row.amount) | number:'1.0-0' }}</b>
+      </div>
+      <p class="hx-empty" *ngIf="!expenseRows().length">No expenses today.</p>
+      <svg class="hx-bag" viewBox="0 0 80 90" aria-hidden="true">
+        <path fill="#E8F8EF" d="M18 28h44v48a8 8 0 0 1-8 8H26a8 8 0 0 1-8-8V28z"/>
+        <path fill="#18A957" d="M30 28v-6a10 10 0 0 1 20 0v6"/>
+        <circle cx="40" cy="52" r="10" fill="#F5B700"/>
+        <text x="40" y="56" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">₹</text>
       </svg>
     </div>
   </div>
 
-  <!-- Extra: recent collections + overdue (from live data) -->
-  <div class="row mt-2">
-    <div class="col-lg-7 mb-3">
-      <div class="rd-panel">
-        <div class="rd-panel-h ad-panel-h-flex">
-          <span>Recent Collections</span>
-          <a class="ad-link" (click)="openDetail.emit('collections')">View All</a>
-        </div>
-        <div class="rd-panel-b table-responsive">
-          <table class="rd-table" *ngIf="collections().length; else emptyC">
-            <thead><tr><th>Receipt</th><th>Member</th><th>Mode</th><th>Amount</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let r of collections() | slice:0:10">
-                <td>{{ r.receipt_no || '—' }}</td>
-                <td>{{ r.customer || r.customer_name || r.name || '—' }}</td>
-                <td>{{ r.mode || '—' }}</td>
-                <td>₹ {{ n(r.amount || r.total_paid || r.received_amount) | number:'1.0-0' }}</td>
-              </tr>
-            </tbody>
-          </table>
-          <ng-template #emptyC><div class="rd-placeholder">No recent collections today</div></ng-template>
-        </div>
+  <div class="hx-bottom">
+    <div class="hx-panel light">
+      <div class="hx-ph">
+        <span class="hx-ph-title">Collection Trend</span>
+        <small>{{ barScope === 'today' ? 'Today' : 'This month' }}</small>
       </div>
-    </div>
-    <div class="col-lg-5 mb-3">
-      <div class="rd-panel">
-        <div class="rd-panel-h">Top Overdue Members</div>
-        <div class="rd-panel-b">
-          <div class="mb-2" *ngFor="let o of outstanding() | slice:0:8; let i = index">
-            <span class="ad-rank mr-1">{{ i + 1 }}</span>
-            <strong>{{ o.customer_name || o.name || 'Member' }}</strong>
-            <span class="float-right font-weight-bold">₹ {{ n(o.pending_amount || o.amount || o.outstanding) | number:'1.0-0' }}</span>
-            <div class="small text-muted ml-4">{{ o.mobile || '' }}</div>
+      <div *ngIf="!hasBars()" class="hx-empty">No receipt amounts for this scope.</div>
+      <div class="hx-combo" *ngIf="hasBars()">
+        <svg class="hx-combo-line" viewBox="0 0 320 160" preserveAspectRatio="none" aria-hidden="true">
+          <polyline [attr.points]="trendPoints" fill="none" stroke="#1687E8" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        </svg>
+        <div class="hx-vchart">
+          <div class="hx-vcol" *ngFor="let label of barLabels; let i = index">
+            <div class="hx-vbar-track"><span [style.height]="barHeight(i)"></span></div>
+            <em>{{ label }}</em>
           </div>
-          <div *ngIf="!outstanding().length" class="rd-placeholder">No overdue list</div>
         </div>
       </div>
-      <div class="rd-panel">
-        <div class="rd-panel-h">Quick Actions</div>
-        <div class="rd-panel-b rd-quick">
-          <a routerLink="/admin-panel/view-customer">Add New Member</a>
-          <a routerLink="/admin-panel/add-commitment-receipt">Add New Collection</a>
-          <a routerLink="/admin-panel/view-feed-back">Add Follow-up</a>
-          <a routerLink="/admin-panel/receipt-report">Export / Receipt Report</a>
-        </div>
+      <div class="hx-chart-key" *ngIf="hasBars()"><i></i> Collections <i class="line"></i> Trend</div>
+    </div>
+    <div class="hx-panel light">
+      <div class="hx-ph">
+        <span class="hx-ph-title">Recent Collections (Receipts)</span>
+        <a [routerLink]="hub('today-collection')">View All</a>
+      </div>
+      <div class="hx-table-wrap">
+        <table>
+          <thead><tr><th>Receipt No</th><th>Customer</th><th>Mode</th><th>Amount</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let row of collections().slice(0, 10)">
+              <td>{{ row.receipt_no }}</td>
+              <td>{{ row.customer }}</td>
+              <td><span class="hx-badge ok">{{ row.mode }}</span></td>
+              <td>₹ {{ n(row.amount) | number:'1.0-0' }}</td>
+              <td>{{ row.receipt_date | date:'dd-MM-yyyy' }}</td>
+            </tr>
+            <tr *ngIf="!collections().length"><td colspan="5">No receipts today.</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
+    <div class="hx-panel light alert-card">
+      <div class="hx-ph"><span class="hx-ph-title">Alerts &amp; Notifications</span></div>
+      <div class="hx-alert" *ngIf="n(s().today_followup_count)" (click)="openDetail.emit('followups')">
+        <span class="hx-alert-ico rose"><i class="fas fa-bell"></i></span>
+        <div><b>{{ n(s().today_followup_count) }} Follow-ups pending</b><small>Due today</small></div>
+      </div>
+      <a class="hx-alert" *ngIf="n(s().today_tasks_count)" [routerLink]="hub('tasks-targets')">
+        <span class="hx-alert-ico purple"><i class="fas fa-tasks"></i></span>
+        <div><b>{{ n(s().today_tasks_count) }} Tasks assigned</b><small *ngIf="todayTasks().length">{{ todayTasks()[0].title }} — {{ todayTasks()[0].employee }}</small></div>
+      </a>
+      <div class="hx-alert" *ngIf="auctions().length">
+        <span class="hx-alert-ico gold"><i class="fas fa-gavel"></i></span>
+        <div><b>Auction scheduled</b><small>{{ auctions()[0].branch || auctions()[0].group_name }}</small></div>
+      </div>
+      <a class="hx-alert" *ngIf="n(s().settlement_pending_count)" [routerLink]="hub('settlement-approvals')">
+        <span class="hx-alert-ico green"><i class="fas fa-check-circle"></i></span>
+        <div><b>{{ n(s().settlement_pending_count) }} Approval requests</b><small>Cash settlement waiting</small></div>
+      </a>
+      <a class="hx-alert" *ngIf="n(s().employee_birthday_today)" [routerLink]="hub('birthdays')">
+        <span class="hx-alert-ico gold"><i class="fas fa-birthday-cake"></i></span>
+        <div><b>{{ n(s().employee_birthday_today) }} Employee birthday today</b><small>{{ birthdayNames() }}</small></div>
+      </a>
+      <p class="hx-empty" *ngIf="!n(s().today_followup_count) && !n(s().today_tasks_count) && !auctions().length && !n(s().settlement_pending_count) && !n(s().employee_birthday_today)">No alerts right now.</p>
+      <svg class="hx-bell" viewBox="0 0 64 72" aria-hidden="true">
+        <path fill="#FDE7EE" d="M32 6a16 16 0 0 0-16 16v10l-6 10h44l-6-10V22A16 16 0 0 0 32 6z"/>
+        <circle cx="32" cy="58" r="6" fill="#EF476F"/>
+      </svg>
+    </div>
   </div>
-
 </div>

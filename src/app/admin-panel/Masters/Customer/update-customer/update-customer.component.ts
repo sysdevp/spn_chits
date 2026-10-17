@@ -224,6 +224,8 @@ export class UpdateCustomerComponent implements OnInit {
   bankList: any[] = [];
   currentChitDate: any;
   existingChits: any[] = [];
+  originalBranchId: any = null;
+  branchChanged = false;
   chitPaymentUi: Array<{
     hideDebitTo: boolean;
     hideChequeNo: boolean;
@@ -274,6 +276,16 @@ export class UpdateCustomerComponent implements OnInit {
   }
 
   branchChg(event) {
+    const selectedBranch = String(event.target.value || "");
+    this.branchChanged =
+      this.originalBranchId != null &&
+      selectedBranch !== "" &&
+      String(this.originalBranchId) !== selectedBranch;
+    if (this.branchChanged) {
+      this.UpdateCustomer.get("sync_related_branch").setValue(true);
+    } else {
+      this.UpdateCustomer.get("sync_related_branch").setValue(false);
+    }
     this.setfamilyList(event.target.value);
   }
 
@@ -1099,9 +1111,10 @@ export class UpdateCustomerComponent implements OnInit {
     this.SubmitbuttonName = "Loading...";
     this.submitted = true;
     this.disableBtn = true;
-    const result = Object.assign({}, this.UpdateCustomer.value);
+    const result = Object.assign({}, this.UpdateCustomer.getRawValue());
     // Backend stores alias in `reference_name`; keep legacy `r_name` for compatibility.
     result.reference_name = result.r_name;
+    delete result.sync_related_branch;
     const loggedEmployeeId = localStorage.getItem("logged_employee_id");
     const loggedUserId = localStorage.getItem("logged_user_id");
     result.logged_employee_id = loggedEmployeeId;
@@ -1323,6 +1336,7 @@ export class UpdateCustomerComponent implements OnInit {
     this.UpdateCustomer = this.formBuilder.group({
       tenant_id: ["", Validators.required],
       branch_id: ["", Validators.required],
+      sync_related_branch: [false],
       scheme_id: [""],
       family_id: [""],
       lead_management_id: [""],
@@ -1521,6 +1535,11 @@ export class UpdateCustomerComponent implements OnInit {
               this.UpdateCustomer.get("branch_id").setValue(
                 response.data[0].branch_id,
               );
+              this.originalBranchId = response.data[0].branch_id;
+              this.branchChanged = false;
+              try {
+                this.UpdateCustomer.get("branch_id").disable({ emitEvent: false });
+              } catch (e) {}
               this.UpdateCustomer.get("scheme_id").setValue(
                 response.data[0].scheme_id,
               );

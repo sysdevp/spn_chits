@@ -84,6 +84,8 @@ import { DeleteCollectionAreaComponent } from './Masters/CollectionArea/delete-c
 //Customer
 import { AddCustomerComponent } from './Masters/Customer/add-customer/add-customer.component';
 import { UpdateCustomerComponent } from './Masters/Customer/update-customer/update-customer.component';
+import { BranchTransferCustomerComponent } from './Masters/Customer/branch-transfer-customer/branch-transfer-customer.component';
+import { BranchTransferCustomerReportComponent } from './Masters/Customer/branch-transfer-customer-report/branch-transfer-customer-report.component';
 import { ViewCustomerComponent } from './Masters/Customer/view-customer/view-customer.component';
 import { DeleteCustomerComponent } from './Masters/Customer/delete-customer/delete-customer.component';
 //Advocate Detail
@@ -180,6 +182,7 @@ import { DeleteBonusSlabComponent } from './Masters/Slab/BonusSlab/delete-bonus-
 import { AddDueSlabComponent } from './Masters/Slab/DueSlab/add-due-slab/add-due-slab.component';
 import { UpdateDueSlabComponent } from './Masters/Slab/DueSlab/update-due-slab/update-due-slab.component';
 import { ViewDueSlabComponent } from './Masters/Slab/DueSlab/view-due-slab/view-due-slab.component';
+import { DueVsPaymentsComponent } from './Masters/Slab/due-vs-payments/due-vs-payments.component';
 import { DeleteDueSlabComponent } from './Masters/Slab/DueSlab/delete-due-slab/delete-due-slab.component';
 //Interest Slab
 import { AddInterestSlabComponent } from './Masters/Slab/InterestSlab/add-interest-slab/add-interest-slab.component';
@@ -221,12 +224,12 @@ import { AddReceiptComponent } from './SubscriberManagement/Receipts/add-receipt
 import { UpdateReceiptComponent } from './SubscriberManagement/Receipts/update-receipt/update-receipt.component';
 import { ViewReceiptComponent } from './SubscriberManagement/Receipts/view-receipt/view-receipt.component';
 import { DeleteReceiptComponent } from './SubscriberManagement/Receipts/delete-receipt/delete-receipt.component';
-//Commitment Chit
+//Chit
 import { AddCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/add-commitment-chit/add-commitment-chit.component';
 import { UpdateCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/update-commitment-chit/update-commitment-chit.component';
 import { DeleteCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/delete-commitment-chit/delete-commitment-chit.component';
 import { ViewCommitmentChitComponent } from './SubscriberManagement/CommitmentChit/view-commitment-chit/view-commitment-chit.component';
-//Commitment Payment
+//Prized Payment
 import { AddCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/add-commitment-payment/add-commitment-payment.component';
 import { DeleteCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/delete-commitment-payment/delete-commitment-payment.component';
 import { UpdateCommitmentPaymentComponent } from './SubscriberManagement/CommitmentPayment/update-commitment-payment/update-commitment-payment.component';
@@ -257,6 +260,24 @@ import { UpdateEmployeeAttendanceComponent } from './EmployeeManagement/Employee
 import { ViewEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/view-employee-attendance/view-employee-attendance.component';
 import { DeleteEmployeeAttendanceComponent } from './EmployeeManagement/EmployeeAttendance/delete-employee-attendance/delete-employee-attendance.component';
 import { ViewLeaveRequestsComponent } from './EmployeeManagement/LeaveRequests/view-leave-requests/view-leave-requests.component';
+import { OfficeTicketsComponent } from './EmployeeManagement/OfficeTickets/office-tickets.component';
+import { PaymentDeskComponent } from './Reports/payment-desk/payment-desk.component';
+import { PrizedShowGroupComponent } from './Reports/prized-show-group/prized-show-group.component';
+import { PrizedShowReportComponent } from './Reports/prized-show-report/prized-show-report.component';
+import { SpnAuctionReportComponent } from './Reports/spn-auction-report/spn-auction-report.component';
+import { CompletedNotPaidReportComponent } from './Reports/completed-not-paid-report/completed-not-paid-report.component';
+import { CashBoxComponent } from './Reports/cash-box/cash-box.component';
+import { MyDayReportComponent } from './Reports/my-day-report/my-day-report.component';
+import { BranchIncomeExpenseComponent } from './Reports/branch-income-expense/branch-income-expense.component';
+import { PettyCashBranchReportComponent } from './Reports/petty-cash-branch-report/petty-cash-branch-report.component';
+import { EmployeeAllowanceComponent } from './EmployeeManagement/Allowance/employee-allowance.component';
+import { CustomerCategoryReportComponent } from './Reports/customer-category-report/customer-category-report.component';
+import { SpnNewGroupComponent } from './Reports/spn-groups/spn-new-group.component';
+import { SpnGroupViewComponent } from './Reports/spn-groups/spn-group-view.component';
+import { KycUploadComponent } from './Masters/Customer/kyc-upload/kyc-upload.component';
+import { EmployeeAdvanceComponent } from './EmployeeManagement/EmployeeAdvance/employee-advance.component';
+import { SectionHubComponent } from './Reports/section-hub/section-hub.component';
+import { BranchOverviewComponent } from './Reports/section-hub/branch-overview.component';
 import { ViewPunchAttendanceComponent } from './EmployeeManagement/PunchAttendance/view-punch-attendance/view-punch-attendance.component';
 //Employee Login
 import { AddEmployeeLoginComponent } from './EmployeeManagement/EmployeeLogin/add-employee-login/add-employee-login.component';
@@ -306,9 +327,10 @@ import { DeleteDynamicMenuComponent } from './MenuManager/delete-dynamic-menu/de
 //Security Permission
 import { AddPermissionComponent } from './SecurityPermission/add-permission/add-permission.component';
 import { UpdatePermissionComponent } from './SecurityPermission/update-permission/update-permission.component';
+import { PermissionMatrixComponent } from './SecurityPermission/permission-matrix/permission-matrix.component';
 import { ViewPermissionComponent } from './SecurityPermission/view-permission/view-permission.component';
 import { DeletePermissionComponent } from './SecurityPermission/delete-permission/delete-permission.component';
-//Commitment Payment Report
+//Prized Payment Report
 import { CommitmentPaymentReportComponent } from './Reports/commitment-payment-report/commitment-payment-report/commitment-payment-report.component';
 //Commission Payment Report
 import { CommissionPaymentReportComponent } from './Reports/commission-payment-report/commission-payment-report/commission-payment-report.component';
@@ -321,7 +343,7 @@ import { AccountsReportComponent } from './Reports/accounts-report/accounts-repo
 //Day Closing Report
 import { DayClosingReportComponent } from './Reports/DayClosingReport/day-closing-report/day-closing-report.component';
 import { ViewDayClosingComponent } from './Reports/DayClosingReport/view-day-closing/view-day-closing.component';
-//Commitment Receipt Report
+//Receipt Report
 import { AddCommitmentReceiptComponent } from './SubscriberManagement/CommitmentReceipts/add-commitment-receipt/add-commitment-receipt.component';
 import { DeleteCommitmentReceiptComponent } from './SubscriberManagement/CommitmentReceipts/delete-commitment-receipt/delete-commitment-receipt.component';
 //Bid Payment Adjustment
@@ -337,6 +359,7 @@ import { AdvancedReceiptReportComponent } from './Reports/advanced-receipt/advan
 import { AvailableAdvanceAmountReportComponent } from './Reports/available-advance-amount/available-advance-amount-report/available-advance-amount-report.component';
 //Interested Customer Report
 import { InterestedCustomerReportComponent } from './Reports/interested-customer/interested-customer-report/interested-customer-report.component';
+import { CustomerAppLeadsReportComponent } from './Reports/customer-app-leads/customer-app-leads-report/customer-app-leads-report.component';
 //Collection Area Mapping
 import { AddCollectionAreaMappingComponent } from './EmployeeManagement/Collection-area-mapping/add-collection-area-mapping/add-collection-area-mapping.component';
 import { UpdateCollectionAreaMappingComponent } from './EmployeeManagement/Collection-area-mapping/update-collection-area-mapping/update-collection-area-mapping.component';
@@ -349,7 +372,7 @@ import { DeleteOtherReceiptChargesComponent } from './SubscriberManagement/other
 import { ViewOtherReceiptChargesComponent } from './SubscriberManagement/otherReceiptCharges/view-other-receipt-charges/view-other-receipt-charges.component';
 //Other Receipt Charges Report
 import { OtherReceiptChargesReportComponent } from './Reports/other-Receipt-Charges/other-receipt-charges-report/other-receipt-charges-report.component';
-//Commitment Pending Report
+//Prized Pending Payment Report
 import { CommitmentPendingReportComponent } from './Reports/commitment-pending/commitment-pending-report/commitment-pending-report.component';
 import { CommitmentEligibilityApprovalComponent } from './Reports/commitment-eligibility-approval/commitment-eligibility-approval.component';
 import { SchemeWisePayablePendingReportComponent } from './Reports/spn-collection-reports/scheme-wise-payable-pending/scheme-wise-payable-pending-report.component';
@@ -358,6 +381,7 @@ import { ThisMonthUnpaidReportComponent } from './Reports/spn-collection-reports
 import { DueNoCustomerReportComponent } from './Reports/spn-collection-reports/due-no-customer/due-no-customer-report.component';
 //Customer Ledger
 import { CustomerLedgerComponent } from './TransactionManagement/customer-ledger/customer-ledger.component';
+import { CustomerScoreRulesComponent } from './settings/customer-score-rules/customer-score-rules.component';
 import { AddDuplicateReceiptComponent } from './SubscriberManagement/DuplicateReceipt/add-duplicate-receipt/add-duplicate-receipt.component';
 //Password Change
 import { PasswordChangeComponent } from './EmployeeManagement/PasswordChange/password-change/password-change.component';
@@ -373,7 +397,7 @@ import { AddFeedbackComponent } from './SubscriberManagement/CollectionActivity/
 import { UpdateFeedbackComponent } from './SubscriberManagement/CollectionActivity/update-feedback/update-feedback.component';
 import { ViewFeedbackComponent } from './SubscriberManagement/CollectionActivity/view-feedback/view-feedback.component';
 import { DeleteFeedbackComponent } from './SubscriberManagement/CollectionActivity/delete-feedback/delete-feedback.component';
-//Commitmentcustomer Outstanding Report
+//Customer Outstanding Report
 import { CommitmentcustomerOutstandingComponent } from './Reports/OutstandingReport/commitmentcustomer-outstanding-report/commitmentcustomer-outstanding/commitmentcustomer-outstanding.component';
 //Commitmentcustomer Receipt Report
 import { CommitmentReceiptReportComponent } from './Reports/commitment-receipt-report/commitment-receipt-report.component';
@@ -622,6 +646,12 @@ import { RefundTransferReportComponent } from './Reports/refund-transfer-report/
 import { AuctionReportFinalComponent } from './Reports/auction-report-final/auction-report-final.component';
 import { TransferCustomerDetailsReportComponent } from './Reports/transfer-customer-details-report/transfer-customer-details-report.component';
 import { CommitmentReportComponent } from './Reports/commitment-report/commitment-report/commitment-report.component';
+import { CommitmentPromiseReportComponent } from './Reports/commitment-promise-report/commitment-promise-report.component';
+import { UtrReceiptReportComponent } from './Reports/utr-receipt-report/utr-receipt-report.component';
+import { CollectionPredictionReportComponent } from './Reports/collection-prediction-report/collection-prediction-report.component';
+import { EmployeePerformanceAiComponent } from './Reports/employee-performance-ai/employee-performance-ai.component';
+import { RefundApprovalComponent } from './Reports/refund-approval/refund-approval.component';
+import { DocumentPreparationComponent } from './Reports/document-preparation/document-preparation.component';
 import { CashbookComponent } from './Reports/cashbook/cashbook.component';
 import { BankbookComponent } from './Reports/bankbook/bankbook.component';
 
@@ -712,6 +742,8 @@ export class DemoMaterialModule {}
     //Customer
     AddCustomerComponent,
     UpdateCustomerComponent,
+    BranchTransferCustomerComponent,
+    BranchTransferCustomerReportComponent,
     ViewCustomerComponent,
     DeleteCustomerComponent,
     //Advocate Detail
@@ -808,6 +840,7 @@ export class DemoMaterialModule {}
     AddDueSlabComponent,
     UpdateDueSlabComponent,
     ViewDueSlabComponent,
+    DueVsPaymentsComponent,
     DeleteDueSlabComponent,
     //Interest Slab
     AddInterestSlabComponent,
@@ -865,6 +898,24 @@ export class DemoMaterialModule {}
     ViewEmployeeAttendanceComponent, 
     DeleteEmployeeAttendanceComponent,
     ViewLeaveRequestsComponent,
+    OfficeTicketsComponent,
+    PaymentDeskComponent,
+    PrizedShowGroupComponent,
+    PrizedShowReportComponent,
+    SpnAuctionReportComponent,
+    CompletedNotPaidReportComponent,
+    CashBoxComponent,
+    MyDayReportComponent,
+    BranchIncomeExpenseComponent,
+    PettyCashBranchReportComponent,
+    EmployeeAllowanceComponent,
+    CustomerCategoryReportComponent,
+    SpnNewGroupComponent,
+    SpnGroupViewComponent,
+    KycUploadComponent,
+    EmployeeAdvanceComponent,
+    SectionHubComponent,
+    BranchOverviewComponent,
     ViewPunchAttendanceComponent,
     //Employee Login
     AddEmployeeLoginComponent, 
@@ -900,7 +951,7 @@ export class DemoMaterialModule {}
     VacantReportComponent,
     AuctionReportComponent,
     ReceiptReportComponent,
-    //Commitment Chit
+    //Chit
     AddCommitmentChitComponent, 
     UpdateCommitmentChitComponent,
     DeleteCommitmentChitComponent,
@@ -916,11 +967,12 @@ export class DemoMaterialModule {}
     ViewDynamicMenuComponent, 
     DeleteDynamicMenuComponent,
     //Security Permission
-    AddPermissionComponent, 
-    UpdatePermissionComponent, 
+    AddPermissionComponent,
+    UpdatePermissionComponent,
+    PermissionMatrixComponent,
     ViewPermissionComponent, 
     DeletePermissionComponent,
-    //Commitment Payment
+    //Prized Payment
     AddCommitmentPaymentComponent,
     DeleteCommitmentPaymentComponent,
     UpdateCommitmentPaymentComponent,
@@ -949,7 +1001,7 @@ export class DemoMaterialModule {}
     //Day Closing Report
     DayClosingReportComponent,
     ViewDayClosingComponent,
-    //Commitment Receipt Report
+    //Receipt Report
     AddCommitmentReceiptComponent, 
     DeleteCommitmentReceiptComponent,
     //BidPayment Adjustment
@@ -965,6 +1017,7 @@ export class DemoMaterialModule {}
     AvailableAdvanceAmountReportComponent,
     //Interested Customer Report
     InterestedCustomerReportComponent,
+    CustomerAppLeadsReportComponent,
     //Collection Area Mapping
     AddCollectionAreaMappingComponent,
     UpdateCollectionAreaMappingComponent,
@@ -977,7 +1030,7 @@ export class DemoMaterialModule {}
     ViewOtherReceiptChargesComponent,
     //Other Receipt Charges Report
     OtherReceiptChargesReportComponent,
-    //Commitment Pending Report
+    //Prized Pending Payment Report
     CommitmentPendingReportComponent,
     CommitmentEligibilityApprovalComponent,
     SchemeWisePayablePendingReportComponent,
@@ -986,6 +1039,7 @@ export class DemoMaterialModule {}
     DueNoCustomerReportComponent,
     //Customer ledger
     CustomerLedgerComponent,
+    CustomerScoreRulesComponent,
     AddDuplicateReceiptComponent,
     PasswordChangeComponent,
    //ReceiptPrint
@@ -1000,9 +1054,9 @@ export class DemoMaterialModule {}
     UpdateFeedbackComponent,
     ViewFeedbackComponent,
     DeleteFeedbackComponent,
-    //Commitmentcustomer Outstanding Report
+    //Customer Outstanding Report
     CommitmentcustomerOutstandingComponent,
-    //Commitment Receipt Report
+    //Receipt Report
     CommitmentReceiptReportComponent,
     //Loan Module
     AddLoanComponent,
@@ -1249,6 +1303,12 @@ export class DemoMaterialModule {}
     TransferCustomerDetailsReportComponent,
     AuctionReportFinalComponent,
     CommitmentReportComponent,
+    CommitmentPromiseReportComponent,
+    UtrReceiptReportComponent,
+    CollectionPredictionReportComponent,
+    EmployeePerformanceAiComponent,
+    RefundApprovalComponent,
+    DocumentPreparationComponent,
     CashbookComponent, 
     BankbookComponent
 ],  

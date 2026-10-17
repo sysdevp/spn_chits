@@ -1,157 +1,278 @@
 <sidenav [orientation]="orientation" [ngClass]="getClasses()">
   <div class="app-brand demo px-2 py-2 text-center" *ngIf="orientation !== 'horizontal'">
-    <a routerLink="/" class="app-brand-text demo sidenav-text font-weight-normal d-block">
+    <a routerLink="/admin-panel/dashboard" class="app-brand-text demo sidenav-text font-weight-normal d-block">
       <img alt="SRI SPN Chit Funds" class="spn-sidenav-logo" src="{{companyLogo}}">
+      <div class="spn-brand-name">SRI SPN CHIT FUNDS</div>
+      <div class="spn-brand-sub">PRIVATE LIMITED</div>
+      <div class="spn-brand-tag">Small Collections<br>Create Big Futures</div>
     </a>
   </div>
   <div class="sidenav-divider mt-0" *ngIf="orientation !== 'horizontal'"></div>
+  <!-- Page ids: src/app/config/spn-access.config.ts (Security Permissions screen) -->
   <div class="sidenav-inner" id="style-6"  [ngClass]="{ 'py-1': orientation !== 'horizontal' }">
-    <sidenav-router-link route="dashboard" icon="ion ion-md-home" *ngIf="isMenuHide(1,0) || isMenuHide(201,1) || isMenuHide(202,1) || isMenuHide(203,1) || isMenuHide(204,1) || isMenuHide(205,1) || isMenuHide(206,1)">Dashboard</sidenav-router-link>
+    <sidenav-router-link route="dashboard" icon="ion ion-md-home" class="spn-m spn-m-dash" *ngIf="canAny([201,202,203,204,205,206]) || hasAny([[1,0]])">Dashboard</sidenav-router-link>
+    <sidenav-router-link route="/admin-panel/branch-overview" icon="fa fa-university" class="spn-m spn-m-branch" *ngIf="can(532)">Branch Overview</sidenav-router-link>
+    <sidenav-router-link route="/admin-panel/hub/corporate" icon="fa fa-building" class="spn-m spn-m-branch" *ngIf="can(531)">Corporate Admin Panel</sidenav-router-link>
 
-    <sidenav-menu icon="fa fa-link" text="Chit" [active]="isMenuActive('/Masters')" [open]="isMenuOpen('/Masters')" *ngIf="isMenuHide(8,2) || isMenuHide(5,28) || isMenuHide(32,28) || isMenuHide(152,28) || isMenuHide(57,37) || isMenuHide(56,28) || isMenuHide(109,37) || isMenuHide(60,37)" class="s_n_mas">
-      <sidenav-router-link route="view-scheme" *ngIf="isMenuHide(8,2)"><i class="fa fa-angle-double-right"></i> Schemes</sidenav-router-link>
-      <sidenav-router-link route="view-customer" *ngIf="isMenuHide(5,28)"><i class="fa fa-angle-double-right"></i> Profile Creation</sidenav-router-link>
-      <sidenav-router-link route="view-commitment-chit" *ngIf="isMenuHide(32,28)"><i class="fa fa-angle-double-right"></i> SPN Approved Customers</sidenav-router-link>
-      <sidenav-router-link route="commitment-eligibility-approval" *ngIf="isMenuHide(152,28) || isRouteVisible('commitment-eligibility-approval')"><i class="fa fa-angle-double-right"></i> SPN Eligibility Approval</sidenav-router-link>
-      <sidenav-router-link route="add-commitment-receipt" *ngIf="isMenuHide(57,37)"><i class="fa fa-angle-double-right"></i> Receipt</sidenav-router-link>
-      <sidenav-router-link route="view-commitment-payment" *ngIf="isMenuHide(56,28)"><i class="fa fa-angle-double-right"></i> Payment</sidenav-router-link>
-      <sidenav-router-link route="add-commitment-enrol" *ngIf="isMenuHide(109,37)"><i class="fa fa-angle-double-right"></i> Refund</sidenav-router-link>
-      <sidenav-router-link route="other-receipt-charges-report" *ngIf="isMenuHide(60,37)"><i class="fa fa-angle-double-right"></i> Other Charges Receipt</sidenav-router-link>
-    </sidenav-menu> 
-
-    <sidenav-menu icon="fa fa-th-list" text="Slabs" [active]="isMenuActive('/Slabs')" [open]="isMenuOpen('/Slabs')" *ngIf="isMenuHide(20,2) || isMenuHide(24,2)">
-      <sidenav-router-link route="view-due-slab" *ngIf="isMenuHide(20,2)"><i class="fa fa-angle-double-right"></i> Due Slab</sidenav-router-link>
-      <sidenav-router-link route="view-payment-slab" *ngIf="isMenuHide(24,2)"><i class="fa fa-angle-double-right"></i> Payment Slab</sidenav-router-link>
-     </sidenav-menu>
-
-    <sidenav-menu icon="fa fa-users" text="HR" [active]="isMenuActive('/EmployeeManagement')" [open]="isMenuOpen('/EmployeeManagement')" *ngIf="isMenuHide(3,34) || isMenuHide(12,2) || isMenuHide(11,2) || isMenuHide(53,0) || isMenuHide(53,53) || isMenuHide(36,34) || isMenuHide(101,34) || isMenuHide(55,34) || isMenuHide(35,34) || isMenuHide(118,34) || isMenuHide(16,2)">
-      <sidenav-router-link route="view-employee" *ngIf="isMenuHide(3,34)"><i class="fa fa-angle-double-right"></i> Employee</sidenav-router-link>
-      <sidenav-router-link route="view-designation" *ngIf="isMenuHide(12,2)"><i class="fa fa-angle-double-right"></i> Designation</sidenav-router-link>
-      <sidenav-router-link route="view-role" *ngIf="isMenuHide(11,2)"><i class="fa fa-angle-double-right"></i> Role</sidenav-router-link>
-      <sidenav-router-link icon="ion ion-md-git-network" route="add-permission" *ngIf="isMenuHide(53,0) || isMenuHide(53,53)"> Security Permissions</sidenav-router-link>
-      <sidenav-router-link route="view-employee-login" *ngIf="isMenuHide(36,34)"><i class="fa fa-angle-double-right"></i> User Logins</sidenav-router-link>
-      <sidenav-router-link route="employee-salary" *ngIf="isMenuHide(101,34)"><i class="fa fa-angle-double-right"></i> Employee Salary</sidenav-router-link>
-      <sidenav-router-link route="view-collection-area-mapping" *ngIf="isMenuHide(55,34)"><i class="fa fa-angle-double-right"></i> Collection Area Mapping</sidenav-router-link>
-      <sidenav-router-link route="view-employee-attendance" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Attendance</sidenav-router-link>
-      <sidenav-router-link route="view-leave-requests" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Leave / Permission / OD</sidenav-router-link>
-      <sidenav-router-link route="view-punch-attendance" *ngIf="isMenuHide(35,34)"><i class="fa fa-angle-double-right"></i> Login Time & Map</sidenav-router-link>
-      <sidenav-router-link route="view-employee-document" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Employee Documents</sidenav-router-link>
-      <sidenav-router-link route="view-auction-on-holidays" *ngIf="isMenuHide(16,2)"><i class="fa fa-angle-double-right"></i> Auction On Holidays</sidenav-router-link>
-      <sidenav-router-link route="add-task" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Task Assignment</sidenav-router-link>
-      <sidenav-router-link route="view-daily-tasks-targets" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Daily Tasks & Targets</sidenav-router-link>
-      <sidenav-router-link route="task-report" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Task Report</sidenav-router-link>
-      <sidenav-router-link route="set-employee-target" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Target Set</sidenav-router-link>
-      <sidenav-router-link route="view-employee-mobile-modules" *ngIf="isMenuHide(118,34)"><i class="fa fa-angle-double-right"></i> Skills & Achievements</sidenav-router-link>
+    <!-- 1. SPN My Customers -->
+    <sidenav-menu icon="fa fa-link" text="SPN My Customers" class="spn-m spn-m-chit"
+      [open]="isGroupOpen(['hub/chit','view-commitment-chit','customer-ledger','customer-score-rules','customer-category-report','cancel-customer-report'])"
+      *ngIf="canSection('my-customers')">
+      <sidenav-router-link route="/admin-panel/hub/chit" linkClass="spn-hub-link" *ngIf="can(541)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="view-commitment-chit" *ngIf="can(542)"><i class="fa fa-angle-double-right"></i> Active Customers (SPN Approved)</sidenav-router-link>
+      <sidenav-router-link route="cancel-customer-report" *ngIf="can(543)"><i class="fa fa-angle-double-right"></i> Cancelled Customers</sidenav-router-link>
+      <sidenav-router-link route="customer-category-report" *ngIf="can(544)"><i class="fa fa-angle-double-right"></i> Customer Category (Excellent / Good / Bad)</sidenav-router-link>
+      <sidenav-router-link route="customer-score-rules" *ngIf="can(545)"><i class="fa fa-angle-double-right"></i> Category Rules</sidenav-router-link>
+      <sidenav-router-link route="customer-ledger" *ngIf="can(546)"><i class="fa fa-angle-double-right"></i> Customer Ledger</sidenav-router-link>
     </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-address-book" text="CRM" [active]="isMenuActive('/CustomerManagement')" [open]="isMenuOpen('/CustomerManagement')" *ngIf="isMenuHide(41,28) || isMenuHide(90,2) || isMenuHide(160,28) || isMenuHide(161,28)">
-      <sidenav-router-link route="view-lead-management" *ngIf="isMenuHide(41,28)"><i class="fa fa-angle-double-right"></i> Leads</sidenav-router-link>
-      <sidenav-router-link route="view-source-type" *ngIf="isMenuHide(90,2)"><i class="fa fa-angle-double-right"></i> Lead Source</sidenav-router-link>
-      <sidenav-router-link route="sales-promotion" *ngIf="isMenuHide(160,28)"><i class="fa fa-angle-double-right"></i> New Group Notifications</sidenav-router-link>
-      <sidenav-router-link route="customer-birthday-report" *ngIf="isMenuHide(161,28)"><i class="fa fa-angle-double-right"></i> Customer Birthday Report</sidenav-router-link>  
+    <!-- 2. SPN New Customers -->
+    <sidenav-menu icon="fa fa-user-plus" text="SPN New Customers" class="spn-m spn-m-new"
+      [open]="isGroupOpen(['hub/new-customers','view-customer','add-customer','update-customer','branch-transfer-customer','branch-transfer-customer-report','view-documents'])"
+      *ngIf="canSection('new-customers') || legacyRoute('commitment-eligibility-approval')">
+      <sidenav-router-link route="/admin-panel/hub/new-customers" linkClass="spn-hub-link" *ngIf="can(551)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="view-customer" *ngIf="can(552)"><i class="fa fa-angle-double-right"></i> Profile Creation</sidenav-router-link>
+      <sidenav-router-link route="commitment-eligibility-approval" *ngIf="can(553) || legacyRoute('commitment-eligibility-approval')"><i class="fa fa-angle-double-right"></i> Enrolment Approval</sidenav-router-link>
+      <sidenav-router-link route="view-documents" *ngIf="can(554)"><i class="fa fa-angle-double-right"></i> Verification (KYC Documents)</sidenav-router-link>
+      <sidenav-router-link route="branch-transfer-customer" *ngIf="can(555)"><i class="fa fa-angle-double-right"></i> Branch Transfer Customer</sidenav-router-link>
+      <sidenav-router-link route="branch-transfer-customer-report" *ngIf="can(556)"><i class="fa fa-angle-double-right"></i> Branch Transfer Report</sidenav-router-link>
     </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-money" text="Loan" [active]="isMenuActive('/LoanManagement')" [open]="isMenuOpen('/LoanManagement')" *ngIf="isMenuHide(100,85) || isMenuHide(86,85) || isMenuHide(87,85)"> 
-      <sidenav-router-link route="view-loan-customer-document" *ngIf="isMenuHide(100,85)"><i class="fa fa-angle-double-right"></i> Document</sidenav-router-link>
-      <sidenav-router-link route="view-loan" *ngIf="isMenuHide(86,85)"><i class="fa fa-angle-double-right"></i> Disbursement</sidenav-router-link>
-      <sidenav-router-link route="add-loan-receipt" *ngIf="isMenuHide(87,85)"><i class="fa fa-angle-double-right"></i> Receipt</sidenav-router-link>
-    </sidenav-menu> 
+    <!-- 3. SPN Chit Management -->
+    <sidenav-menu icon="fa fa-th-large" text="SPN Chit Management" class="spn-m spn-m-groups"
+      [open]="isGroupOpen(['hub/groups','view-scheme','add-scheme','update-scheme','view-due-slab','view-payment-slab','due-vs-payments','view-auction-on-holidays','spn-new-group','spn-group-view'])"
+      *ngIf="canSection('chit-management')">
+      <sidenav-router-link route="/admin-panel/hub/groups" linkClass="spn-hub-link" *ngIf="can(561)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="spn-new-group" *ngIf="can(562)"><i class="fa fa-angle-double-right"></i> SPN New Group (Group Formation)</sidenav-router-link>
+      <sidenav-router-link route="spn-group-view" *ngIf="can(563)"><i class="fa fa-angle-double-right"></i> Group View</sidenav-router-link>
+      <sidenav-router-link route="view-scheme" *ngIf="can(564)"><i class="fa fa-angle-double-right"></i> Schemes (New Scheme Chit)</sidenav-router-link>
+      <sidenav-router-link route="view-due-slab" *ngIf="can(565)"><i class="fa fa-angle-double-right"></i> Due Slab</sidenav-router-link>
+      <sidenav-router-link route="view-payment-slab" *ngIf="can(566)"><i class="fa fa-angle-double-right"></i> Payment Slab</sidenav-router-link>
+      <sidenav-router-link route="due-vs-payments" *ngIf="can(567)"><i class="fa fa-angle-double-right"></i> Due vs Payments</sidenav-router-link>
+      <sidenav-router-link route="view-auction-on-holidays" *ngIf="can(568)"><i class="fa fa-angle-double-right"></i> Auction On Holidays</sidenav-router-link>
+    </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-briefcase" text="Legal" [active]="isMenuActive('/LoanManagement')" [open]="isMenuOpen('/LoanManagement')" *ngIf="isMenuHide(116,2) || isMenuHide(117,2)"> 
-      <sidenav-router-link route="view-case-stage" *ngIf="isMenuHide(116,2)"><i class="fa fa-angle-double-right"></i> Case Stages</sidenav-router-link>
-      <sidenav-router-link route="view-lawyer" *ngIf="isMenuHide(117,2)"><i class="fa fa-angle-double-right"></i> Lawyer</sidenav-router-link>
-    </sidenav-menu> 
+    <!-- 4. SPN Collection -->
+    <sidenav-menu icon="fa fa-money" text="SPN Collection" class="spn-m spn-m-coll"
+      [open]="isGroupOpen(['hub/collection','add-commitment-receipt','other-receipt-charges-report','commitment-receipt-report','utr-receipt-report','scheme-wise-payable-pending-report','next-month-collection-report','this-month-unpaid-report','due-no-customer-report','collection-prediction-report','employee-collection-report','before-enrol-receipt-report','settlement-report','view-feed-back','historical-performance-report','business-forecast-report','commitmentcustomer-outstanding-report'])"
+      *ngIf="canSection('collection')">
+      <sidenav-router-link route="/admin-panel/hub/collection" linkClass="spn-hub-link" *ngIf="can(571)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="add-commitment-receipt" *ngIf="can(572)"><i class="fa fa-angle-double-right"></i> Receipts</sidenav-router-link>
+      <sidenav-router-link route="commitment-receipt-report" *ngIf="can(573)"><i class="fa fa-angle-double-right"></i> Receipt Report (New / Old)</sidenav-router-link>
+      <sidenav-router-link route="scheme-wise-payable-pending-report" *ngIf="can(574)"><i class="fa fa-angle-double-right"></i> Scheme Wise Collection</sidenav-router-link>
+      <sidenav-router-link route="this-month-unpaid-report" *ngIf="can(575)"><i class="fa fa-angle-double-right"></i> Coming Month Collection (Unpaid)</sidenav-router-link>
+      <sidenav-router-link route="next-month-collection-report" *ngIf="can(576)"><i class="fa fa-angle-double-right"></i> Next Month Collection</sidenav-router-link>
+      <sidenav-router-link route="due-no-customer-report" *ngIf="can(577)"><i class="fa fa-angle-double-right"></i> Due No Customer List</sidenav-router-link>
+      <sidenav-router-link route="other-receipt-charges-report" *ngIf="can(578)"><i class="fa fa-angle-double-right"></i> Other Charges Collection</sidenav-router-link>
+      <sidenav-router-link route="before-enrol-receipt-report" *ngIf="can(579)"><i class="fa fa-angle-double-right"></i> RF / Before Enrolment Collection</sidenav-router-link>
+      <sidenav-router-link route="utr-receipt-report" *ngIf="can(580) || legacyRoute('utr-receipt-report')"><i class="fa fa-angle-double-right"></i> UTR Receipt Report</sidenav-router-link>
+      <sidenav-router-link route="employee-collection-report" *ngIf="can(581)"><i class="fa fa-angle-double-right"></i> Branch / Employee Collection</sidenav-router-link>
+      <sidenav-router-link route="collection-prediction-report" *ngIf="can(582) || legacyRoute('collection-prediction-report')"><i class="fa fa-angle-double-right"></i> Collection Prediction</sidenav-router-link>
+      <sidenav-router-link route="historical-performance-report" *ngIf="can(583)"><i class="fa fa-angle-double-right"></i> Historical Performance</sidenav-router-link>
+      <sidenav-router-link route="business-forecast-report" *ngIf="can(584)"><i class="fa fa-angle-double-right"></i> Business Forecast</sidenav-router-link>
+      <sidenav-router-link route="commitmentcustomer-outstanding-report" *ngIf="can(585)"><i class="fa fa-angle-double-right"></i> Outstanding Customers</sidenav-router-link>
+      <sidenav-router-link route="settlement-report" *ngIf="can(586)"><i class="fa fa-angle-double-right"></i> Settlement Report</sidenav-router-link>
+      <sidenav-router-link route="view-feed-back" *ngIf="can(587)"><i class="fa fa-angle-double-right"></i> Collection Feedback</sidenav-router-link>
+    </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-envelope" text="SMS" [active]="isMenuActive('/SMS')" [open]="isMenuOpen('/SMS')" *ngIf="isMenuHide(162,0) || isMenuHide(162,162) || isMenuHide(163,162) || isMenuHide(161,162)"> 
-      <sidenav-router-link route="sms-content" *ngIf="isMenuHide(162,162) || isMenuHide(162,0)"><i class="fa fa-angle-double-right"></i> Template</sidenav-router-link>
-      <sidenav-router-link route="send-message" *ngIf="isMenuHide(163,162)"><i class="fa fa-angle-double-right"></i> SMS Notification</sidenav-router-link>
-      <sidenav-router-link route="customer-birthday-report" *ngIf="isMenuHide(161,162) || isMenuHide(161,28)"><i class="fa fa-angle-double-right"></i> Birthday SMS</sidenav-router-link>  
-    </sidenav-menu> 
+    <!-- 5. SPN Chit Payment -->
+    <sidenav-menu icon="fa fa-inr" text="SPN Chit Payment" class="spn-m spn-m-pay"
+      [open]="isGroupOpen(['hub/payment','payment-dashboard','payment-priced','payment-closed','payment-refund-desk','payment-pending-approvals','view-commitment-payment','document-preparation','add-commitment-enrol','refund-approval','payment-refund-report','commitment-payment-report','commitment-pending-report','commitment-promise-report','final-closed-report','completed-not-paid-report'])"
+      *ngIf="canSection('chit-payment') || legacyRoute('commitment-promise-report')">
+      <sidenav-router-link route="/admin-panel/hub/payment" linkClass="spn-hub-link" *ngIf="can(591)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/payment-dashboard" *ngIf="can(592)"><i class="fa fa-angle-double-right"></i> Payments Dashboard</sidenav-router-link>
+      <sidenav-router-link route="view-commitment-payment" *ngIf="can(593)"><i class="fa fa-angle-double-right"></i> Payment Entry</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/payment-priced" *ngIf="can(594)"><i class="fa fa-angle-double-right"></i> Prized Payment</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/payment-closed" *ngIf="can(595)"><i class="fa fa-angle-double-right"></i> Final Closed Payment</sidenav-router-link>
+      <sidenav-router-link route="document-preparation" [queryParams]="{kind: 'prized'}" *ngIf="can(596)"><i class="fa fa-angle-double-right"></i> Prized Payment Documents</sidenav-router-link>
+      <sidenav-router-link route="document-preparation" [queryParams]="{kind: 'closed'}" *ngIf="can(597)"><i class="fa fa-angle-double-right"></i> Closed Payment Documents</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/payment-pending-approvals" *ngIf="can(598)"><i class="fa fa-angle-double-right"></i> Pending Approval</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/payment-refund-desk" *ngIf="can(599)"><i class="fa fa-angle-double-right"></i> Refund Payment</sidenav-router-link>
+      <sidenav-router-link route="add-commitment-enrol" *ngIf="can(600)"><i class="fa fa-angle-double-right"></i> Refund Entry</sidenav-router-link>
+      <sidenav-router-link route="refund-approval" *ngIf="can(601)"><i class="fa fa-angle-double-right"></i> Refund Approval</sidenav-router-link>
+      <sidenav-router-link route="commitment-payment-report" *ngIf="can(602)"><i class="fa fa-angle-double-right"></i> Prized Chit Payment Report</sidenav-router-link>
+      <sidenav-router-link route="commitment-pending-report" *ngIf="can(603)"><i class="fa fa-angle-double-right"></i> Pending Payments Report</sidenav-router-link>
+      <sidenav-router-link route="commitment-promise-report" *ngIf="can(604) || legacyRoute('commitment-promise-report')"><i class="fa fa-angle-double-right"></i> Promised Report (Calendar)</sidenav-router-link>
+      <sidenav-router-link route="final-closed-report" *ngIf="can(605) || legacyRoute('commitment-promise-report')"><i class="fa fa-angle-double-right"></i> Final Closed Report</sidenav-router-link>
+      <sidenav-router-link route="completed-not-paid-report" *ngIf="can(606) || legacyRoute('commitment-promise-report')"><i class="fa fa-angle-double-right"></i> Completed – Payment Not Given</sidenav-router-link>
+      <sidenav-router-link route="payment-refund-report" *ngIf="can(607)"><i class="fa fa-angle-double-right"></i> Refund Report</sidenav-router-link>
+    </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-map-marker" text="Location" [active]="isMenuActive('/SMS')" [open]="isMenuOpen('/SMS')" *ngIf="isMenuHide(6,2) || isMenuHide(7,2) || isMenuHide(113,2) || isMenuHide(114,2) || isMenuHide(115,2) || isMenuHide(15,2) || isMenuHide(10,2)"> 
-      <sidenav-router-link route="view-head-office" *ngIf="isMenuHide(6,2)"><i class="fa fa-angle-double-right"></i> Regional Office</sidenav-router-link>
-      <sidenav-router-link route="view-branch" *ngIf="isMenuHide(7,2)"><i class="fa fa-angle-double-right"></i> Branch Office</sidenav-router-link>
-      <sidenav-router-link route="view-country" *ngIf="isMenuHide(113,2)"><i class="fa fa-angle-double-right"></i> Country</sidenav-router-link>
-      <sidenav-router-link route="view-state" *ngIf="isMenuHide(114,2)"><i class="fa fa-angle-double-right"></i> State</sidenav-router-link>
-      <sidenav-router-link route="view-district" *ngIf="isMenuHide(115,2)"><i class="fa fa-angle-double-right"></i> District</sidenav-router-link>
-      <sidenav-router-link route="view-city" *ngIf="isMenuHide(15,2)"><i class="fa fa-angle-double-right"></i> City</sidenav-router-link>
-      <sidenav-router-link route="view-collection-area" *ngIf="isMenuHide(10,2)"><i class="fa fa-angle-double-right"></i> Collection Area</sidenav-router-link>
-    </sidenav-menu> 
+    <!-- 5b. SPN Auction -->
+    <sidenav-menu icon="fa fa-trophy" text="SPN Auction" class="spn-m spn-m-pay"
+      [open]="isGroupOpen(['prized-show-group','prized-show-report','spn-auction-report'])"
+      *ngIf="canSection('auction')">
+      <sidenav-router-link route="/admin-panel/prized-show-group" *ngIf="can(611)"><i class="fa fa-angle-double-right"></i> Prized Show Group</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/prized-show-report" *ngIf="can(612)"><i class="fa fa-angle-double-right"></i> Prized Show Report</sidenav-router-link>
+      <sidenav-router-link route="/admin-panel/spn-auction-report" *ngIf="can(613)"><i class="fa fa-angle-double-right"></i> Auction Report (Scheme-wise)</sidenav-router-link>
+    </sidenav-menu>
 
-    <sidenav-menu icon="fa fa-calculator" text="Accounts" [active]="isMenuActive('/SMS')" [open]="isMenuOpen('/SMS')" *ngIf="isMenuHide(17,2) || isMenuHide(13,2) || isMenuHide(102,2) || isMenuHide(103,2)"> 
-      <sidenav-router-link route="view-bank-details" *ngIf="isMenuHide(17,2)"><i class="fa fa-angle-double-right"></i> Bank Details</sidenav-router-link>
-      <sidenav-router-link route="view-charges-type" *ngIf="isMenuHide(13,2)"><i class="fa fa-angle-double-right"></i> Charges Types</sidenav-router-link>
-      <sidenav-router-link route="view-accounting-group" *ngIf="isMenuHide(102,2)"><i class="fa fa-angle-double-right"></i> Account Groups</sidenav-router-link>
-      <sidenav-router-link route="view-accounting-head" *ngIf="isMenuHide(103,2)"><i class="fa fa-angle-double-right"></i> Account Head</sidenav-router-link>
-    </sidenav-menu> 
-    
-    <sidenav-menu icon="fa fa-bar-chart" text="Reports" [active]="isMenuActive('/Reports')" [open]="isMenuOpen('/Reports')" *ngIf="isMenuHide(69,48) || isMenuHide(61,37) || isMenuHide(126,124) || isMenuHide(132,48) || isMenuHide(133,48) || isMenuHide(63,65) || isMenuHide(70,65) || isMenuHide(71,65) || isMenuHide(81,43) || isMenuHide(93,43) || isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124) || isMenuHide(148,67) || isMenuHide(75,67) || isMenuHide(76,67) || isMenuHide(94,67) || isMenuHide(105,67) || isMenuHide(106,67) || isMenuHide(108,67) || isMenuHide(107,67) || isMenuHide(77,68) || isMenuHide(78,68) || isMenuHide(150,68) || isMenuHide(98,68) || isMenuHide(97,68) || isMenuHide(95,68) || isMenuHide(84,83) || isMenuHide(91,83) || isMenuHide(89,88) || isMenuHide(164,168) || isMenuHide(165,168) || isMenuHide(166,168) || isMenuHide(167,168) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)">
-      <sidenav-menu icon="fa fa-angle-double-right" text="Subscribers Report" [active]="isMenuActive('/CustomerReport')" [open]="isMenuOpen('/CustomerReport')" *ngIf="isMenuHide(69,48) || isMenuHide(126,124) || isMenuHide(61,37) || isMenuHide(132,48) || isMenuHide(133,48)">
-        <sidenav-router-link route="commitment-report" *ngIf="isMenuHide(69,48)"><i class="fa fa-angle-double-right"></i> Commmitment Chit - Enrolled Subscriber</sidenav-router-link>
-        <sidenav-router-link route="customer-ledger" *ngIf="isMenuHide(126,124) || isMenuHide(61,37)"><i class="fa fa-angle-double-right"></i> Ledger</sidenav-router-link>
-        <sidenav-router-link route="pledge-customer-report" *ngIf="isMenuHide(132,48)"><i class="fa fa-angle-double-right"></i> Pledge</sidenav-router-link>
-        <sidenav-router-link route="suit-file-report" *ngIf="isMenuHide(133,48)"><i class="fa fa-angle-double-right"></i> Suit Filed</sidenav-router-link>
+    <!-- 6. SPN Customer CRM -->
+    <sidenav-menu icon="fa fa-heart" text="SPN Customer CRM" class="spn-m spn-m-crm"
+      [open]="isGroupOpen(['hub/crm','view-lead-management','customer-app-leads-report','view-source-type','sales-promotion','customer-birthday-report','sms-content','send-message'])"
+      *ngIf="canSection('crm')">
+      <sidenav-router-link route="/admin-panel/hub/crm" linkClass="spn-hub-link" *ngIf="can(621)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="customer-birthday-report" *ngIf="can(622)"><i class="fa fa-angle-double-right"></i> Birthday Wishes</sidenav-router-link>
+      <sidenav-router-link route="sales-promotion" *ngIf="can(623)"><i class="fa fa-angle-double-right"></i> New Group Wishes</sidenav-router-link>
+      <sidenav-router-link route="send-message" *ngIf="can(624)"><i class="fa fa-angle-double-right"></i> Send SMS / Wishes</sidenav-router-link>
+      <sidenav-router-link route="sms-content" *ngIf="can(625)"><i class="fa fa-angle-double-right"></i> Wish Templates</sidenav-router-link>
+      <sidenav-router-link route="view-lead-management" *ngIf="can(626)"><i class="fa fa-angle-double-right"></i> Leads</sidenav-router-link>
+      <sidenav-router-link route="customer-app-leads-report" *ngIf="can(627)"><i class="fa fa-angle-double-right"></i> Referral &amp; App Leads</sidenav-router-link>
+      <sidenav-router-link route="view-source-type" *ngIf="can(628)"><i class="fa fa-angle-double-right"></i> Lead Source</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 7. SPN HR Department -->
+    <sidenav-menu icon="fa fa-users" text="SPN HR Department" class="spn-m spn-m-hr"
+      [open]="isGroupOpen(['hub/hr','view-employee','add-employee','update-employee','view-designation','employee-salary','employee-advance','day-allowance-report','petrol-allowance','view-collection-area-mapping','view-employee-attendance','view-leave-requests','view-punch-attendance','view-employee-mobile-modules'])"
+      *ngIf="canSection('hr')">
+      <sidenav-router-link route="/admin-panel/hub/hr" linkClass="spn-hub-link" *ngIf="can(631)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="view-employee" *ngIf="can(632)"><i class="fa fa-angle-double-right"></i> Employee Details</sidenav-router-link>
+      <sidenav-router-link route="view-designation" *ngIf="can(633)"><i class="fa fa-angle-double-right"></i> Designation</sidenav-router-link>
+      <sidenav-router-link route="employee-salary" *ngIf="can(634)"><i class="fa fa-angle-double-right"></i> Salary</sidenav-router-link>
+      <sidenav-router-link route="employee-advance" *ngIf="can(635)"><i class="fa fa-angle-double-right"></i> Employee Advance / Loan</sidenav-router-link>
+      <sidenav-router-link route="day-allowance-report" *ngIf="can(636)"><i class="fa fa-angle-double-right"></i> Day Allowance (₹200/day)</sidenav-router-link>
+      <sidenav-router-link route="petrol-allowance" *ngIf="can(637)"><i class="fa fa-angle-double-right"></i> Petrol Allowance</sidenav-router-link>
+      <sidenav-router-link route="view-employee-attendance" *ngIf="can(638)"><i class="fa fa-angle-double-right"></i> Attendance</sidenav-router-link>
+      <sidenav-router-link route="view-leave-requests" *ngIf="can(639)"><i class="fa fa-angle-double-right"></i> Leave / Permission / OD</sidenav-router-link>
+      <sidenav-router-link route="view-punch-attendance" *ngIf="can(640)"><i class="fa fa-angle-double-right"></i> Live Tracking &amp; Punch Map</sidenav-router-link>
+      <sidenav-router-link route="view-collection-area-mapping" *ngIf="can(641)"><i class="fa fa-angle-double-right"></i> Collection Area Mapping</sidenav-router-link>
+      <sidenav-router-link route="view-employee-mobile-modules" *ngIf="can(642)"><i class="fa fa-angle-double-right"></i> Employees Care (Skills &amp; Achievements)</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 8. SPN Target / Task -->
+    <sidenav-menu icon="fa fa-bullseye" text="SPN Target / Task" class="spn-m spn-m-action"
+      [open]="isGroupOpen(['hub/action','add-task','view-daily-tasks-targets','task-report','set-employee-target','employee-performance-ai'])"
+      *ngIf="canSection('target-task') || legacyRoute('employee-performance-ai')">
+      <sidenav-router-link route="/admin-panel/hub/action" linkClass="spn-hub-link" *ngIf="can(651)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="add-task" *ngIf="can(652)"><i class="fa fa-angle-double-right"></i> New / Assign Task</sidenav-router-link>
+      <sidenav-router-link route="view-daily-tasks-targets" *ngIf="can(653)"><i class="fa fa-angle-double-right"></i> Daily Tasks &amp; Targets</sidenav-router-link>
+      <sidenav-router-link route="set-employee-target" *ngIf="can(654)"><i class="fa fa-angle-double-right"></i> Target Set</sidenav-router-link>
+      <sidenav-router-link route="task-report" *ngIf="can(655)"><i class="fa fa-angle-double-right"></i> Task Report</sidenav-router-link>
+      <sidenav-router-link route="employee-performance-ai" *ngIf="can(656) || legacyRoute('employee-performance-ai')"><i class="fa fa-angle-double-right"></i> Performance AI</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 9. SPN Ticket / Request -->
+    <sidenav-menu icon="fa fa-ticket" text="SPN Ticket / Request" class="spn-m spn-m-ticket"
+      [open]="isGroupOpen(['hub/ticket','office-tickets'])"
+      *ngIf="canSection('ticket')">
+      <sidenav-router-link route="/admin-panel/hub/ticket" linkClass="spn-hub-link" *ngIf="can(661)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="office-tickets" *ngIf="can(662)"><i class="fa fa-angle-double-right"></i> Office Wish &amp; Tickets</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 10. SPN Document Management -->
+    <sidenav-menu icon="fa fa-folder-open" text="SPN Document Management" class="spn-m spn-m-doc"
+      [open]="isGroupOpen(['hub/documents','view-employee-document','add-employee-document','view-loan-customer-document'])"
+      *ngIf="canSection('documents')">
+      <sidenav-router-link route="/admin-panel/hub/documents" linkClass="spn-hub-link" *ngIf="can(671)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="view-documents" *ngIf="can(672)"><i class="fa fa-angle-double-right"></i> Customer Documents</sidenav-router-link>
+      <sidenav-router-link route="view-employee-document" *ngIf="can(673)"><i class="fa fa-angle-double-right"></i> Employee Documents</sidenav-router-link>
+      <sidenav-router-link route="view-loan-customer-document" *ngIf="can(674)"><i class="fa fa-angle-double-right"></i> Loan Documents</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 11. SPN Security Power -->
+    <sidenav-menu icon="fa fa-shield" text="SPN Security Power" class="spn-m spn-m-sec"
+      [open]="isGroupOpen(['hub/security','view-employee-login','add-employee-login','view-role','add-role','add-permission','update-permission','log-monitoring-report'])"
+      *ngIf="canSection('security')">
+      <sidenav-router-link route="/admin-panel/hub/security" linkClass="spn-hub-link" *ngIf="can(681)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-router-link route="view-employee-login" *ngIf="can(682)"><i class="fa fa-angle-double-right"></i> User Management (Logins)</sidenav-router-link>
+      <sidenav-router-link route="view-role" *ngIf="can(683)"><i class="fa fa-angle-double-right"></i> Roles</sidenav-router-link>
+      <sidenav-router-link route="add-permission" *ngIf="can(684)"><i class="fa fa-angle-double-right"></i> Role &amp; Permission</sidenav-router-link>
+      <sidenav-router-link route="log-monitoring-report" *ngIf="can(685)"><i class="fa fa-angle-double-right"></i> Login Activity / Audit Logs</sidenav-router-link>
+    </sidenav-menu>
+
+    <!-- 12. SPN Reports Section -->
+    <sidenav-menu icon="fa fa-bar-chart" text="SPN Reports Section" class="spn-m spn-m-rep"
+      [open]="isGroupOpen(['hub/reports','commitment-report','pledge-customer-report','suit-file-report','business-agent-report','commission-pending-report','commission-payment-report','incentive-payment-report','incentive-pending-report','lead-management-report','loan-receipt-report','loan-customer-report','loan-customerwise-outstanding-report','loan-day-closing-report'])"
+      *ngIf="canSection('reports')">
+      <sidenav-router-link route="/admin-panel/hub/reports" linkClass="spn-hub-link" *ngIf="can(691)"><i class="fa fa-dashboard"></i> Overview</sidenav-router-link>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Customer Reports" *ngIf="canAny([704,692,693])">
+        <sidenav-router-link route="commitment-report" *ngIf="can(704)"><i class="fa fa-angle-double-right"></i> Chit Enrolment Report</sidenav-router-link>
+        <sidenav-router-link route="pledge-customer-report" *ngIf="can(692)"><i class="fa fa-angle-double-right"></i> Pledge</sidenav-router-link>
+        <sidenav-router-link route="suit-file-report" *ngIf="can(693)"><i class="fa fa-angle-double-right"></i> Suit Filed</sidenav-router-link>
       </sidenav-menu>
-      
-      <sidenav-menu icon="fa fa-angle-double-right" text="Payment Report" [active]="isMenuActive('/PaymentReports')" [open]="isMenuOpen('/PaymentReports')" *ngIf="isMenuHide(63,65) || isMenuHide(70,65) || isMenuHide(71,65)">
-        <sidenav-router-link route="payment-refund-report" *ngIf="isMenuHide(63,65)"><i class="fa fa-angle-double-right"></i> Refund</sidenav-router-link>
-        <sidenav-router-link route="commitment-payment-report" *ngIf="isMenuHide(70,65)"><i class="fa fa-angle-double-right"></i> Commitment Chit Payments</sidenav-router-link>
-        <sidenav-router-link route="commitment-pending-report" *ngIf="isMenuHide(71,65)"><i class="fa fa-angle-double-right"></i> Commitment Chit Pending Payments</sidenav-router-link>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Sales Reports" *ngIf="canAny([694,695,696,697,698,699])">
+        <sidenav-router-link route="business-agent-report" *ngIf="can(694)"><i class="fa fa-angle-double-right"></i> Business Agent Report</sidenav-router-link>
+        <sidenav-router-link route="commission-pending-report" *ngIf="can(695)"><i class="fa fa-angle-double-right"></i> Commission Pending</sidenav-router-link>
+        <sidenav-router-link route="commission-payment-report" *ngIf="can(696)"><i class="fa fa-angle-double-right"></i> Commission Payment</sidenav-router-link>
+        <sidenav-router-link route="incentive-payment-report" *ngIf="can(697)"><i class="fa fa-angle-double-right"></i> Incentive Payment</sidenav-router-link>
+        <sidenav-router-link route="incentive-pending-report" *ngIf="can(698)"><i class="fa fa-angle-double-right"></i> Incentive Pending</sidenav-router-link>
+        <sidenav-router-link route="lead-management-report" *ngIf="can(699)"><i class="fa fa-angle-double-right"></i> Lead Report</sidenav-router-link>
       </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Loan Reports" *ngIf="canAny([700,701,702,703])">
+        <sidenav-router-link route="loan-receipt-report" *ngIf="can(700)"><i class="fa fa-angle-double-right"></i> Loan Receipt</sidenav-router-link>
+        <sidenav-router-link route="loan-customer-report" *ngIf="can(701)"><i class="fa fa-angle-double-right"></i> Loan Customer Report</sidenav-router-link>
+        <sidenav-router-link route="loan-customerwise-outstanding-report" *ngIf="can(702)"><i class="fa fa-angle-double-right"></i> Loan Outstanding</sidenav-router-link>
+        <sidenav-router-link route="loan-day-closing-report" *ngIf="can(703)"><i class="fa fa-angle-double-right"></i> Loan Day Closing</sidenav-router-link>
+      </sidenav-menu>
+    </sidenav-menu>
 
-      <sidenav-menu icon="fa fa-angle-double-right" text="Outstanding Report" [active]="isMenuActive('/OutstandingReport')" [open]="isMenuOpen('/OutstandingReport')" *ngIf="isMenuHide(81,43) || isMenuHide(93,43)">
-        <sidenav-router-link route="commitmentcustomer-outstanding-report" *ngIf="isMenuHide(81,43)"><i class="fa fa-angle-double-right"></i> Commitment Customer</sidenav-router-link>
-        <sidenav-router-link route="loan-customerwise-outstanding-report" *ngIf="isMenuHide(93,43)"><i class="fa fa-angle-double-right"></i> Loan Outstanding</sidenav-router-link>
+    <!-- 13. SPN Account Management -->
+    <sidenav-menu icon="fa fa-calculator" text="SPN Account Management" class="spn-m spn-m-acc"
+      [open]="isGroupOpen(['view-expenses-income','add-expenses-income','view-petty-cash-income','add-petty-cash-income','view-petty-cash-expense','add-petty-cash-expense','view-petty-cash-head','cheque-in-bank','cashbook','bank-book','day-book-report','day-closing-report','accounts-report','add-expenses-income-report','trial-balance','profit-loss-report','balance-sheet-report','view-accounting-group','view-accounting-head','view-bank-details','my-cash-box','cash-box-approvals','income-cash-box-report','my-day-report','branch-income-expense-report','petty-cash-branch-report','payment-accounts-payout'])"
+      *ngIf="canSection('accounts') || canAny([594,595,599]) || legacyRoute('cashbook')">
+      <sidenav-menu icon="fa fa-angle-double-right" text="Payments Done" *ngIf="canAny([594,595,599,711])">
+        <sidenav-router-link route="/admin-panel/payment-priced" *ngIf="can(594)"><i class="fa fa-angle-double-right"></i> Prized Payment</sidenav-router-link>
+        <sidenav-router-link route="/admin-panel/payment-closed" *ngIf="can(595)"><i class="fa fa-angle-double-right"></i> Final Payment</sidenav-router-link>
+        <sidenav-router-link route="/admin-panel/payment-refund-desk" *ngIf="can(599)"><i class="fa fa-angle-double-right"></i> Refund Payment</sidenav-router-link>
+        <sidenav-router-link route="/admin-panel/payment-accounts-payout" *ngIf="can(711)"><i class="fa fa-angle-double-right"></i> Accounts Payout Approval</sidenav-router-link>
       </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="My Cash Box" *ngIf="canAny([712,713,714,715]) || legacyRoute('cashbook')">
+        <sidenav-router-link route="my-cash-box" *ngIf="can(712) || legacyRoute('cashbook')"><i class="fa fa-angle-double-right"></i> My Cash Box</sidenav-router-link>
+        <sidenav-router-link route="cash-box-approvals" *ngIf="can(713) || legacyRoute('cashbook')"><i class="fa fa-angle-double-right"></i> Cash Box Approvals</sidenav-router-link>
+        <sidenav-router-link route="income-cash-box-report" *ngIf="can(714) || legacyRoute('cashbook')"><i class="fa fa-angle-double-right"></i> Income Cash Box Report</sidenav-router-link>
+        <sidenav-router-link route="my-day-report" *ngIf="can(715) || legacyRoute('cashbook')"><i class="fa fa-angle-double-right"></i> My Day Report</sidenav-router-link>
+      </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Branch Reports" *ngIf="canAny([716,717])">
+        <sidenav-router-link route="branch-income-expense-report" *ngIf="can(716)"><i class="fa fa-angle-double-right"></i> Branch Income &amp; Expense (AI)</sidenav-router-link>
+        <sidenav-router-link route="petty-cash-branch-report" *ngIf="can(717)"><i class="fa fa-angle-double-right"></i> Petty Cash Branch Report</sidenav-router-link>
+      </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Entries" *ngIf="canAny([718,719,720,721])">
+        <sidenav-router-link route="view-expenses-income" *ngIf="can(718)"><i class="fa fa-angle-double-right"></i> Income / Expenses Entry</sidenav-router-link>
+        <sidenav-router-link route="view-petty-cash-income" *ngIf="can(719)"><i class="fa fa-angle-double-right"></i> Petty Cash Income</sidenav-router-link>
+        <sidenav-router-link route="view-petty-cash-expense" *ngIf="can(720)"><i class="fa fa-angle-double-right"></i> Petty Cash Expense</sidenav-router-link>
+        <sidenav-router-link route="cheque-in-bank" *ngIf="can(721)"><i class="fa fa-angle-double-right"></i> Cheque In Bank</sidenav-router-link>
+      </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Books &amp; Statements" *ngIf="canAny([722,723,724,725,726,727,728,729,730]) || legacyRoute('cashbook')">
+        <sidenav-router-link route="day-book-report" *ngIf="can(722)"><i class="fa fa-angle-double-right"></i> Day Book</sidenav-router-link>
+        <sidenav-router-link route="cashbook" *ngIf="can(723) || legacyRoute('cashbook')"><i class="fa fa-angle-double-right"></i> Cash Box Book</sidenav-router-link>
+        <sidenav-router-link route="bank-book" *ngIf="can(724)"><i class="fa fa-angle-double-right"></i> Bank Book</sidenav-router-link>
+        <sidenav-router-link route="day-closing-report" *ngIf="can(725)"><i class="fa fa-angle-double-right"></i> Day Closing Report</sidenav-router-link>
+        <sidenav-router-link route="accounts-report" *ngIf="can(726)"><i class="fa fa-angle-double-right"></i> Accounts Report</sidenav-router-link>
+        <sidenav-router-link route="add-expenses-income-report" *ngIf="can(727)"><i class="fa fa-angle-double-right"></i> Income / Expenses Report</sidenav-router-link>
+        <sidenav-router-link route="trial-balance" *ngIf="can(728)"><i class="fa fa-angle-double-right"></i> Trial Balance</sidenav-router-link>
+        <sidenav-router-link route="profit-loss-report" *ngIf="can(729)"><i class="fa fa-angle-double-right"></i> Profit &amp; Loss</sidenav-router-link>
+        <sidenav-router-link route="balance-sheet-report" *ngIf="can(730)"><i class="fa fa-angle-double-right"></i> Balance Sheet</sidenav-router-link>
+      </sidenav-menu>
+      <sidenav-menu icon="fa fa-angle-double-right" text="Account Masters" *ngIf="canAny([731,732,733,734])">
+        <sidenav-router-link route="view-accounting-group" *ngIf="can(731)"><i class="fa fa-angle-double-right"></i> Account Groups</sidenav-router-link>
+        <sidenav-router-link route="view-accounting-head" *ngIf="can(732)"><i class="fa fa-angle-double-right"></i> Account Head</sidenav-router-link>
+        <sidenav-router-link route="view-petty-cash-head" *ngIf="can(733)"><i class="fa fa-angle-double-right"></i> Petty Cash Head</sidenav-router-link>
+        <sidenav-router-link route="view-bank-details" *ngIf="can(734)"><i class="fa fa-angle-double-right"></i> Bank Details</sidenav-router-link>
+      </sidenav-menu>
+    </sidenav-menu>
 
-      <sidenav-menu icon="fa fa-angle-double-right" text="Collection Report" [active]="isMenuActive('/Transactions')" [open]="isMenuOpen('/Transactions')" *ngIf="isMenuHide(82,66) || isMenuHide(51,66) || isMenuHide(145,66) || isMenuHide(146,66) || isMenuHide(74,66) || isMenuHide(147,66) || isMenuHide(127,124) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)">
-        <sidenav-router-link route="commitment-receipt-report" *ngIf="isMenuHide(82,66)"><i class="fa fa-angle-double-right"></i> Commitment Receipt Report</sidenav-router-link>
-        <sidenav-router-link route="historical-performance-report" *ngIf="isMenuHide(51,66)"><i class="fa fa-angle-double-right"></i> Historical performance (3 / 6 / 12 mo)</sidenav-router-link>
-        <sidenav-router-link route="business-forecast-report" *ngIf="isMenuHide(51,66)"><i class="fa fa-angle-double-right"></i> Business forecast (3 mo vs YoY)</sidenav-router-link>
-        <sidenav-router-link route="employee-collection-report" *ngIf="isMenuHide(145,66)"><i class="fa fa-angle-double-right"></i> Employee Collection Report</sidenav-router-link>
-        <sidenav-router-link route="before-enrol-receipt-report" *ngIf="isMenuHide(146,66)"><i class="fa fa-angle-double-right"></i> Before Enrollment Receipt Report</sidenav-router-link>
-        <sidenav-router-link route="other-receipt-charges-report" *ngIf="isMenuHide(74,66)"><i class="fa fa-angle-double-right"></i> Other Charges Report</sidenav-router-link>
-        <sidenav-router-link route="settlement-report" *ngIf="isMenuHide(147,66) || isMenuHide(205,1) || isMenuHide(203,1) || isMenuHide(202,1) || isMenuHide(201,1) || isMenuHide(1,0)"><i class="fa fa-angle-double-right"></i> Settlement Report</sidenav-router-link>
-        <sidenav-router-link route="view-feed-back" *ngIf="isMenuHide(127,124)"><i class="fa fa-angle-double-right"></i> Collection Feedback</sidenav-router-link>
-      </sidenav-menu>
+    <!-- Other modules not covered by the SPN boards -->
+    <sidenav-menu icon="fa fa-university" text="Loan &amp; Legal" class="spn-m spn-m-loan"
+      [open]="isGroupOpen(['view-loan','add-loan-receipt','view-case-stage','view-lawyer'])"
+      *ngIf="canSection('loan-legal')">
+      <sidenav-router-link route="view-loan" *ngIf="can(741)"><i class="fa fa-angle-double-right"></i> Loan Disbursement</sidenav-router-link>
+      <sidenav-router-link route="add-loan-receipt" *ngIf="can(742)"><i class="fa fa-angle-double-right"></i> Loan Receipt</sidenav-router-link>
+      <sidenav-router-link route="view-case-stage" *ngIf="can(743)"><i class="fa fa-angle-double-right"></i> Case Stages</sidenav-router-link>
+      <sidenav-router-link route="view-lawyer" *ngIf="can(744)"><i class="fa fa-angle-double-right"></i> Lawyer</sidenav-router-link>
+    </sidenav-menu>
 
-      <sidenav-menu icon="fa fa-angle-double-right" text="Accounts Report" [active]="isMenuActive('/AccountsReport')" [open]="isMenuOpen('/AccountsReport')" *ngIf="isMenuHide(148,67) || isMenuHide(75,67) || isMenuHide(76,67) || isMenuHide(94,67) || isMenuHide(105,67) || isMenuHide(106,67) || isMenuHide(108,67) || isMenuHide(107,67)"> 
-        <sidenav-router-link route="day-book-report" *ngIf="isMenuHide(148,67)"><i class="fa fa-angle-double-right"></i> Day Book</sidenav-router-link>
-        <sidenav-router-link route="day-closing-report" *ngIf="isMenuHide(75,67)"><i class="fa fa-angle-double-right"></i> Day Closing Report</sidenav-router-link>
-        <sidenav-router-link route="accounts-report" *ngIf="isMenuHide(76,67)"><i class="fa fa-angle-double-right"></i> Accounts Report</sidenav-router-link>
-        <sidenav-router-link route="loan-day-closing-report" *ngIf="isMenuHide(94,67)"><i class="fa fa-angle-double-right"></i> Loan - Day closing report</sidenav-router-link>
-        <sidenav-router-link route="add-expenses-income-report" *ngIf="isMenuHide(105,67)"><i class="fa fa-angle-double-right"></i> Account Income/Expenses</sidenav-router-link>
-        <sidenav-router-link route="trial-balance" *ngIf="isMenuHide(106,67)"><i class="fa fa-angle-double-right"></i> Trial Balanace</sidenav-router-link>
-        <sidenav-router-link route="profit-loss-report" *ngIf="isMenuHide(108,67)"><i class="fa fa-angle-double-right"></i> Profit & Loss</sidenav-router-link>
-        <sidenav-router-link route="balance-sheet-report" *ngIf="isMenuHide(107,67)"><i class="fa fa-angle-double-right"></i> Balance Sheet</sidenav-router-link>
-      </sidenav-menu> 
-      
-      <sidenav-menu icon="fa fa-angle-double-right" text="Business Development Report" [active]="isMenuActive('/BusinessDevelopment')" [open]="isMenuOpen('/BusinessDevelopment')" *ngIf="isMenuHide(77,68) || isMenuHide(78,68) || isMenuHide(150,68) || isMenuHide(98,68) || isMenuHide(97,68) || isMenuHide(95,68)">
-        <sidenav-router-link route="business-agent-report" *ngIf="isMenuHide(77,68)"><i class="fa fa-angle-double-right"></i> Business Agent Report</sidenav-router-link>
-        <sidenav-router-link route="commission-pending-report" *ngIf="isMenuHide(78,68)"><i class="fa fa-angle-double-right"></i> Comission Pending Report</sidenav-router-link>
-        <sidenav-router-link route="commission-payment-report" *ngIf="isMenuHide(150,68)"><i class="fa fa-angle-double-right"></i> Commission Payment report</sidenav-router-link>
-        <sidenav-router-link route="incentive-payment-report" *ngIf="isMenuHide(98,68)"><i class="fa fa-angle-double-right"></i> Incentive Payment</sidenav-router-link>
-        <sidenav-router-link route="incentive-pending-report" *ngIf="isMenuHide(97,68)"><i class="fa fa-angle-double-right"></i> Incentive Pending</sidenav-router-link>
-        <sidenav-router-link route="lead-management-report" *ngIf="isMenuHide(95,68)"><i class="fa fa-angle-double-right"></i> Lead Report</sidenav-router-link>
-      </sidenav-menu>
-
-      <sidenav-menu icon="fa fa-angle-double-right" text="Loan Report" [active]="isMenuActive('/LoanReport')" [open]="isMenuOpen('/LoanReport')" *ngIf="isMenuHide(84,83) || isMenuHide(91,83) || isMenuHide(93,43) || isMenuHide(94,67)"> 
-        <sidenav-router-link route="loan-receipt-report" *ngIf="isMenuHide(84,83)"><i class="fa fa-angle-double-right"></i> Loan Receipt</sidenav-router-link>
-        <sidenav-router-link route="loan-customer-report" *ngIf="isMenuHide(91,83)"><i class="fa fa-angle-double-right"></i> Loan Customer Report</sidenav-router-link>
-        <sidenav-router-link route="loan-customerwise-outstanding-report" *ngIf="isMenuHide(93,43)"><i class="fa fa-angle-double-right"></i> Loan Outstanding</sidenav-router-link>
-        <sidenav-router-link route="loan-day-closing-report" *ngIf="isMenuHide(94,67)"><i class="fa fa-angle-double-right"></i> Loan - Day closing report</sidenav-router-link>
-      </sidenav-menu> 
-       
-      <sidenav-menu icon="fa fa-angle-double-right" text="Log Monitoring Report" [active]="isMenuActive('/LogMonitoring')" [open]="isMenuOpen('/LogMonitoring')" *ngIf="isMenuHide(89,88)">
-        <sidenav-router-link route="log-monitoring-report" *ngIf="isMenuHide(89,88)"><i class="fa fa-angle-double-right"></i> Logs</sidenav-router-link>
-      </sidenav-menu>
-
-      <sidenav-menu icon="fa fa-angle-double-right" text="SPN Collection Reports" [active]="isMenuActive('/SpnCollectionReports')" [open]="isMenuOpen('/SpnCollectionReports')" *ngIf="isMenuHide(164,168) || isMenuHide(165,168) || isMenuHide(166,168) || isMenuHide(167,168)">
-        <sidenav-router-link route="scheme-wise-payable-pending-report" *ngIf="isMenuHide(164,168)"><i class="fa fa-angle-double-right"></i> Scheme-wise Payable &amp; Pending</sidenav-router-link>
-        <sidenav-router-link route="next-month-collection-report" *ngIf="isMenuHide(165,168)"><i class="fa fa-angle-double-right"></i> Next Month Collection</sidenav-router-link>
-        <sidenav-router-link route="this-month-unpaid-report" *ngIf="isMenuHide(166,168)"><i class="fa fa-angle-double-right"></i> This Month Unpaid (Running)</sidenav-router-link>
-        <sidenav-router-link route="due-no-customer-report" *ngIf="isMenuHide(167,168)"><i class="fa fa-angle-double-right"></i> Due No Customer List</sidenav-router-link>
-      </sidenav-menu>
+    <sidenav-menu icon="fa fa-cogs" text="Masters &amp; Settings" class="spn-m spn-m-set"
+      [open]="isGroupOpen(['view-head-office','view-branch','view-country','view-state','view-district','view-city','view-collection-area','view-charges-type','view-family-code'])"
+      *ngIf="canSection('masters')">
+      <sidenav-router-link route="view-head-office" *ngIf="can(751)"><i class="fa fa-angle-double-right"></i> Regional Office</sidenav-router-link>
+      <sidenav-router-link route="view-branch" *ngIf="can(752)"><i class="fa fa-angle-double-right"></i> Branch Office</sidenav-router-link>
+      <sidenav-router-link route="view-country" *ngIf="can(753)"><i class="fa fa-angle-double-right"></i> Country</sidenav-router-link>
+      <sidenav-router-link route="view-state" *ngIf="can(754)"><i class="fa fa-angle-double-right"></i> State</sidenav-router-link>
+      <sidenav-router-link route="view-district" *ngIf="can(755)"><i class="fa fa-angle-double-right"></i> District</sidenav-router-link>
+      <sidenav-router-link route="view-city" *ngIf="can(756)"><i class="fa fa-angle-double-right"></i> City</sidenav-router-link>
+      <sidenav-router-link route="view-collection-area" *ngIf="can(757)"><i class="fa fa-angle-double-right"></i> Collection Area</sidenav-router-link>
+      <sidenav-router-link route="view-charges-type" *ngIf="can(758)"><i class="fa fa-angle-double-right"></i> Charges Types</sidenav-router-link>
+      <sidenav-router-link route="view-family-code" *ngIf="can(759)"><i class="fa fa-angle-double-right"></i> Family Code Master</sidenav-router-link>
     </sidenav-menu>
 
   </div>

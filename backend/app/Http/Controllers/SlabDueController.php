@@ -431,18 +431,19 @@ class SlabDueController extends Controller
     }
 
     public function get_customer_slab_type(Request $request) {
-        try { 
+        try {
 		$cond = [];
-		$cond['customer_id'] = $request->id; 
-		$cond['chit_type'] = 3; 
-            $slab_types = ChitDetail::where($cond)->get();
-			
+		$cond['customer_id'] = $request->id;
+		$cond['chit_type'] = 3;
+            // Include cancelled (soft-deleted) enrollments — used by add-commitment-enrol refund
+            $slab_types = ChitDetail::withTrashed()->where($cond)->get();
+
             $i=1;
 			$slab_list = [];
-			
-            foreach($slab_types as $slab_type) { 
-			
-				$slab_due = SlabDue::where('id',$slab_type->slab_id)->get();
+
+            foreach($slab_types as $slab_type) {
+
+				$slab_due = SlabDue::withTrashed()->where('id',$slab_type->slab_id)->get();
 				if(count($slab_due)>0) {
 					$slab_type->sno = $i;
 					$slab_type->slab_info = $slab_due[0];
@@ -450,9 +451,8 @@ class SlabDueController extends Controller
 						$slab_type->slab_info->slab_name = \App\Models\ChitDetail::formatSlabWithArNo($slab_type->slab_info->slab_name, $slab_type->ar_no ?? null);
 					}
 					$i++;
-					
+					array_push($slab_list,$slab_type);
 				}
-				array_push($slab_list,$slab_type);
                 /*$slab_type->sno = $i;
                 $slab_name = SlabDue::where('id',$slab_type->slab_id)->get();
                 $slab_type->slab_info = $slab_name[0];

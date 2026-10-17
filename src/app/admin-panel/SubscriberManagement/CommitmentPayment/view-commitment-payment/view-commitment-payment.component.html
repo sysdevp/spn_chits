@@ -1,6 +1,6 @@
 <ng-template #uploadModal let-c="close" let-d="dismiss">
   <div class="modal-header without-text">
-    <h5 class="float-left px-2 py-2 text-white mb-0">Commitment Payment Details</h5>
+    <h5 class="float-left px-2 py-2 text-white mb-0">Prized Payment Details</h5>
     <button type="button" class="btn btn-default bg-white modal-close-btn float-right mx-3 rounded-circle py-2 px-3 " id="myDiv" (click)="c('Close click')">X</button>
   </div>
   <div class="modal-body">
@@ -39,7 +39,7 @@
             <b *ngIf="ViewCommitmentPaymentInfo.payment_for==4">Advance Return Amount</b>
             <b *ngIf="ViewCommitmentPaymentInfo.payment_for==5">Chit Amount Transfer</b>
             <b *ngIf="ViewCommitmentPaymentInfo.payment_for==6">Advance Amount Transfer</b>
-            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==7">Commitment Payment</b>
+            <b *ngIf="ViewCommitmentPaymentInfo.payment_for==7">Prized Payment</b>
           </div>
         </div>
         <div class="col-md-6">
@@ -99,9 +99,11 @@
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row">
-      <div class="col-6 my-auto font-weight-bold">Commitment Payment List</div>
+      <div class="col-6 my-auto font-weight-bold">Prized Payment List</div>
       <div class="col-6 text-right">
-        <a [routerLink]="['/admin-panel/add-commitment-payment']" class="bg-success border-0 text-white px-3 py-2"> + Add Commitment Payment</a>
+        <a [routerLink]="['/admin-panel/document-preparation']" [queryParams]="{kind: 'prized'}" class="bg-primary border-0 text-white px-3 py-2 mr-1">Prized Payment</a>
+        <a [routerLink]="['/admin-panel/document-preparation']" [queryParams]="{kind: 'closed'}" class="bg-info border-0 text-white px-3 py-2 mr-1">Closed Payment</a>
+        <a [routerLink]="['/admin-panel/add-commitment-payment']" class="bg-success border-0 text-white px-3 py-2"> + Add Prized Payment</a>
       </div>
     </div>
   </div>

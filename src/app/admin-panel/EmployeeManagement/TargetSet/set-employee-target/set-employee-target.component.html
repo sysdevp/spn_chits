@@ -64,10 +64,15 @@
           <option value="activity">Activity Target</option>
         </select>
       </div>
-      <div class="form-group col-md-4">
-        <label>Amount <span class="error">*</span></label>
+      <div class="form-group col-md-2">
+        <label>Target Amount</label>
         <input type="number" class="form-control" formControlName="target_amount" min="0" step="0.01" placeholder="0.00">
       </div>
+      <div class="form-group col-md-2">
+        <label>Business Value</label>
+        <input type="number" class="form-control" formControlName="business_value" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="col-12 text-danger small mb-2" *ngIf="submitted && amountMissing()">Enter the Target Amount or the Business Value</div>
     </div>
 
     <div class="form-row">
@@ -106,6 +111,7 @@
             <th>From</th>
             <th>To</th>
             <th>Target</th>
+            <th>Business Value</th>
             <th>Achieved</th>
             <th>%</th>
             <th></th>
@@ -120,6 +126,7 @@
             <td>{{row.period_start}}</td>
             <td>{{row.period_end}}</td>
             <td>{{row.target_amount}}</td>
+            <td>{{row.business_value || 0}}</td>
             <td>{{row.achieved_amount}}</td>
             <td>
               <div class="hr-progress"><span [style.width.%]="row.completion_percent || 0"></span></div>
@@ -130,7 +137,7 @@
             </td>
           </tr>
           <tr *ngIf="!targetList.length">
-            <td colspan="10" class="text-center text-muted py-4">No targets found</td>
+            <td colspan="11" class="text-center text-muted py-4">No targets found</td>
           </tr>
         </tbody>
       </table>

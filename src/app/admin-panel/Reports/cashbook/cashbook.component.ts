@@ -3,10 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../../Services/user.service';
 import { AppService } from '../../../app.service';
 import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
 
 @Component({
-  
   selector: 'app-cashbook',
   templateUrl: './cashbook.component.html',
   styles: []
@@ -18,14 +16,15 @@ export class CashbookComponent implements OnInit {
   SubmitbuttonName = 'Submit';
 
   entries: any[] = [];
-  opening_balance: number = 0;
-  closing_balance: number = 0;
-  total_debit: number = 0;
-  total_credit: number = 0;
+  opening_balance = 0;
+  closing_balance = 0;
+  total_debit = 0;
+  total_credit = 0;
   reportLoaded = false;
 
-  branchList: any;
-  isSuperAdmin: boolean;
+  branchList: any[] = [];
+  companyList: any[] = [];
+  isSuperAdmin = false;
 
   @ViewChild('focus1') focus1: ElementRef;
   @ViewChild('focus2') focus2: ElementRef;
@@ -39,26 +38,41 @@ export class CashbookComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    const tenantId = localStorage.getItem('tenant_id') || '';
     this.bookForm = this.fb.group({
-      tenant_id: [''],
-      branch_id: [''],
-      start_date: [null, Validators.required],
-      end_date: [null, Validators.required],
-      book_type: ['cash', Validators.required] // cash or bank
+      tenant_id: [tenantId, Validators.required],
+      branch_id: ['', Validators.required],
+      start_date: ['', Validators.required],
+      end_date: ['', Validators.required],
+      book_type: ['cash', Validators.required]
     });
+    if (tenantId) {
+      this.isSuperAdmin = false;
+      this.setBranchList(tenantId);
+    } else {
+      this.isSuperAdmin = true;
+      this.userservice.getData('', 'list-tenants', 'POST').subscribe((res: any) => {
+        this.companyList = res.status === 'Success' ? res.data : [];
+      });
+    }
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = ('0' + (today.getMonth() + 1)).slice(-2);
+    const d = ('0' + today.getDate()).slice(-2);
+    this.bookForm.get('start_date').setValue(y + '-' + m + '-01');
+    this.bookForm.get('end_date').setValue(y + '-' + m + '-' + d);
   }
 
   companyChg(event) {
-    let tenant_id = event.target.value;
-    this.setBranchList(tenant_id);
+    this.bookForm.get('branch_id').setValue('');
+    this.setBranchList(event.target.value);
   }
 
   setBranchList(tenant_id) {
-    let cond = {
-      "conditions[tenant_id]": tenant_id,
-      "log_id": localStorage.getItem('logged_employee_id')
-    };
-    this.userservice.getData(cond, "get-branches", "POST").subscribe((res: any) => {
+    this.userservice.getData({
+      'conditions[tenant_id]': tenant_id,
+      log_id: localStorage.getItem('logged_employee_id')
+    }, 'get-branches', 'POST').subscribe((res: any) => {
       this.branchList = res.status === 'Success' ? res.data : [];
     });
   }
@@ -80,36 +94,48 @@ export class CashbookComponent implements OnInit {
       return;
     }
 
-    const formData = { ...this.bookForm.value };
+    const formData: any = { ...this.bookForm.value };
+    formData.from_date = formData.start_date;
+    formData.to_date = formData.end_date;
 
     this.userservice.getData(formData, 'cash-bank-book', 'POST').subscribe((res: any) => {
       this.SubmitbuttonName = 'Submit';
       if (res.status === 'Success') {
         const data = res.data || {};
-        this.entries = data.entries || [];
+        this.entries = (data.entries || []).map((e: any) => Object.assign({}, e, {
+          running_balance: e.running_balance != null ? e.running_balance : e.balance
+        }));
         this.opening_balance = data.opening_balance || 0;
         this.total_debit = data.total_debit || 0;
         this.total_credit = data.total_credit || 0;
         this.closing_balance = data.closing_balance || 0;
         this.reportLoaded = true;
       } else {
-        this.appService.showAlert('Report', res.msg, 'error');
+        this.appService.showAlert('Cash Box Book', res.msg || res.error || 'Failed', 'error');
       }
-    }, err => {
+    }, () => {
       this.SubmitbuttonName = 'Submit';
-      this.appService.showAlert('Report', 'Something went wrong!', 'error');
+      this.appService.showAlert('Cash Box Book', 'Something went wrong!', 'error');
     });
   }
 
   exportExcel(): void {
-    const worksheet = XLSX.utils.json_to_sheet(this.entries);
-    const workbook = { Sheets: { 'Report': worksheet }, SheetNames: ['Report'] };
-    XLSX.writeFile(workbook, 'cash-bank-book.xlsx');
-  }
-
-  exportPDF(): void {
-    const doc = new jsPDF();
-    
-    doc.save('cash-bank-book.pdf');
+    const rows = this.entries.map((e) => ({
+      Date: e.date,
+      Particulars: e.particulars,
+      Debit: e.debit,
+      Credit: e.credit,
+      Balance: e.running_balance
+    }));
+    rows.push({
+      Date: '',
+      Particulars: 'TOTAL',
+      Debit: this.total_debit,
+      Credit: this.total_credit,
+      Balance: this.closing_balance
+    } as any);
+    const worksheet = XLSX.utils.json_to_sheet(rows);
+    const workbook = { Sheets: { Report: worksheet }, SheetNames: ['Report'] };
+    XLSX.writeFile(workbook, 'cash-box-book.xlsx');
   }
 }

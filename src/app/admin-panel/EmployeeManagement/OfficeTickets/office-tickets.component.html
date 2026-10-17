@@ -1,0 +1,116 @@
+<div class="card">
+  <div class="card-header font-weight-bold" style="background:#025E2D;color:#fff">Employees – Office Wish &amp; Ticket Raising</div>
+  <div class="card-body">
+    <form [formGroup]="filterForm" (ngSubmit)="load()">
+      <div class="form-row">
+        <div class="form-group col-md-2" [hidden]="!isSuperAdmin">
+          <label>Company</label>
+          <select class="form-control" formControlName="tenant_id" (change)="companyChg($event)">
+            <option value="">Select</option>
+            <option *ngFor="let c of companyList" [value]="c.id">{{ c.chit_fund_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>Branch</label>
+          <select class="form-control" formControlName="branch_id">
+            <option value="0">All branches</option>
+            <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>Type</label>
+          <select class="form-control" formControlName="kind">
+            <option value="all">All</option>
+            <option value="office_wish">Office Wish</option>
+            <option value="complaint">Complaint</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>Status</label>
+          <select class="form-control" formControlName="status">
+            <option value="all">All</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="approved">Approved</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label>Search</label>
+          <input class="form-control" formControlName="search" placeholder="Ticket ID / subject" />
+        </div>
+        <div class="form-group col-md-2 d-flex align-items-end">
+          <button class="btn btn-success w-100" type="submit">{{ loading ? 'Loading…' : 'Filter' }}</button>
+        </div>
+      </div>
+    </form>
+
+    <div class="row mb-3">
+      <div class="col-md-3 mb-2"><div class="tk-kpi tk-a"><div class="small">Total</div><div class="h4 mb-0">{{ summary.total }}</div></div></div>
+      <div class="col-md-3 mb-2"><div class="tk-kpi tk-b"><div class="small">Open</div><div class="h4 mb-0">{{ summary.open }}</div></div></div>
+      <div class="col-md-3 mb-2"><div class="tk-kpi tk-c"><div class="small">In Progress</div><div class="h4 mb-0">{{ summary.in_progress }}</div></div></div>
+      <div class="col-md-3 mb-2"><div class="tk-kpi tk-d"><div class="small">Resolved</div><div class="h4 mb-0">{{ summary.resolved }}</div></div></div>
+    </div>
+
+    <div class="row">
+      <div class="col-lg-7">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered">
+            <thead><tr><th>Ticket</th><th>Type</th><th>Employee</th><th>Branch</th><th>Date</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <tr *ngFor="let row of rows">
+                <td>{{ row.ticket_no }}</td>
+                <td>{{ row.category }}</td>
+                <td>{{ row.employee_name }}</td>
+                <td>{{ row.branch_name }}</td>
+                <td>{{ row.created_at }}</td>
+                <td>{{ label(row.status) }}</td>
+                <td><button type="button" class="btn btn-sm btn-outline-success" (click)="open(row)">View</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="!rows.length" class="text-muted">No tickets for this filter. Employees raise them from the app under Office Wish &amp; Tickets.</p>
+        </div>
+      </div>
+      <div class="col-lg-5" *ngIf="report">
+        <h6 class="font-weight-bold">Tickets by type</h6>
+        <div *ngFor="let item of report.by_type" class="mb-2">
+          <div class="d-flex justify-content-between small"><span>{{ item.name }}</span><span>{{ item.count }}</span></div>
+          <div class="bar" [style.width]="barWidth(item.count)"></div>
+        </div>
+        <h6 class="font-weight-bold mt-3">Tickets by branch</h6>
+        <div *ngFor="let item of report.by_branch" class="d-flex justify-content-between small border-bottom py-1">
+          <span>{{ item.name }}</span><strong>{{ item.count }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="border rounded p-3 mt-3" *ngIf="selected">
+      <div class="d-flex justify-content-between">
+        <h6 class="mb-0">{{ selected.ticket_no }} · {{ selected.category }}</h6>
+        <span class="badge badge-success">{{ label(selected.status) }}</span>
+      </div>
+      <p class="mb-1 mt-2"><strong>{{ selected.employee_name }}</strong> · {{ selected.branch_name }}</p>
+      <p class="mb-1">{{ selected.subject }}</p>
+      <p>{{ selected.description }}</p>
+      <p class="small text-muted" *ngIf="selected.from_date">From {{ selected.from_date }} to {{ selected.to_date || '-' }} · Priority {{ selected.priority }}</p>
+      <div class="msg" *ngFor="let msg of messages">
+        <strong>{{ msg.sender_name }}</strong> <span class="text-muted small">{{ msg.sender_role }} · {{ msg.created_at }}</span>
+        <div>{{ msg.message }}</div>
+      </div>
+      <div class="form-row">
+        <div class="col-md-8"><input class="form-control" [(ngModel)]="reply" placeholder="Reply to employee" /></div>
+        <div class="col-md-4"><button type="button" class="btn btn-success w-100" (click)="send()">Send</button></div>
+      </div>
+      <div class="form-group mt-2">
+        <label>Decision remarks</label>
+        <input class="form-control" [(ngModel)]="remarks" />
+      </div>
+      <button type="button" class="btn btn-outline-primary mr-1" (click)="setStatus('in_progress')">In Progress</button>
+      <button type="button" class="btn btn-outline-success mr-1" (click)="setStatus('approved')">Approve</button>
+      <button type="button" class="btn btn-success mr-1" (click)="setStatus('resolved')">Resolve</button>
+      <button type="button" class="btn btn-secondary" (click)="setStatus('closed')">Close</button>
+    </div>
+  </div>
+</div>

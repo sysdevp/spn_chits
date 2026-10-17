@@ -1,0 +1,69 @@
+<div class="sg-hero">
+  <h1>Completed – Payment Not Given</h1>
+  <p>Customers who paid every due in full but have not received their chit amount yet. Shows how much they paid, how much we give, and the difference.</p>
+</div>
+
+<div class="sg-card">
+  <div class="sg-grid">
+    <div *ngIf="!lockedBranch">
+      <label>Branch</label>
+      <select [(ngModel)]="f.branch_id">
+        <option value="">All Branches</option>
+        <option *ngFor="let b of branchList" [value]="b.id">{{ b.branch_name }}</option>
+      </select>
+    </div>
+    <div>
+      <label>Scheme</label>
+      <select [(ngModel)]="f.scheme_id">
+        <option value="">All Schemes</option>
+        <option *ngFor="let s of schemeList" [value]="s.id">{{ schemeLabel(s) }}</option>
+      </select>
+    </div>
+    <div><label>Search</label><input type="text" [(ngModel)]="f.search" placeholder="Name, code, mobile, AR no" /></div>
+    <div><label><input type="checkbox" [(ngModel)]="f.include_paid" /> Include already paid</label></div>
+    <div style="display:flex;gap:8px">
+      <button type="button" class="sg-btn" (click)="load()">Search</button>
+      <button type="button" class="sg-btn light" (click)="exportCsv()">CSV</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-kpis">
+  <div class="sr-kpi"><span>Customers</span><b>{{ totals.count || 0 }}</b></div>
+  <div class="sr-kpi blue"><span>Customers paid</span><b>{{ money(totals.customer_paid) }}</b></div>
+  <div class="sr-kpi gold"><span>We have to give</span><b>{{ money(totals.payable) }}</b></div>
+  <div class="sr-kpi violet"><span>Difference</span><b>{{ money(totals.difference) }}</b></div>
+  <div class="sr-kpi rose"><span>Pending payout</span><b>{{ money(totals.pending_payout) }}</b></div>
+  <div class="sr-kpi rose"><span>No payout request</span><b>{{ totals.not_requested || 0 }}</b></div>
+</div>
+
+<div class="sg-card" style="overflow:auto">
+  <div class="sg-empty" *ngIf="loading">Loading...</div>
+  <table class="sg-table" *ngIf="!loading && visible.length">
+    <thead><tr>
+      <th>Customer</th><th>Branch</th><th>Scheme</th><th>Months</th><th>Completed on</th>
+      <th class="sr-right">Customer paid</th><th class="sr-right">Last month due</th><th class="sr-right">We give</th>
+      <th class="sr-right">Difference</th><th class="sr-right">Given</th><th class="sr-right">Pending</th><th>Waiting</th><th>Payout request</th>
+    </tr></thead>
+    <tbody>
+      <tr *ngFor="let r of visible">
+        <td>{{ r.customer_name }} <span class="spn-prized-tag sm" *ngIf="r.prized_status == 1">SPN Prized</span>
+          <div class="sg-note" style="margin:0">{{ r.customer_code }} · {{ r.mobile }} · {{ r.ar_no }}</div></td>
+        <td>{{ r.branch_name }}</td>
+        <td>{{ r.scheme }}</td>
+        <td>{{ r.months }}</td>
+        <td>{{ r.completed_on | date:'dd/MM/yyyy' }}</td>
+        <td class="sr-right">{{ money(r.customer_paid) }}</td>
+        <td class="sr-right">{{ money(r.last_month_due) }}</td>
+        <td class="sr-right">{{ money(r.payable) }}</td>
+        <td class="sr-right" [class.sr-green]="r.difference >= 0" [class.sr-red]="r.difference < 0">{{ money(r.difference) }}</td>
+        <td class="sr-right">{{ money(r.given) }}</td>
+        <td class="sr-right sr-red">{{ money(r.pending_payout) }}</td>
+        <td [class.sr-red]="r.days_waiting > 30">{{ r.days_waiting }} days</td>
+        <td>{{ statusLabel(r.request_status) }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="sg-empty" *ngIf="!loading && !visible.length">No fully-paid customers waiting for payment.</div>
+  <div class="sg-note">Difference = amount we give (chit value) − total the customer paid. Raise the payout from Final Closed Payment.</div>
+</div>

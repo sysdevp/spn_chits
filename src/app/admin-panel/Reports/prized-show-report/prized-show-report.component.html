@@ -1,0 +1,114 @@
+<div class="psr-page">
+  <div class="psr-hero">
+    <div>
+      <div class="psr-kicker">SPN Auction · Report</div>
+      <h1>Prized Show Report</h1>
+      <p>Month-wise prized customers from your show groups, with due no, auction date, customer paid amount and payout status.</p>
+    </div>
+    <button type="button" class="psr-btn" (click)="exportCsv()">Export</button>
+  </div>
+
+  <div class="psr-filters">
+    <div>
+      <label>Group</label>
+      <select [(ngModel)]="groupFilter" (ngModelChange)="load()">
+        <option value="">All groups</option>
+        <option *ngFor="let g of groups" [value]="g.id">{{g.group_name}}</option>
+      </select>
+    </div>
+    <div>
+      <label>Month no</label>
+      <select [(ngModel)]="monthFilter">
+        <option value="">All months</option>
+        <option *ngFor="let m of monthNos()" [value]="m">Month {{m}}</option>
+      </select>
+    </div>
+    <div>
+      <label>View</label>
+      <select [(ngModel)]="view">
+        <option value="groups">Group cards</option>
+        <option value="months">Month-wise prized customers</option>
+        <option value="table">Detailed table</option>
+      </select>
+    </div>
+    <button type="button" class="psr-btn" (click)="reset()">Reset</button>
+  </div>
+
+  <div class="kpis" *ngIf="!loading">
+    <div class="kpi k1"><span>Groups</span><b>{{totalGroups}}</b></div>
+    <div class="kpi k2"><span>Members</span><b>{{totalMembers}}</b></div>
+    <div class="kpi k3"><span>Months marked</span><b>{{totalMarked}}</b></div>
+    <div class="kpi k4"><span>Total prized amount</span><b>{{money(totalAmount)}}</b></div>
+    <div class="kpi k1"><span>Paid out</span><b>{{money(totalPaidOut)}}</b></div>
+    <div class="kpi k3"><span>Months still to prize</span><b>{{totalPending}}</b></div>
+  </div>
+
+  <div class="empty" *ngIf="loading">Loading report...</div>
+  <div class="empty" *ngIf="!loading && !rows.length">No prized months marked yet. Create a show group and mark months first.</div>
+
+  <div class="board" *ngIf="!loading && rows.length && view === 'groups'">
+    <article class="card" *ngFor="let item of rows" [ngClass]="item.tone">
+      <div class="head">
+        <h3>{{item.group_name}}</h3>
+        <p>{{item.scheme_name}}</p>
+        <div class="meta">
+          <span class="chip">{{money(item.chit_value)}}</span>
+          <span class="chip">{{item.member_count}} members</span>
+          <span class="chip">{{item.marked_count}} / {{item.months}} months</span>
+          <span class="chip">{{money(item.total_amount)}}</span>
+          <span class="chip">Paid {{money(item.paid_out)}}</span>
+        </div>
+      </div>
+      <table *ngIf="filteredSchedule(item).length; else noMark">
+        <thead>
+          <tr><th>Month</th><th>Prized customer</th><th>Due no</th><th>Amount</th><th>Payout</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of filteredSchedule(item)">
+            <td><b>{{row.month_no}}</b><div class="sub">{{row.auction_date || '-'}}</div></td>
+            <td>{{row.customer_name}} <span class="spn-prized-tag sm">SPN Prized</span><div class="sub">{{row.ar_no || '-'}} · {{row.mobile || '-'}} · {{row.branch_name || '-'}}</div></td>
+            <td>{{row.due_no}}</td>
+            <td class="amt">{{money(row.amount)}}</td>
+            <td><span class="pay" [ngClass]="row.payment_status">{{payLabel(row.payment_status)}}</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noMark><div class="empty">No month marked in this group.</div></ng-template>
+    </article>
+  </div>
+
+  <div *ngIf="!loading && rows.length && view === 'months'">
+    <div class="card month-card" *ngFor="let m of monthWise()">
+      <div class="head"><h3>Month {{m.month_no}}</h3><p>{{m.rows.length}} prized · {{money(m.amount)}}</p></div>
+      <table>
+        <thead><tr><th>Group</th><th>Scheme</th><th>Auction date</th><th>Customer</th><th>Branch</th><th>Due no</th><th>Amount</th><th>Payout</th></tr></thead>
+        <tbody>
+          <tr *ngFor="let r of m.rows">
+            <td>{{r.group_name}}</td><td>{{r.scheme_name}}</td><td>{{r.auction_date || '-'}}</td>
+            <td>{{r.customer_name}}<div class="sub">{{r.ar_no}} · {{r.mobile}}</div></td>
+            <td>{{r.branch_name || '-'}}</td><td>{{r.due_no}}</td>
+            <td class="amt">{{money(r.amount)}}</td>
+            <td><span class="pay" [ngClass]="r.payment_status">{{payLabel(r.payment_status)}}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="!loading && rows.length && view === 'table'" style="overflow:auto">
+    <table>
+      <thead>
+        <tr><th>Group</th><th>Scheme</th><th>Month</th><th>Auction date</th><th>Customer</th><th>Code</th><th>Mobile</th><th>Branch</th><th>AR No</th><th>Due no</th><th>Joined</th><th>Customer paid</th><th>Prized amount</th><th>Payout</th><th>Paid on</th><th>Marked by</th><th>Remarks</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of flatRows()">
+          <td>{{r.group_name}}</td><td>{{r.scheme_name}}</td><td>{{r.month_no}}</td><td>{{r.auction_date || '-'}}</td>
+          <td>{{r.customer_name}}</td><td>{{r.customer_code}}</td><td>{{r.mobile}}</td><td>{{r.branch_name}}</td><td>{{r.ar_no}}</td>
+          <td>{{r.due_no}}</td><td>{{r.joined_on}}</td><td>{{money(r.customer_paid)}}</td><td class="amt">{{money(r.amount)}}</td>
+          <td><span class="pay" [ngClass]="r.payment_status">{{payLabel(r.payment_status)}}</span></td>
+          <td>{{r.payment_date || '-'}}</td><td>{{r.marked_by_name || '-'}}</td><td>{{r.remarks}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

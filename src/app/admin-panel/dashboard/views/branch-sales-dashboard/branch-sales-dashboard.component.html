@@ -18,12 +18,12 @@
   </div>
   <div class="rd-kpi accent-orange">
     <div class="rd-kpi-label">Sales Target (Monthly)</div>
-    <div class="rd-kpi-value">—</div>
+    <div class="rd-kpi-value">₹ {{ n(s().monthly_target) | number:'1.0-0' }}</div>
   </div>
   <div class="rd-kpi">
     <div class="rd-kpi-label">Target Achieved</div>
-    <div class="rd-kpi-value">₹ {{ n(s().current_month_collection) | number:'1.0-0' }}</div>
-    <div class="rd-kpi-note">Collections proxy</div>
+    <div class="rd-kpi-value">₹ {{ n(s().monthly_target_achieved || s().current_month_collection) | number:'1.0-0' }}</div>
+    <div class="rd-kpi-note">{{ n(s().monthly_target_percent) }}% of target</div>
   </div>
 </div>
 

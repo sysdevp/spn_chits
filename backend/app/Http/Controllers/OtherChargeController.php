@@ -446,7 +446,8 @@ if (!empty($receiver)) {
             ? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')) : '';
 
         $othercharge->charge_type_name = ($othercharge->other_charges_det && !empty($othercharge->other_charges_det->charge_name))
-            ? $othercharge->other_charges_det->charge_name : '';
+            ? $othercharge->other_charges_det->charge_name
+            : (empty($othercharge->charge_type_id) ? 'Registration Fee (RF)' : 'Other Charge');
 
         $othercharge->payment_type_name = ($othercharge->payment_type_det && !empty($othercharge->payment_type_det->payment_name))
             ? $othercharge->payment_type_det->payment_name : '';
@@ -560,6 +561,9 @@ if (!empty($receiver)) {
 
             if (!empty($request->customer_id)) {
                 $query->where('customer_id', $request->customer_id);
+            }
+            if (!empty($request->charge_type_id)) {
+                $query->where('charge_type_id', $request->charge_type_id);
             }
 
             if(($start_date=='') && ($end_date=='')) {

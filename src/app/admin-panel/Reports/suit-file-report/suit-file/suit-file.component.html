@@ -38,14 +38,14 @@
           <div class="row">
             <div class="col-6">
               <div class="form-group row">
-                <label class="col-sm-4">Select Group </label>
+                <label class="col-sm-4">Select Scheme </label>
                 <div class="col-sm-8">
-                  <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
-                    <option value="">Select Group</option>
-                    <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                  <select #scheme_id class="form-control form-control w-100 border-dark" formControlName="scheme_id">
+                    <option value="">Select Scheme</option>
+                    <option *ngFor="let data of groupList" value="{{data.id}}">{{data.scheme_format || data.scheme_name || data.group_name}}</option>
                   </select>
-                  <div class="col-md-12" *ngIf="submitted && f.group_id.errors" class="invalid-feedback">
-                    <label *ngIf="f.group_id.errors.required">Group is required</label>
+                  <div class="col-md-12" *ngIf="submitted && f.scheme_id && f.scheme_id.errors" class="invalid-feedback">
+                    <label *ngIf="f.scheme_id.errors.required">Scheme is required</label>
                   </div>
                 </div>
               </div>

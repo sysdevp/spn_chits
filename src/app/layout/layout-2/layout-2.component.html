@@ -7,6 +7,21 @@
 
       <div class="layout-content">
         <div class="container-fluid router-transitions flex-grow-1 container-p-y">
+          <div class="spn-page-head" *ngIf="showPageHead">
+            <div class="spn-page-copy">
+              <div class="spn-crumb">Dashboard / {{ pageSection }}<span *ngIf="pageTitle && pageTitle !== pageSection"> / {{ pageTitle }}</span></div>
+              <div class="spn-page-title">
+                <div class="spn-page-ico"><i class="fas fa-layer-group"></i></div>
+                <div>
+                  <h1>{{ pageTitle }}</h1>
+                  <p>{{ pageSubtitle }}</p>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="spn-page-export" (click)="exportPage()">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+          </div>
           <router-outlet></router-outlet>
         </div>
         <app-layout-footer></app-layout-footer>

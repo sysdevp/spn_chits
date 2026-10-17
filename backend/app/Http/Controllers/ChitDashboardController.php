@@ -7,6 +7,7 @@ use App\Models\BeforeEnrolReceipt;
 use App\Models\BiddingDetail;
 use App\Models\Branch;
 use App\Models\Customer;
+use App\Models\EmployeeTarget;
 use App\Models\Followup;
 use App\Models\Group;
 use App\Models\Payment;
@@ -14,6 +15,8 @@ use App\Models\PaymentType;
 use App\Models\Receipt;
 use App\Models\CashSettlement;
 use App\Models\Employee;
+use App\Models\ChitDetail;
+use App\Models\LeadManagement;
 use Carbon\Carbon;
 use App\Services\UserLoginScopeService;
 use Illuminate\Http\Request;
@@ -473,6 +476,7 @@ class ChitDashboardController extends Controller
                         $maxAmt = $amt;
                     }
                 }
+
                 $rank = 1;
                 foreach ($branchAmt as $bid => $amt) {
                     if ($amt <= 0) {
@@ -484,6 +488,8 @@ class ChitDashboardController extends Controller
                         'branch_id' => $bid,
                         'branch_name' => $br ? $br->branch_name : ('Branch ' . $bid),
                         'amount' => round((float) $amt, 2),
+                        'target_amount' => 0,
+                        'target_pct' => 0,
                         'pct' => $maxAmt > 0 ? (int) round(($amt / $maxAmt) * 100) : 0,
                     ];
                     if (count($branchCollections) >= 15) {
@@ -492,6 +498,106 @@ class ChitDashboardController extends Controller
                 }
             } catch (\Exception $brEx) {
                 Log::warning('Dashboard branch collections failed: ' . $brEx->getMessage());
+            }
+
+            // Active employee targets for selected branch scope (independent of collection queries)
+            $branchTargetMap = [];
+            $monthlyTargetTotal = 0;
+            $monthlyTargetAchieved = 0;
+            $salesTargetTotal = 0.0;
+            $salesTargetAchieved = 0.0;
+            $collectionTargetTotal = 0.0;
+            $collectionTargetAchieved = 0.0;
+            try {
+                if (Schema::hasTable('employee_targets') && !empty($branchIds)) {
+                    $empIdsInBranch = Employee::whereIn('branch_id', $branchIds)->pluck('id')->all();
+
+                    $baseTargetQuery = function () use ($branchIds, $empIdsInBranch, $tenantId) {
+                        $q = EmployeeTarget::where('status', 1)
+                            ->where('tenant_id', $tenantId)
+                            ->where(function ($inner) use ($branchIds, $empIdsInBranch) {
+                                $inner->whereIn('branch_id', $branchIds)
+                                    ->orWhere('branch_id', 0)
+                                    ->orWhereNull('branch_id');
+                                if (!empty($empIdsInBranch)) {
+                                    $inner->orWhereIn('employee_id', $empIdsInBranch);
+                                }
+                            });
+                        return $q;
+                    };
+
+                    // Prefer monthly targets overlapping the current calendar month
+                    $targetRows = $baseTargetQuery()
+                        ->where('period_type', 'monthly')
+                        ->whereDate('period_start', '<=', $lastDay)
+                        ->whereDate('period_end', '>=', $firstDay)
+                        ->get();
+
+                    // Fallback: any active target overlapping today (daily/weekly/monthly)
+                    if ($targetRows->isEmpty()) {
+                        $targetRows = $baseTargetQuery()
+                            ->whereDate('period_start', '<=', $today)
+                            ->whereDate('period_end', '>=', $today)
+                            ->get();
+                    }
+
+                    $seenIds = [];
+                    $hasTargetType = Schema::hasColumn('employee_targets', 'target_type');
+                    foreach ($targetRows as $tRow) {
+                        if (isset($seenIds[$tRow->id])) {
+                            continue;
+                        }
+                        $seenIds[$tRow->id] = true;
+
+                        $tBid = (int) ($tRow->branch_id ?: 0);
+                        if ($tBid > 0 && !in_array($tBid, $branchIds, true)) {
+                            // Still allow via employee branch membership
+                            $emp = Employee::find($tRow->employee_id);
+                            $empBid = $emp ? (int) ($emp->branch_id ?: 0) : 0;
+                            if ($empBid <= 0 || !in_array($empBid, $branchIds, true)) {
+                                continue;
+                            }
+                            $tBid = $empBid;
+                        }
+
+                        $amt = (float) ($tRow->target_amount ?: 0);
+                        $ach = (float) ($tRow->achieved_amount ?: 0);
+                        $monthlyTargetTotal += $amt;
+                        $monthlyTargetAchieved += $ach;
+
+                        $tType = $hasTargetType ? strtolower((string) ($tRow->target_type ?? '')) : 'existing_client_collection';
+                        if (in_array($tType, ['new_business', 'sales'], true)) {
+                            $salesTargetTotal += $amt;
+                            $salesTargetAchieved += $ach;
+                        } elseif (in_array($tType, ['existing_client_collection', 'new_client_collection', 'collection'], true) || $tType === '') {
+                            $collectionTargetTotal += $amt;
+                            $collectionTargetAchieved += $ach;
+                            if ($tBid > 0) {
+                                if (!isset($branchTargetMap[$tBid])) {
+                                    $branchTargetMap[$tBid] = ['target' => 0, 'achieved' => 0];
+                                }
+                                $branchTargetMap[$tBid]['target'] += $amt;
+                                $branchTargetMap[$tBid]['achieved'] += $ach;
+                            }
+                        }
+                    }
+
+                    // Enrich branch collection rows with target amounts when available
+                    if (!empty($branchCollections) && !empty($branchTargetMap)) {
+                        foreach ($branchCollections as &$bcRow) {
+                            $bid = (int) ($bcRow['branch_id'] ?? 0);
+                            $tAmt = isset($branchTargetMap[$bid]) ? (float) $branchTargetMap[$bid]['target'] : (float) ($bcRow['target_amount'] ?? 0);
+                            $bcRow['target_amount'] = round($tAmt, 2);
+                            $bcAmt = (float) ($bcRow['amount'] ?? 0);
+                            $bcRow['target_pct'] = $tAmt > 0 ? (int) round(($bcAmt / $tAmt) * 100) : 0;
+                        }
+                        unset($bcRow);
+                    }
+                }
+            } catch (\Exception $tEx) {
+                Log::warning('Dashboard targets failed: ' . $tEx->getMessage());
+                $monthlyTargetTotal = 0;
+                $monthlyTargetAchieved = 0;
             }
 
             // ---------- Cash settlements (Settlement Report snapshot) ----------
@@ -564,6 +670,236 @@ class ChitDashboardController extends Controller
                 Log::warning('Dashboard settlements failed: ' . $sEx->getMessage());
             }
 
+            // Today enrolled customers + month joining + today leads + live tracking + today tasks
+            $todayEnrolledCustomers = 0;
+            $monthEnrolledCustomers = 0;
+            $todayLeads = 0;
+            $liveEmployeeCount = 0;
+            $todayTasksCount = 0;
+            $todayTasksList = [];
+            try {
+                $todayEnrolledCustomers = (int) ChitDetail::whereIn('branch_id', $branchIds)
+                    ->whereDate('created_at', $today)
+                    ->distinct('customer_id')
+                    ->count('customer_id');
+            } catch (\Exception $e) {
+                try {
+                    $todayEnrolledCustomers = (int) DB::table('chit_details')
+                        ->whereIn('branch_id', $branchIds)
+                        ->whereDate('created_at', $today)
+                        ->distinct()
+                        ->count('customer_id');
+                } catch (\Exception $e2) {
+                    $todayEnrolledCustomers = 0;
+                }
+            }
+            try {
+                $monthEnrolledCustomers = (int) ChitDetail::whereIn('branch_id', $branchIds)
+                    ->whereBetween(DB::raw('DATE(created_at)'), [$firstDay, $lastDay])
+                    ->distinct('customer_id')
+                    ->count('customer_id');
+            } catch (\Exception $e) {
+                try {
+                    $monthEnrolledCustomers = (int) DB::table('chit_details')
+                        ->whereIn('branch_id', $branchIds)
+                        ->whereBetween(DB::raw('DATE(created_at)'), [$firstDay, $lastDay])
+                        ->distinct()
+                        ->count('customer_id');
+                } catch (\Exception $e2) {
+                    $monthEnrolledCustomers = 0;
+                }
+            }
+            try {
+                $todayLeads = (int) LeadManagement::where('tenant_id', $tenantId)
+                    ->whereIn('branch_id', $branchIds)
+                    ->whereDate('created_at', $today)
+                    ->count();
+            } catch (\Exception $e) {
+                $todayLeads = 0;
+            }
+            try {
+                if (Schema::hasTable('employee_tasks')) {
+                    $taskBase = function () use ($tenantId, $branchIds, $today) {
+                        $q = \App\Models\EmployeeTask::where('tenant_id', $tenantId)
+                            ->whereDate('task_date', $today);
+                        if (!empty($branchIds)) {
+                            $q->where(function ($inner) use ($branchIds) {
+                                $inner->whereIn('branch_id', $branchIds)->orWhereNull('branch_id')->orWhere('branch_id', 0);
+                            });
+                        }
+                        return $q;
+                    };
+                    $todayTasksCount = (int) $taskBase()->count();
+                    $todayTasksList = $taskBase()->orderBy('id', 'desc')->limit(15)->get()->map(function ($t) {
+                        $emp = \App\Models\Employee::find($t->employee_id);
+                        return [
+                            'id' => (int) $t->id,
+                            'title' => $t->title ?? 'Task',
+                            'employee' => $emp ? trim(($emp->first_name ?? '') . ' ' . ($emp->last_name ?? '')) : '',
+                            'status' => $t->task_status ?? '',
+                            'task_date' => $t->task_date ? date('d-m-Y', strtotime($t->task_date)) : '',
+                        ];
+                    })->values()->all();
+                }
+            } catch (\Exception $e) {
+                $todayTasksCount = 0;
+                $todayTasksList = [];
+            }
+            try {
+                if (Schema::hasTable('employee_live_locations')) {
+                    $liveQ = DB::table('employee_live_locations')
+                        ->whereNotNull('latitude')
+                        ->where('latitude', '!=', '')
+                        ->whereNotNull('longitude')
+                        ->where('longitude', '!=', '')
+                        ->where('updated_at', '>=', date('Y-m-d H:i:s', strtotime('-24 hours')))
+                        ->where('tenant_id', $tenantId);
+                    if (!empty($branchIds)) {
+                        $liveQ->whereIn('branch_id', $branchIds);
+                    }
+                    $liveEmployeeCount = (int) $liveQ->distinct('employee_id')->count('employee_id');
+                }
+            } catch (\Exception $e) {
+                $liveEmployeeCount = 0;
+            }
+
+            // ---------- Attendance (present / absent / leave) ----------
+            $activeEmployees = 0;
+            $presentToday = 0;
+            $leaveToday = 0;
+            try {
+                $activeEmployees = (int) Employee::whereIn('branch_id', $branchIds)->where('status', 1)->count();
+                if (Schema::hasTable('employee_attendances')) {
+                    $attQ = DB::table('employee_attendances')->whereIn('branch_id', $branchIds)->whereDate('att_date', $today);
+                    if (Schema::hasColumn('employee_attendances', 'check_in_time')) {
+                        $attQ->where(function ($q) {
+                            $q->whereNotNull('check_in_time')->orWhere('attendance_type', 1);
+                        });
+                    }
+                    $presentToday = (int) $attQ->distinct()->count('employee_id');
+                }
+                if (Schema::hasTable('employee_leave_requests') && Schema::hasColumn('employee_leave_requests', 'request_status')) {
+                    $leaveToday = (int) DB::table('employee_leave_requests')->whereIn('branch_id', $branchIds)
+                        ->where('request_status', 'approved')
+                        ->whereDate('from_date', '<=', $today)->whereDate('to_date', '>=', $today)
+                        ->distinct()->count('employee_id');
+                }
+            } catch (\Exception $e) {
+                Log::warning('Dashboard attendance failed: ' . $e->getMessage());
+            }
+            $absentToday = max(0, $activeEmployees - $presentToday - $leaveToday);
+
+            // ---------- Today's petty-cash expenses ----------
+            $todayExpenseTotal = 0.0;
+            $todayExpenseRows = [];
+            try {
+                if (Schema::hasTable('petty_cash_expenses')) {
+                    $expQ = DB::table('petty_cash_expenses as pe')
+                        ->leftJoin('petty_cash_expense_types as pt', 'pt.id', '=', 'pe.expenses_type_id')
+                        ->whereIn('pe.branch_id', $branchIds)
+                        ->whereDate('pe.expenses_date', $today)
+                        ->where('pe.status', '!=', 3);
+                    if (Schema::hasColumn('petty_cash_expenses', 'deleted_at')) {
+                        $expQ->whereNull('pe.deleted_at');
+                    }
+                    $todayExpenseTotal = (float) (clone $expQ)->sum('pe.expenses_amount');
+                    $todayExpenseRows = (clone $expQ)->groupBy('pe.expenses_type_id')
+                        ->select(DB::raw("MAX(pt.expenses_type) as label"), DB::raw('SUM(pe.expenses_amount) as amount'))
+                        ->orderBy('amount', 'desc')->limit(4)->get()
+                        ->map(function ($r) {
+                            return ['label' => $r->label ?: 'Other', 'amount' => round((float) $r->amount, 2)];
+                        })->toArray();
+                }
+            } catch (\Exception $e) {
+                Log::warning('Dashboard expenses failed: ' . $e->getMessage());
+            }
+
+            // ---------- Top employees by this month's receipts ----------
+            $topEmployees = [];
+            try {
+                $empRows = DB::table('receipts as r')
+                    ->leftJoin('employees as e', 'e.id', '=', 'r.employee_id')
+                    ->leftJoin('branches as b', 'b.id', '=', 'e.branch_id')
+                    ->whereIn('r.branch_id', $branchIds)
+                    ->where('r.status', 1)
+                    ->where('r.employee_id', '>', 0)
+                    ->whereBetween('r.receipt_date', [$firstDay, $lastDay])
+                    ->groupBy('r.employee_id')
+                    ->select('r.employee_id', DB::raw("MAX(TRIM(CONCAT(COALESCE(e.first_name,''),' ',COALESCE(e.last_name,'')))) as name"),
+                        DB::raw('MAX(b.branch_name) as branch'), DB::raw('SUM(COALESCE(r.received_amount,0) + COALESCE(r.penalty,0)) as amount'),
+                        DB::raw('COUNT(*) as receipts'))
+                    ->orderBy('amount', 'desc')->limit(3)->get();
+                $maxEmp = $empRows->max('amount') ?: 1;
+                foreach ($empRows as $er) {
+                    $topEmployees[] = [
+                        'employee_id' => (int) $er->employee_id,
+                        'name' => $er->name ?: ('Employee ' . $er->employee_id),
+                        'branch' => $er->branch ?: '',
+                        'amount' => round((float) $er->amount, 2),
+                        'receipts' => (int) $er->receipts,
+                        'pct' => (int) round(((float) $er->amount / $maxEmp) * 100),
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Dashboard top employees failed: ' . $e->getMessage());
+            }
+
+            // ---------- Employee birthdays ----------
+            $empBirthdayToday = [];
+            $empBirthdayMonth = 0;
+            try {
+                $bq = Employee::whereIn('branch_id', $branchIds)->where('status', 1)->whereNotNull('dob');
+                $empBirthdayMonth = (int) (clone $bq)->whereRaw('MONTH(dob) = ?', [date('n')])->count();
+                $empBirthdayToday = (clone $bq)->whereRaw("DATE_FORMAT(dob, '%m-%d') = ?", [date('m-d')])->limit(10)->get()
+                    ->map(function ($e) {
+                        return ['name' => trim(($e->first_name ?? '') . ' ' . ($e->last_name ?? '')), 'mobile' => $e->mobile_no ?? ''];
+                    })->toArray();
+            } catch (\Exception $e) {
+                Log::warning('Dashboard birthdays failed: ' . $e->getMessage());
+            }
+
+            // ---------- This month's unpaid dues and old overdue ----------
+            $monthPendingAmount = 0.0;
+            $monthPendingCount = 0;
+            $overdueAmount = 0.0;
+            $overdueCount = 0;
+            try {
+                $paidSub = DB::table('receipts')->where('status', 1)->where('receipt_date', '>=', $firstDay)
+                    ->groupBy('enrollment_id')->select('enrollment_id', DB::raw('SUM(COALESCE(received_amount,0)) as paid'));
+                $dueQ = DB::table('chit_details as cd')
+                    ->leftJoin('schemes as s', 's.id', '=', 'cd.scheme_id')
+                    ->leftJoinSub($paidSub, 'pm', 'pm.enrollment_id', '=', 'cd.id')
+                    ->whereIn('cd.branch_id', $branchIds)
+                    ->where('cd.status', 1)
+                    ->whereRaw('COALESCE(s.monthly_due,0) > COALESCE(pm.paid,0)');
+                if (Schema::hasColumn('chit_details', 'deleted_at')) {
+                    $dueQ->whereNull('cd.deleted_at');
+                }
+                $monthPendingCount = (int) (clone $dueQ)->count();
+                $monthPendingAmount = (float) (clone $dueQ)->sum(DB::raw('COALESCE(s.monthly_due,0) - COALESCE(pm.paid,0)'));
+
+                if (Schema::hasColumn('chit_details', 'pending_amount')) {
+                    $odQ = DB::table('chit_details')->whereIn('branch_id', $branchIds)->where('status', 1)->where('pending_amount', '>', 0);
+                    if (Schema::hasColumn('chit_details', 'deleted_at')) {
+                        $odQ->whereNull('deleted_at');
+                    }
+                    $overdueCount = (int) (clone $odQ)->count();
+                    $overdueAmount = (float) (clone $odQ)->sum('pending_amount');
+                }
+            } catch (\Exception $e) {
+                Log::warning('Dashboard pending/overdue failed: ' . $e->getMessage());
+            }
+
+            $salesTargetPct = ($salesTargetTotal > 0)
+                ? (int) round(($salesTargetAchieved / $salesTargetTotal) * 100)
+                : 0;
+            $collectionTargetPct = ($collectionTargetTotal > 0)
+                ? (int) round((
+                    ($collectionTargetAchieved > 0 ? $collectionTargetAchieved : $currentMonthCollection)
+                    / $collectionTargetTotal
+                ) * 100)
+                : 0;
+
             $payload = [
                 'as_of' => $today,
                 'summary' => [
@@ -576,11 +912,56 @@ class ChitDashboardController extends Controller
                     'today_collection_total' => round($todayCollectionTotal, 2),
                     'today_payment_total' => round($todayPaymentTotal, 2),
                     'today_followup_count' => count($todayFollowupsList),
+                    'today_enrolled_customers' => $todayEnrolledCustomers,
+                    'month_enrolled_customers' => $monthEnrolledCustomers,
+                    'today_leads' => $todayLeads,
+                    'today_tasks_count' => $todayTasksCount,
+                    'live_employee_count' => $liveEmployeeCount,
                     'settlement_pending_count' => $settlementPendingCount,
                     'settlement_approved_count' => $settlementApprovedCount,
                     'settlement_today_amount' => round($settlementTodayAmount, 2),
                     'settlement_month_amount' => round($settlementMonthAmount, 2),
+                    'monthly_target' => round($salesTargetTotal > 0 ? $salesTargetTotal : ($monthlyTargetTotal ?? 0), 2),
+                    'monthly_target_achieved' => round(
+                        $salesTargetTotal > 0
+                            ? $salesTargetAchieved
+                            : ((($monthlyTargetAchieved ?? 0) > 0) ? ($monthlyTargetAchieved ?? 0) : ($currentMonthCollection ?? 0)),
+                        2
+                    ),
+                    'monthly_target_percent' => $salesTargetTotal > 0
+                        ? $salesTargetPct
+                        : ((($monthlyTargetTotal ?? 0) > 0)
+                            ? (int) round(
+                                (
+                                    (($monthlyTargetAchieved ?? 0) > 0 ? ($monthlyTargetAchieved ?? 0) : ($currentMonthCollection ?? 0))
+                                    / $monthlyTargetTotal
+                                ) * 100
+                            )
+                            : 0),
+                    'sales_target' => round($salesTargetTotal, 2),
+                    'sales_target_achieved' => round($salesTargetAchieved, 2),
+                    'sales_target_percent' => $salesTargetPct,
+                    'collection_target' => round($collectionTargetTotal, 2),
+                    'collection_target_achieved' => round(
+                        $collectionTargetAchieved > 0 ? $collectionTargetAchieved : ($currentMonthCollection ?? 0),
+                        2
+                    ),
+                    'collection_target_percent' => $collectionTargetPct,
+                    'active_employees' => $activeEmployees,
+                    'present_today' => $presentToday,
+                    'absent_today' => $absentToday,
+                    'leave_today' => $leaveToday,
+                    'today_expense_total' => round($todayExpenseTotal, 2),
+                    'employee_birthday_today' => count($empBirthdayToday),
+                    'employee_birthday_month' => $empBirthdayMonth,
+                    'month_pending_amount' => round($monthPendingAmount, 2),
+                    'month_pending_count' => $monthPendingCount,
+                    'overdue_amount' => round($overdueAmount, 2),
+                    'overdue_count' => $overdueCount,
                 ],
+                'today_expenses' => $todayExpenseRows,
+                'top_employees' => $topEmployees,
+                'employee_birthdays_today' => $empBirthdayToday,
                 'charts' => [
                     'collection_by_mode' => [
                         'labels' => $barLabels,
@@ -599,6 +980,7 @@ class ChitDashboardController extends Controller
                 'today_collections' => $todayCollectionsList,
                 'today_payments' => $todayPaymentsList,
                 'recent_settlements' => $recentSettlements,
+                'today_tasks' => $todayTasksList,
             ];
 
             return response()->json([
@@ -633,10 +1015,22 @@ class ChitDashboardController extends Controller
                 'today_collection_total' => 0,
                 'today_payment_total' => 0,
                 'today_followup_count' => 0,
+                'today_enrolled_customers' => 0,
+                'today_leads' => 0,
+                'live_employee_count' => 0,
                 'settlement_pending_count' => 0,
                 'settlement_approved_count' => 0,
                 'settlement_today_amount' => 0,
                 'settlement_month_amount' => 0,
+                'monthly_target' => 0,
+                'monthly_target_achieved' => 0,
+                'monthly_target_percent' => 0,
+                'sales_target' => 0,
+                'sales_target_achieved' => 0,
+                'sales_target_percent' => 0,
+                'collection_target' => 0,
+                'collection_target_achieved' => 0,
+                'collection_target_percent' => 0,
             ],
             'charts' => [
                 'collection_by_mode' => ['labels' => [], 'data' => [], 'scope' => 'month'],

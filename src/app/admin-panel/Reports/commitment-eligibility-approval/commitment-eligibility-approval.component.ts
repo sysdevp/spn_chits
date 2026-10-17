@@ -39,12 +39,13 @@ export class CommitmentEligibilityApprovalComponent implements OnInit {
     const tenant_id = localStorage.getItem('tenant_id');
     this.filterForm = this.formBuilder.group({
       tenant_id: [tenant_id, Validators.required],
-      branch_id: ['', Validators.required],
+      branch_id: [''],
     });
     this.approveForm = this.formBuilder.group({
       enrollment_id: ['', Validators.required],
       date_introduced: [null, Validators.required],
       due_date: [null, Validators.required],
+      promised_month: [null],
       payment_type: ['', Validators.required],
       agent_type: ['', Validators.required],
       introducer_id: [''],
@@ -84,8 +85,12 @@ export class CommitmentEligibilityApprovalComponent implements OnInit {
       this.SubmitbuttonName = 'Filter';
       return;
     }
+    const body: any = Object.assign({}, this.filterForm.value);
+    if (!body.branch_id) {
+      body.branch_ids = this.branchList.map((b) => b.id);
+    }
     this.userservice
-      .getData(this.filterForm.value, 'list-commitment-eligibility-pending', 'POST')
+      .getData(body, 'list-commitment-eligibility-pending', 'JSON')
       .subscribe(
         (res: any) => {
           this.SubmitbuttonName = 'Filter';

@@ -1,0 +1,78 @@
+<div class="pm-toolbar">
+  <div class="pm-search">
+    <i class="fa fa-search"></i>
+    <input type="text" class="form-control form-control-sm" placeholder="Search menu, sub menu or overview…" [(ngModel)]="search" [ngModelOptions]="{standalone: true}">
+  </div>
+  <div class="pm-count"><b>{{ totalCount() }}</b> of {{ totalPages() }} pages enabled</div>
+  <div class="pm-actions">
+    <button type="button" class="btn btn-sm btn-success" (click)="setAll('full')"><i class="fa fa-check-square-o"></i> Full access to all</button>
+    <button type="button" class="btn btn-sm btn-info" (click)="setAll('view')"><i class="fa fa-eye"></i> View only all</button>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="setAll('none')"><i class="fa fa-times"></i> Clear all</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="setCollapsedAll(false)">Expand</button>
+    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="setCollapsedAll(true)">Collapse</button>
+  </div>
+</div>
+
+<div class="pm-legend">
+  <span><span class="pm-badge ov">Overview</span> section summary page</span>
+  <span><b>View</b> opens the menu / page · <b>Add · Edit · Delete</b> control buttons inside the page · “—” not applicable</span>
+</div>
+
+<ng-container *ngFor="let section of sections">
+  <div class="pm-section" *ngIf="visiblePages(section).length">
+    <div class="pm-head" [class.pm-all]="sectionState(section) === 'all'" [class.pm-some]="sectionState(section) === 'some'">
+      <button type="button" class="pm-collapse" (click)="toggleCollapse(section)">
+        <i class="fa" [ngClass]="collapsed[section.key] && !search ? 'fa-chevron-right' : 'fa-chevron-down'"></i>
+      </button>
+      <i class="pm-icon" [ngClass]="section.icon"></i>
+      <div class="pm-title" (click)="toggleCollapse(section)">
+        <div>{{ section.title }} <span class="pm-pill">{{ sectionCount(section) }}/{{ section.pages.length }}</span></div>
+        <small>{{ section.description }}</small>
+      </div>
+      <div class="pm-head-btns">
+        <button type="button" class="btn btn-xs btn-success" (click)="setSection(section, 'full')">Full</button>
+        <button type="button" class="btn btn-xs btn-info" (click)="setSection(section, 'view')">View only</button>
+        <button type="button" class="btn btn-xs btn-outline-danger" (click)="setSection(section, 'none')">None</button>
+      </div>
+    </div>
+
+    <div class="pm-body" *ngIf="!collapsed[section.key] || search">
+      <table class="table table-sm pm-table mb-0">
+        <thead>
+          <tr>
+            <th class="pm-col-name">Menu / Sub menu</th>
+            <th class="pm-col-chk">All</th>
+            <th class="pm-col-chk">View</th>
+            <th class="pm-col-chk">Add</th>
+            <th class="pm-col-chk">Edit</th>
+            <th class="pm-col-chk">Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let group of groups(section)">
+            <tr class="pm-group" *ngIf="group.title && groupVisible(group, section)">
+              <td colspan="6"><i class="fa fa-folder-open-o"></i> {{ group.title }}</td>
+            </tr>
+            <ng-container *ngFor="let page of group.pages; trackBy: trackPage">
+              <tr *ngIf="matches(page, section)" [class.pm-on]="isOn(page, 'view')" [class.pm-ov-row]="page.overview">
+                <td class="pm-col-name">
+                  <span class="pm-badge ov" *ngIf="page.overview">Overview</span>
+                  {{ page.overview && page.title === 'Overview' ? section.title + ' Overview' : page.title }}
+                  <div class="pm-route" *ngIf="page.route">/{{ page.route }}<span *ngIf="page.qp"> ({{ page.qp.kind }})</span></div>
+                  <div class="pm-hint" *ngIf="page.hint">{{ page.hint }}</div>
+                </td>
+                <td class="pm-col-chk">
+                  <input type="checkbox" [checked]="rowFull(page)" (change)="setRow(page, $event.target.checked)">
+                </td>
+                <td class="pm-col-chk" *ngFor="let a of actions">
+                  <input *ngIf="has(page, a)" type="checkbox" [checked]="isOn(page, a)" (change)="toggle(page, a, $event.target.checked)">
+                  <span *ngIf="!has(page, a)" class="text-muted">—</span>
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>

@@ -17,6 +17,16 @@ export class AuthGuardService implements CanActivate {
 
     this.menuPermission.refreshPermissions();
 
+    const pagePath = this.pagePath(route);
+    const pageAllowed = this.menuPermission.canPageRoute(pagePath, (route.data['permType'] || '') as MenuPermType | '');
+    if (pageAllowed !== null) {
+      if (pageAllowed) {
+        return true;
+      }
+      this.router.navigate(['admin-panel/access-denied']);
+      return false;
+    }
+
     const routeKey = route.data['routeKey'] as string;
     if (routeKey) {
       const permType = route.data['permType'] as MenuPermType | undefined;
@@ -45,5 +55,14 @@ export class AuthGuardService implements CanActivate {
 
     this.router.navigate(['admin-panel/access-denied']);
     return false;
+  }
+
+  /** 'update-scheme/:id' → 'update-scheme'; 'hub/:section' → 'hub/<section>'. */
+  private pagePath(route: ActivatedRouteSnapshot): string {
+    const path = (route.routeConfig && route.routeConfig.path) || '';
+    if (path === 'hub/:section') {
+      return 'hub/' + (route.paramMap.get('section') || '');
+    }
+    return path.split('/').filter((seg) => seg.charAt(0) !== ':').join('/');
   }
 }

@@ -1,9 +1,9 @@
 <div class="card">
     <div class="card-header">
       <div class="row">
-        <div class="col-6 my-auto font-weight-bold">Add Commitment Receipt</div>
+        <div class="col-6 my-auto font-weight-bold">Receipts</div>
         <div class="col-6 text-right">
-          <a [routerLink]="['/admin-panel/commitment-receipt-report']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i>Commitment Receipt Report</a>
+          <a [routerLink]="['/admin-panel/commitment-receipt-report']" class="bg-info border-0 text-white px-3 py-2"> <i class="fas fa-eye pr-2"></i>Receipt Report</a>
         </div>
       </div>
     </div>
@@ -319,7 +319,7 @@
             <div class="form-group row">
               <label for="exampleFormControlSelect1" class="col-sm-4">Transaction Date <span class="error">*</span></label>
               <div class="col-sm-8">
-                <input #transaction_date type="text" class="form-control col-sm-12" placeholder="Transaction Date" (click)="d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false" formControlName="transaction_date">
+                <input #transaction_date type="text" class="form-control col-sm-12" placeholder="Transaction Date" (click)="utrManual && d3.toggle()" ngbDatepicker #d3="ngbDatepicker" onkeydown="return false" formControlName="transaction_date" [readonly]="!utrManual">
                 <div class="col-md-12" *ngIf="submitted && f.transaction_date.errors" class="invalid-feedback">
                   <label *ngIf="f.transaction_date.errors.required">Transaction date is required</label>
                 </div>
@@ -330,10 +330,37 @@
             <div class="form-group row">
               <label for="exampleFormControlSelect1" class="col-sm-4">Transaction No <span class="error">*</span></label>
               <div class="col-sm-8">
-                <input #transaction_no type="text" class="form-control col-sm-12" placeholder="Transaction No" formControlName="transaction_no">
+                <input #transaction_no type="text" class="form-control col-sm-12" placeholder="Transaction No" formControlName="transaction_no" [readonly]="!utrManual">
                 <div class="col-md-12" *ngIf="submitted && f.transaction_no.errors" class="invalid-feedback">
                   <label *ngIf="f.transaction_no.errors.required">Transaction no is required</label>
                 </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6" [hidden]="hideTransaction">
+            <div class="form-group row">
+              <label class="col-sm-4">Transaction Time <span class="error">*</span></label>
+              <div class="col-sm-8">
+                <input type="time" step="1" class="form-control col-sm-12" formControlName="transaction_time" [readonly]="!utrManual">
+                <div class="col-md-12" *ngIf="submitted && f.transaction_time.errors" class="invalid-feedback">
+                  <label *ngIf="f.transaction_time.errors.required">Transaction time is required</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-12" [hidden]="hideTransaction">
+            <div class="form-group row">
+              <label class="col-sm-2">Payment Screenshot <span class="error">*</span></label>
+              <div class="col-sm-10">
+                <div class="d-flex align-items-center mb-2">
+                  <button type="button" class="btn btn-sm mr-2" [ngClass]="utrManual ? 'btn-warning' : 'btn-outline-secondary'" (click)="toggleUtrManual()">
+                    {{ utrManual ? 'Manual ON — type UTR' : 'Manual OFF — screenshot only' }}
+                  </button>
+                  <span class="small" [ngClass]="utrReady ? 'text-success' : 'text-warning'">{{ utrScanning ? 'Reading screenshot...' : utrMessage }}</span>
+                </div>
+                <input type="file" accept="image/*" capture="environment" class="form-control-file" (change)="onPaymentScreenshot($event)">
+                <small class="d-block text-muted mt-1">Only a successful payment screen with UTR, date and time is accepted. Fields stay locked unless Manual is ON. Manually typed UTRs appear separately in UTR Receipt Report.</small>
+                <img *ngIf="screenshotPreview" [src]="screenshotPreview" alt="Payment screenshot" style="max-height:160px;margin-top:8px;border:1px solid #ddd;border-radius:6px;">
               </div>
             </div>
           </div>

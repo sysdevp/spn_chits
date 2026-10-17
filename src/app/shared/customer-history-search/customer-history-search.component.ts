@@ -129,12 +129,43 @@ import { UserService } from '../../Services/user.service';
       .navbar-chs .chs-clear {
         color: rgba(255, 255, 255, 0.75);
       }
+      :host-context(.spn-internal-header) .navbar-chs,
+      :host-context(.spn-internal-header) .chs-wrap.compact {
+        margin-right: 0;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+      }
+      :host-context(.spn-internal-header) .chs-input {
+        background: #fff;
+        border: 1px solid #E2E8F0;
+        color: #0F172A;
+        height: 44px;
+        width: 100%;
+        max-width: none;
+        border-radius: 12px;
+        padding: 8px 40px 8px 14px;
+        box-shadow: 0 4px 14px rgba(7, 29, 58, .06);
+      }
+      :host-context(.spn-internal-header) .chs-input::placeholder {
+        color: #94a3b8;
+      }
+      :host-context(.spn-internal-header) .chs-input-wrap i.search-ico {
+        left: auto;
+        right: 14px;
+        color: #64748B;
+      }
+      :host-context(.spn-internal-header) .chs-clear {
+        right: 34px;
+        color: #64748B;
+      }
     `,
   ],
 })
 export class CustomerHistorySearchComponent implements OnInit, OnDestroy {
   @Input() compact = false;
   @Input() variant: 'dashboard' | 'navbar' = 'dashboard';
+  @Input() placeholder = '';
   @Input() branchId: string | number | '' = '';
   @ViewChild('rootEl') rootEl: ElementRef;
 

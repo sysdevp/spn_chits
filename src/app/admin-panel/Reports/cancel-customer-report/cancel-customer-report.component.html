@@ -2,7 +2,7 @@
 <div class="card maz-vh">
   <div class="card-header">
     <div class="row" [hidden]="selectionfield">
-      <div class="col-6 my-auto font-weight-bold">Cancel Enrollment Report</div>
+      <div class="col-6 my-auto font-weight-bold">Cancelled Customers Report</div>
       <div class="col-6 text-right">&nbsp;</div>
     </div>
     <div class="col-12 r_res pr-6" [hidden]="pdfrectab">
@@ -45,11 +45,22 @@
           </div>
           <div class="col-6">
             <div class="form-group row">
-              <label class="col-sm-4">Select Group</label>
+              <label class="col-sm-4">Select Scheme</label>
               <div class="col-sm-8">
-                <select #group_id class="form-control form-control w-100 border-dark" formControlName="group_id">
-                  <option value="">Select Group</option>
-                  <option *ngFor="let data of groupList" value="{{data.id}}">{{data.group_name}}</option>
+                <select class="form-control form-control w-100 border-dark" formControlName="scheme_id" (change)="schemeChg()">
+                  <option value="">All Schemes</option>
+                  <option *ngFor="let data of schemeList" value="{{data.id}}">{{data.chit_value}} / {{data.no_of_months}} Months</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="form-group row">
+              <label class="col-sm-4">Select Slab</label>
+              <div class="col-sm-8">
+                <select class="form-control form-control w-100 border-dark" formControlName="slab_id">
+                  <option value="">All Slabs</option>
+                  <option *ngFor="let data of slabList" value="{{data.id}}">{{data.slab_name}}</option>
                 </select>
               </div>
             </div>
@@ -69,7 +80,7 @@
           <tr>
             <th>S No</th>
             <th>Branch Name</th>
-            <th>Group Name</th>
+            <th>Scheme / Slab</th>
             <th>Ticket No</th>
             <th>Chit Value</th>
             <th>Customer Name</th>
@@ -142,7 +153,7 @@
           <tr> 
             <th>Sno</th>
             <th>Branch Name</th>
-            <th>Group Name</th>
+            <th>Scheme / Slab</th>
             <th>Ticket No</th>
             <th>Chit Value</th>
             <th>Subscriber Name</th>
@@ -178,7 +189,7 @@
         <tr>
           <th class="bg-secondary text-white">Sno</th>
           <th class="bg-secondary text-white">Branch Name</th>
-          <th class="bg-secondary text-white">Group Name</th>
+          <th class="bg-secondary text-white">Scheme / Slab</th>
           <th class="bg-secondary text-white">Ticket No</th>
           <th class="bg-secondary text-white">Chit Value</th>
           <th class="bg-secondary text-white">Customer Name</th>

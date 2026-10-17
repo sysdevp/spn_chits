@@ -3,7 +3,6 @@ import { FormGroup, FormArray, FormBuilder, Validators, FormControl } from '@ang
 import { AppService } from '../../../../app.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { UserService } from '../../../../Services/user.service';
-import { FileUploader } from 'ng2-file-upload';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { HttpClient, HttpHeaders} from '@angular/common/http';
 import { environment } from '../../../../../environments/environment';
@@ -48,31 +47,8 @@ export class UpdateDocumentComponent implements OnInit {
   assetList: any[];
   
   APIUrl:string;
-  auth_token = "Bearer "+localStorage.getItem('token');
-  uploader = new FileUploader({
-    url: '',
-    headers: [{
-      name: 'Content-Type',
-      value: 'application/x-www-form-urlencoded'
-    },
-    {
-      name: 'Authorization',
-      value: this.auth_token
-    },
-    {
-      name: 'Accept',
-      value: 'multipart/form-data'
-    }]
-  });
-  hasBaseDropZoneOver = false;
   overallupload: number;
-  upload_document: string;
-
-  fileOver(e: any) { 
-    this.hasBaseDropZoneOver = e;
-  }
-
-  fileDrop(eve){}
+  uploadState: { [key: string]: { busy: boolean, name: string, error: string } } = {};
 
   constructor(private http: HttpClient,  private route: ActivatedRoute, private modalService: NgbModal,private appService: AppService, private formBuilder: FormBuilder, private userservice: UserService, private router: Router) 
   { 
@@ -183,6 +159,7 @@ export class UpdateDocumentComponent implements OnInit {
     let documentCount=event.target.value;
     const documentArray = < FormArray > this.UpdateDocument.get('DocumentDetails');
     documentArray.controls = [];
+    this.clearUploadState('document');
     for(let i=0;i<parseInt(documentCount); i++) {
       this.addDocumentDetail();
     }
@@ -199,6 +176,7 @@ export class UpdateDocumentComponent implements OnInit {
     let assetCount=event.target.value;
     const assetArray = < FormArray > this.UpdateDocument.get('AssetDetails');
     assetArray.controls = [];
+    this.clearUploadState('asset');
     for(let i=0;i<parseInt(assetCount); i++) {
       this.addAssetDetail();
     }
@@ -447,45 +425,64 @@ export class UpdateDocumentComponent implements OnInit {
     }
   }
   
-  uploadAssetDetails(event) { 
-    this.overallupload = 0;
-    let fileList: any = event;
-    if (fileList.length > 0) 
-    {
-      let f: File = fileList[0]._file;
-      let headers = new HttpHeaders();
-      headers.append('Content-Type', 'multipart/form-data');
-      headers.append('Accept', 'application/json');
-      const formData: FormData = new FormData();
-      formData.append("asset_path", f, f.name);
-      formData.append("upload_type",this.uploadType);
-      this.upload_document = f.name;
-      this.http.post(this.APIUrl+ 'asset-document-upload', formData, {headers: headers}).subscribe((response) => { 
-        if(this.uploadType=="document") {
-          const pfArray = < FormArray > this.UpdateDocument.get('DocumentDetails'); 
-          pfArray.controls[this.uploadIndex].get('document_path').setValue(response['file_name']);
-        }
-        else if(this.uploadType=="asset") {
-          const pfArray = < FormArray > this.UpdateDocument.get('AssetDetails');
-          pfArray.controls[this.uploadIndex].get('asset_path').setValue(response['file_name']);
-        }
-        this.triggerFalseClick();
-      },
-      (error) => { });
-    }
+  rowUpload(uploadType: string, index: number) {
+    return this.uploadState[uploadType + index] || { busy: false, name: '', error: '' };
   }
 
-  triggerFalseClick() {  
-    let element: HTMLElement = document.getElementById("myDiv") as HTMLElement;
-    if(element!=null)
-    {
-      element.click();
+  clearUploadState(uploadType: string) {
+    Object.keys(this.uploadState).forEach((k) => {
+      if (k.indexOf(uploadType) === 0) {
+        delete this.uploadState[k];
+      }
+    });
+  }
+
+  isAnyUploadBusy() {
+    return Object.keys(this.uploadState).some((k) => this.uploadState[k].busy);
+  }
+
+  onRowFileSelected(event: any, index: number, uploadType: string) {
+    const input = event.target;
+    const file: File = input && input.files && input.files[0] ? input.files[0] : null;
+    if (!file) {
+      return;
     }
-    element = document.getElementById("myDivDocuments") as HTMLElement;
-    if(element!=null)
-    {
-      element.click();
+    input.value = '';
+    const key = uploadType + index;
+    const pathCtrl = uploadType == 'asset'
+      ? this.AssetDetails.at(index).get('asset_path')
+      : this.DocumentDetails.at(index).get('document_path');
+    if (file.size > 10 * 1024 * 1024) {
+      this.uploadState[key] = { busy: false, name: file.name, error: 'File is larger than 10 MB' };
+      this.appService.showAlert("Document", "File is larger than 10 MB. Please choose a smaller file.", "error");
+      return;
     }
+    this.uploadState[key] = { busy: true, name: file.name, error: '' };
+    pathCtrl.setValue('');
+
+    const token = localStorage.getItem('token');
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', 'Bearer ' + token);
+    }
+    const formData = new FormData();
+    formData.append('asset_path', file, file.name);
+    formData.append('upload_type', uploadType);
+
+    this.http.post(this.APIUrl + 'asset-document-upload', formData, { headers: headers }).subscribe((response: any) => {
+      const fileName = response && response.file_name ? response.file_name : '';
+      pathCtrl.setValue(fileName);
+      const msg = fileName ? '' : ((response && response.msg) || 'Upload failed');
+      this.uploadState[key] = { busy: false, name: file.name, error: msg };
+      if (!fileName) {
+        this.appService.showAlert("Document", msg, "error");
+      }
+    }, (error) => {
+      const msg = (error && error.error && error.error.msg) || 'Upload failed. Please login again and retry.';
+      pathCtrl.setValue('');
+      this.uploadState[key] = { busy: false, name: file.name, error: msg };
+      this.appService.showAlert("Document", msg, "error");
+    });
   }
 
   onSubmit() { 
@@ -493,6 +490,12 @@ export class UpdateDocumentComponent implements OnInit {
     this.submitted = true;
     this.disableBtn = true;
     const result = Object.assign({}, this.UpdateDocument.value); 
+    if (this.isAnyUploadBusy()) {
+      this.SubmitbuttonName = "Submit";
+      this.disableBtn = false;
+      this.appService.showAlert("Document", "Please wait for all files to finish uploading", "error");
+      return;
+    }
     if (this.UpdateDocument.invalid) 
     { 
       this.SubmitbuttonName = "Submit";

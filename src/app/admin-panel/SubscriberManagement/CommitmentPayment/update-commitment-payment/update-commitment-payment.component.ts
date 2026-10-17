@@ -414,26 +414,26 @@ export class UpdateCommitmentPaymentComponent implements OnInit {
       this.SubmitbuttonName = "Submit";
       try {
         if (response.status == 'Success') {
-          this.appService.showAlert("Commitment Payment",response.msg, "success");
+          this.appService.showAlert("Prized Payment",response.msg, "success");
           setTimeout(() => {
             this.router.navigate(['/admin-panel/view-commitment-payment']);
           }, 300);
         } else {
-          this.appService.showAlert("Commitment Payment", response.msg, "error");
+          this.appService.showAlert("Prized Payment", response.msg, "error");
           this.disableBtn = false;
         }
       } catch (err) {
-        this.appService.showAlert("Commitment Payment", 'Sorry!! Something went wrong!', "error");
+        this.appService.showAlert("Prized Payment", 'Sorry!! Something went wrong!', "error");
         this.disableBtn = false;
       }
     }, (err: any) => {
       this.disableBtn = false;
       this.SubmitbuttonName = "Submit";
       if (err.status == 401) {
-        this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
       }
       else {
-        this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+        this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
       }
     });
   }
@@ -543,17 +543,17 @@ export class UpdateCommitmentPaymentComponent implements OnInit {
             this.setSlabTypeList(response.data[0].customer_id,response.data[0].enrollment_id);
           }
           else {
-            this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
           }
         } catch (err) { 
-          this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+          this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
         }
       }, (err: any) => {
         if (err.status == 401) {
-          this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+          this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
         }
         else {
-          this.appService.showAlert("Commitment Payment", "Sorry!! Something went wrong!", "error");
+          this.appService.showAlert("Prized Payment", "Sorry!! Something went wrong!", "error");
         }
       });
     });

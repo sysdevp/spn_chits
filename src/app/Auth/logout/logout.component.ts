@@ -15,48 +15,29 @@ export class LogoutComponent implements OnInit {
   ngOnInit() {
     const token = localStorage.getItem('token');
     const loginUrl = localStorage.getItem('loginUrl');
-    const logoutUrl = `${environment.API}logout`;
+
+    this.clearStorage();
 
     if (token) {
-      const headers = new HttpHeaders({
-        Authorization: `Bearer ${token}`
-      });
-
-      this.http.post(logoutUrl, {}, { headers }).subscribe({
-        next: (response) => {
-          console.log('Logged out from backend', response);
-          this.clearStorage();
-          this.redirectToLogin(loginUrl);
-        },
-        error: (error) => {
-          console.error('Backend logout failed', error);
-          this.clearStorage(); // Still clear storage even if logout fails
-          this.redirectToLogin(loginUrl);
-        }
-      });
-    } else {
-      this.clearStorage();
-      this.redirectToLogin(loginUrl);
+      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+      this.http.post(`${environment.API}logout`, { token: token }, { headers }).subscribe(
+        () => {},
+        () => {}
+      );
     }
+    this.redirectToLogin(loginUrl);
   }
 
   clearStorage() {
-    const keys = [
-      'token', 'tenant_id', 'branch_id', 'logged_user_id', 'logged_employee_id',
-      'logged_user_type', 'profile_img', 'role_id', 'role_type_id', 'role_type_name',
-      'logged_user_name', 'logged_role_name', 'logged_tenant_name', 'tenant_det',
-      'role_permission', 'company_logo', 'receipt_logo', 'favicon', 'company_name',
-      'is_tenant_admin', 'loginUrl', 'database_name'
-    ];
-
-    keys.forEach(key => localStorage.removeItem(key));
+    const keep = Object.keys(localStorage).filter((k) => /^(themeSettings|appwork)/i.test(k));
+    const saved = keep.map((k) => [k, localStorage.getItem(k)]);
+    localStorage.clear();
+    sessionStorage.clear();
+    saved.forEach(([k, v]) => localStorage.setItem(k, v));
   }
 
   redirectToLogin(loginUrl: string | null) {
-    if (loginUrl == null) {
-      this.router.navigate(['/']);
-    } else {
-      this.router.navigate([loginUrl]);
-    }
+    const target = loginUrl && loginUrl !== '/logout' ? loginUrl : '/';
+    this.router.navigateByUrl(target, { replaceUrl: true });
   }
 }

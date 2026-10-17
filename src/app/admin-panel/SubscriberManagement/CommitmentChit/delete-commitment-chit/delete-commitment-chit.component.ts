@@ -36,7 +36,7 @@ export class DeleteCommitmentChitComponent implements OnInit {
     const resultData = Object.assign({}, this.DeleteCommitmentChit.value);
     swal({
       title: "Are you sure?",
-      text: "You are deleting the Commitment Chit detail.",
+      text: "You are deleting the Chit detail.",
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#DD6B55",
@@ -49,14 +49,14 @@ export class DeleteCommitmentChitComponent implements OnInit {
           try {
             this.router.navigate(['/admin-panel/view-commitment-chit']);
           } catch (err) {
-            this.appService.showAlert("Commitment Chit", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Chit", "Sorry!! Something went wrong!", "error");
           }
         }, (err: any) => {
           if (err.status == 401) {
-            this.appService.showAlert("Commitment Chit", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Chit", "Sorry!! Something went wrong!", "error");
           }
           else {
-            this.appService.showAlert("Commitment Chit", "Sorry!! Something went wrong!", "error");
+            this.appService.showAlert("Chit", "Sorry!! Something went wrong!", "error");
           }
         });
       }
